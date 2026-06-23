@@ -18,12 +18,15 @@ export default function rootLayout({ children, router }) {
 
   const navEl = document.getElementById('nav')
   if (navEl && !navEl.hasChildNodes()) {
-    navEl.innerHTML = `<span class="brand">SafaRouter</span>${navItems}`
+    navEl.innerHTML = `<span class="brand">SafaRouter</span><div class="nav-loader"></div>${navItems}`
     navEl.querySelectorAll('[data-safa-link]').forEach((el) => {
       el.addEventListener('click', (e) => {
         e.preventDefault()
         router.push(el.getAttribute('href'))
       })
+    })
+    router.on('loading', ({ loading }) => {
+      navEl.classList.toggle('is-loading', loading)
     })
   }
 

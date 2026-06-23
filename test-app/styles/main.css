@@ -106,6 +106,26 @@ pre {
   border-bottom-color: var(--color-accent);
 }
 
+.nav-loader {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 2px;
+  width: 0;
+  background: var(--color-accent);
+  transition: width 0.3s ease;
+}
+
+#nav.is-loading .nav-loader {
+  width: 60%;
+  animation: loader-pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes loader-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
 /* ── Main Content ───────────────────────── */
 
 #app {
