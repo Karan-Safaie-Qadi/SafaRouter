@@ -75,14 +75,14 @@ export class SafaRouter {
     emit(this._events, EVENTS.DESTROY, {})
   }
 
-  async push(url) {
+  async push(url, state = {}) {
     const u = createURL(url) || new URL(url, location.origin)
-    await this._navigate(normalizePath(u.pathname), 'push', parseQuery(u.search))
+    await this._navigate(normalizePath(u.pathname), 'push', parseQuery(u.search), state)
   }
 
-  async replace(url) {
+  async replace(url, state = {}) {
     const u = createURL(url) || new URL(url, location.origin)
-    await this._navigate(normalizePath(u.pathname), 'replace', parseQuery(u.search))
+    await this._navigate(normalizePath(u.pathname), 'replace', parseQuery(u.search), state)
   }
 
   back() {
@@ -176,12 +176,12 @@ export class SafaRouter {
     walk(this.config.routes, '/')
   }
 
-  async _navigate(path, method, query = {}) {
+  async _navigate(path, method, query = {}, state = {}) {
     if (path === this._pathname) return
-    await this._resolve(path, method, query)
+    await this._resolve(path, method, query, state)
   }
 
-  async _resolve(path, method, query = {}) {
+  async _resolve(path, method, query = {}, state = {}) {
     this._isLoading = true
     emit(this._events, EVENTS.LOADING, { path, loading: true })
     emit(this._events, EVENTS.BEFORE_NAVIGATE, { path, method })
@@ -219,8 +219,8 @@ export class SafaRouter {
         if (lfn) layoutFns.push(lfn)
       }
 
-      if (method === 'push') this._history.push(path)
-      else if (method === 'replace') this._history.replace(path)
+      if (method === 'push') this._history.push(path, state)
+      else if (method === 'replace') this._history.replace(path, state)
 
       const matched = this._matcher.match(path)
       this._pathname = path
