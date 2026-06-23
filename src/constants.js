@@ -39,7 +39,7 @@ export const DEFAULT_CONFIG = {
   target: '#app',
   basePath: '',
   useHash: false,
-  scrollToTop: true,
+  scrollToTop: false,
   prefetch: true,
   cacheRoutes: true,
   titleTemplate: '%s — SafaRouter',
