@@ -10,8 +10,8 @@ import { EVENTS, DEFAULT_CONFIG } from './constants.js'
 import { RouteLoadError, SafaError } from './errors.js'
 
 export class SafaRouter {
-  static version = '1.2.6'
-  static VERSION = '1.2.6'
+  static version = '1.2.7'
+  static VERSION = '1.2.7'
 
   constructor(options = {}) {
     this.config = { ...DEFAULT_CONFIG, ...options }
@@ -103,6 +103,7 @@ export class SafaRouter {
     this._history.destroy()
     for (const k of Object.keys(this._events)) this._events[k] = []
     this._cache.clear()
+    this._prefetched.clear()
     this._scrollManager.clear()
     this._targetEl = null
     emit(this._events, EVENTS.DESTROY, {})
@@ -228,19 +229,16 @@ export class SafaRouter {
     if (page && this.config.cacheRoutes) {
       this._cachePut(normalized, page)
     }
-    if (typeof document !== 'undefined' && !this._prefetched.has(normalized)) {
-      this._prefetched.add(normalized)
-      const candidates = this._resolvePagePath(normalized)
-      if (candidates) {
-        for (const url of candidates) {
-          const link = document.createElement('link')
-          link.rel = 'prefetch'
-          link.href = url
-          link.as = 'document'
-          document.head.appendChild(link)
-        }
-      }
-    }
+  }
+
+  _addPrefetchLink(url) {
+    if (typeof document === 'undefined' || this._prefetched.has(url)) return
+    this._prefetched.add(url)
+    const link = document.createElement('link')
+    link.rel = 'prefetch'
+    link.href = url
+    link.as = 'document'
+    document.head.appendChild(link)
   }
 
   clearCache() { this._cache.clear() }
@@ -285,6 +283,7 @@ export class SafaRouter {
         if (res.ok) {
           const text = await res.text()
           this._extractTitle(text)
+          this._addPrefetchLink(p)
           return text
         }
       } catch {
@@ -335,7 +334,10 @@ export class SafaRouter {
     if (depth > 10) {
       const err = new Error('Redirect loop detected')
       console.error('[SafaRouter]', err.message)
+      this._isLoading = false
+      this._abortFetch()
       emit(this._events, EVENTS.ERROR, { error: err, path })
+      emit(this._events, EVENTS.LOADING, { path, loading: false })
       return
     }
     if (depth === 0) {

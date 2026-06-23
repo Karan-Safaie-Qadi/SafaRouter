@@ -81,9 +81,10 @@ export function useRouter(router) {
   }
 
   const subscribers = new Set()
-  let disposed = false
+  let active = true
 
   const onRouteChange = () => {
+    if (!active) return
     state = {
       pathname: router.pathname,
       params: router.params,
@@ -97,7 +98,7 @@ export function useRouter(router) {
 
   const routeUnsub = router.on('routechange', onRouteChange)
   const destroyUnsub = router.on('destroy', () => {
-    disposed = true
+    active = false
     subscribers.clear()
     routeUnsub()
   })
@@ -105,6 +106,7 @@ export function useRouter(router) {
   return {
     get state() { return state },
     subscribe(fn) {
+      if (!active) return () => {}
       subscribers.add(fn)
       fn(state)
       return () => { subscribers.delete(fn) }
@@ -115,7 +117,7 @@ export function useRouter(router) {
     forward: router.forward.bind(router),
     navigate: router.navigate.bind(router),
     unsubscribe() {
-      disposed = true
+      active = false
       subscribers.clear()
       routeUnsub()
       destroyUnsub()
