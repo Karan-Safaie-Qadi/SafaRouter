@@ -38,12 +38,10 @@ export function isRouteGroupSegment(segment) {
   return /^\(/.test(segment) && /\)$/.test(segment)
 }
 
-export function isRouteGroup(segment) {
-  return /^\(/.test(segment) && /\)$/.test(segment)
-}
+export const isRouteGroup = isRouteGroupSegment
 
 export function extractParamName(segment) {
-  const m = segment.match(/^\[(?:\.\.\.)?([^\]]+)\]$/)
+  const m = segment.match(/^\[\[?(?:\.\.\.)?([^\]]+)\]\]?$/)
   return m ? m[1] : null
 }
 

@@ -48,7 +48,7 @@ class RouteNode {
         const nested = c._findDynamic(segment)
         if (nested) return nested
       }
-      if (c.segment.startsWith('[') && c.segment.endsWith(']') && !c.segment.startsWith('[.')) return c
+      if (c.segment.startsWith('[') && c.segment.endsWith(']') && !c.segment.startsWith('[.') && !c.segment.startsWith('[[')) return c
     }
     return null
   }
@@ -144,7 +144,8 @@ export class RouteTree {
       }
       const ca = node._findCatchAll()
       if (ca && ca.page) {
-        return { node: ca, params: { ...params }, layouts: ca.getLayoutChain() }
+        const name = ca.segment.replace(/^\[\.\.\.|\]\]?$/g, '')
+        return { node: ca, params: { ...params, [name]: [] }, layouts: ca.getLayoutChain() }
       }
       return null
     }

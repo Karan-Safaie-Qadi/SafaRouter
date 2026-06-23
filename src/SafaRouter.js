@@ -296,7 +296,10 @@ export class SafaRouter {
 
   async _navigate(path, method, query = {}, state = {}, depth = 0) {
     if (depth > 10) { console.error('[SafaRouter] Redirect loop detected'); return }
-    if (path === this._pathname && depth === 0) return
+    if (depth === 0) {
+      const sameQuery = JSON.stringify(query) === JSON.stringify(this._query)
+      if (path === this._pathname && sameQuery) return
+    }
     await this._resolve(path, method, query, state, depth)
   }
 
@@ -343,9 +346,10 @@ export class SafaRouter {
         if (loadingHtml && this._targetEl) {
           this._targetEl.innerHTML = loadingHtml
         }
-        pageContent = await this._fetchPage(path)
+        pageContent = this._cache.get(path) || await this._fetchPage(path)
         if (pageContent === null) {
           const notFoundHtml = await this._fetchSpecial(path, 'not-found.html')
+          if (this._navId !== navId) { this._isLoading = false; return }
           if (notFoundHtml) {
             if (method === 'push') this._history.push(path, state)
             else if (method === 'replace') this._history.replace(path, state)
@@ -529,7 +533,8 @@ export class SafaRouter {
       return
     }
 
-    const notFound = this._routeData?.node?.notFound || this._globalNotFound
+    this._routeData = null
+    const notFound = this._globalNotFound
     if (notFound) {
       try {
         const fn = await this._loadComponent(notFound)
