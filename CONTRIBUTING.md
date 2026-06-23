@@ -5,7 +5,7 @@ We welcome contributions! Here's how to get started.
 ## Development
 
 ```bash
-git clone https://github.com/pishro-dev/safa-router.git
+git clone https://github.com/Karan-Safaie-Qadi/SafaRouter.git
 cd safa-router
 npm start
 ```

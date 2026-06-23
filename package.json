@@ -34,10 +34,10 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/pishro-dev/safa-router.git"
+    "url": "git+https://github.com/Karan-Safaie-Qadi/SafaRouter.git"
   },
   "bugs": {
-    "url": "https://github.com/pishro-dev/safa-router/issues"
+    "url": "https://github.com/Karan-Safaie-Qadi/SafaRouter/issues"
   },
-  "homepage": "https://github.com/pishro-dev/safa-router#readme"
+  "homepage": "https://github.com/Karan-Safaie-Qadi/SafaRouter#readme"
 }
