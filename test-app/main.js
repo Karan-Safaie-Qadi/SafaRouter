@@ -37,7 +37,7 @@ const router = new SafaRouter({
   // ── v1.3.0: Maintenance Mode (disabled by default) ──
   maintenanceMode: {
     enabled: false,
-    allowedPaths: ['/login', '/assets/**'],
+    allowedPaths: ['/login', '/assets/**', '/sandbox'],
   },
 
   // ── v1.3.0: Error Logging ──
@@ -145,7 +145,10 @@ const router = new SafaRouter({
       meta: {
         transition: {
           duration: 500,
-          enterClass: 'slide-up',
+          enterClass: 'fade-in',
+          enterActiveClass: 'fade-in-active',
+          exitClass: 'fade-out',
+          exitActiveClass: 'fade-out-active',
         },
       },
     },

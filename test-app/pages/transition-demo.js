@@ -14,7 +14,10 @@ export default function transitionDemoPage({ router }) {
         </p>
         <div style="background: var(--color-bg); padding: 0.75rem; border-radius: 4px; font-family: monospace; font-size: 0.875rem;">
           <div>duration: <span style="color: var(--color-accent);">500</span></div>
-          <div>enterClass: <span style="color: var(--color-success);">"slide-up"</span></div>
+          <div>enterClass: <span style="color: var(--color-success);">"fade-in"</span></div>
+          <div>enterActiveClass: <span style="color: var(--color-success);">"fade-in-active"</span></div>
+          <div>exitClass: <span style="color: var(--color-warning);">"fade-out"</span></div>
+          <div>exitActiveClass: <span style="color: var(--color-warning);">"fade-out-active"</span></div>
         </div>
       </div>
 
@@ -37,7 +40,10 @@ export default function transitionDemoPage({ router }) {
   meta: {
     transition: {
       duration: 500,
-      enterClass: 'slide-up',
+      enterClass: 'fade-in',
+      enterActiveClass: 'fade-in-active',
+      exitClass: 'fade-out',
+      exitActiveClass: 'fade-out-active',
     },
   },
 }</pre>

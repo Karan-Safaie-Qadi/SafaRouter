@@ -202,13 +202,32 @@ pre {
 
 /* ── Transition effects ─────────────────── */
 
-@keyframes slideUp {
-  from { opacity: 0; transform: translateY(24px); }
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
-.slide-up {
-  animation: slideUp 500ms ease;
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+
+.fade-in {
+  animation: fadeIn 500ms ease;
+}
+
+.fade-out {
+  animation: fadeOut 500ms ease;
+}
+
+.fade-in-active {
+  opacity: 1;
+  transition: opacity 500ms ease, transform 500ms ease;
+}
+
+.fade-out-active {
+  opacity: 0;
+  transition: opacity 500ms ease;
 }
 
 /* ── Maintenance Banner ─────────────────── */

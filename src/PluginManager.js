@@ -1,4 +1,5 @@
 import { EVENTS } from './constants.js'
+import { emit } from './utils.js'
 
 export class PluginManager {
   constructor(router) {
@@ -64,6 +65,9 @@ export class PluginManager {
       })
     }
 
+    if (this._router && this._router._events) {
+      emit(this._router._events, EVENTS.PLUGIN_INSTALL, { name: plugin.name })
+    }
     return this
   }
 
@@ -74,6 +78,9 @@ export class PluginManager {
       try { cleanup() } catch {}
     }
     this._plugins.delete(name)
+    if (this._router && this._router._events) {
+      emit(this._router._events, EVENTS.PLUGIN_EJECT, { name })
+    }
     return true
   }
 

@@ -666,7 +666,7 @@ export class SafaRouter {
         this._targetEl.innerHTML = html
         this._bindLinks()
         if (this.config.prefetchStrategy === 'visible') this._observeLinks()
-      })
+      }, transCfg)
     } else {
       this._targetEl.innerHTML = html
       this._bindLinks()
