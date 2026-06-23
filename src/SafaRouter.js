@@ -777,8 +777,16 @@ export class SafaRouter {
       else if (method === 'replace') this._history.replace(path, state)
       this._pathname = path
       if (this._targetEl) {
-        this._targetEl.innerHTML = this._globalLayout
-          ? await this._renderWithLayouts(notFoundHtml, [this._globalLayout], 0)
+        let layoutFn = this._globalLayout
+        if (layoutFn && typeof layoutFn === 'string') {
+          const res = await fetch(layoutFn)
+          if (res.ok) {
+            const layoutHtml = await res.text()
+            layoutFn = ({ children }) => this._renderHtmlLayout(layoutHtml, children)
+          }
+        }
+        this._targetEl.innerHTML = layoutFn
+          ? await this._renderWithLayouts(notFoundHtml, [layoutFn], 0)
           : notFoundHtml
       }
       this._updateTitle()
@@ -795,8 +803,16 @@ export class SafaRouter {
         this._pathname = path
         let html = typeof fn === 'function' ? fn({ path, router: this, statusCode: status }) : fn
         if (this._globalLayout) {
-          const lfn = await this._loadComponent(this._globalLayout)
-          if (lfn) html = await this._renderWithLayouts(html, [lfn], 0)
+          let lfn = this._globalLayout
+          if (typeof lfn === 'string') {
+            const res = await fetch(lfn)
+            if (res.ok) {
+              const layoutHtml = await res.text()
+              lfn = ({ children }) => this._renderHtmlLayout(layoutHtml, children)
+            }
+          }
+          const loaded = await this._loadComponent(lfn)
+          if (loaded) html = await this._renderWithLayouts(html, [loaded], 0)
         }
         if (this._targetEl) this._targetEl.innerHTML = html
         this._updateTitle()
@@ -824,8 +840,16 @@ export class SafaRouter {
         const fn = await this._loadComponent(routeError)
         let html = typeof fn === 'function' ? fn({ error: err, path, router: this, statusCode: status }) : fn
         if (this._globalLayout) {
-          const lfn = await this._loadComponent(this._globalLayout)
-          if (lfn) html = await this._renderWithLayouts(html, [lfn], 0)
+          let lfn = this._globalLayout
+          if (typeof lfn === 'string') {
+            const res = await fetch(lfn)
+            if (res.ok) {
+              const layoutHtml = await res.text()
+              lfn = ({ children }) => this._renderHtmlLayout(layoutHtml, children)
+            }
+          }
+          const loaded = await this._loadComponent(lfn)
+          if (loaded) html = await this._renderWithLayouts(html, [loaded], 0)
         }
         if (this._targetEl) this._targetEl.innerHTML = html
         this._updateTitle()
@@ -845,8 +869,16 @@ export class SafaRouter {
         const fn = await this._loadComponent(this._globalError)
         let html = typeof fn === 'function' ? fn({ error: err, path, router: this, statusCode: status }) : fn
         if (this._globalLayout) {
-          const lfn = await this._loadComponent(this._globalLayout)
-          if (lfn) html = await this._renderWithLayouts(html, [lfn], 0)
+          let lfn = this._globalLayout
+          if (typeof lfn === 'string') {
+            const res = await fetch(lfn)
+            if (res.ok) {
+              const layoutHtml = await res.text()
+              lfn = ({ children }) => this._renderHtmlLayout(layoutHtml, children)
+            }
+          }
+          const loaded = await this._loadComponent(lfn)
+          if (loaded) html = await this._renderWithLayouts(html, [loaded], 0)
         }
         if (this._targetEl) this._targetEl.innerHTML = html
         this._updateTitle()
