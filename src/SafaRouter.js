@@ -602,6 +602,7 @@ export class SafaRouter {
   }
 
   _updateTitle() {
+    if (typeof document === 'undefined') return
     const template = this.config.titleTemplate
     if (!template) return
 

@@ -1,8 +1,9 @@
 import { describe, it, expect, vi } from 'vitest'
 import { SafaRouter } from '../src/SafaRouter.js'
-import { useRouter, emit } from '../src/utils.js'
+import { useRouter, emit, buildQuery } from '../src/utils.js'
 import { EVENTS } from '../src/constants.js'
 import { Link } from '../src/Link.js'
+import { NavigationAbortError } from '../src/errors.js'
 
 function createMockRouter(opts = {}) {
   const router = new SafaRouter({
@@ -151,5 +152,129 @@ describe('_handleNotFound state', () => {
     router._history.replace = replaceSpy
     await router._handleNotFound('/missing', 'replace', undefined, { from: 'test' })
     expect(replaceSpy).toHaveBeenCalledWith('/missing', { from: 'test' })
+  })
+})
+
+describe('NavigationAbortError', () => {
+  it('throws NavigationAbortError on cancelled navigation and emits ERROR', async () => {
+    const router = createMockRouter()
+    router.use((ctx, next) => { ctx.cancelled = true; return next() })
+    const handler = vi.fn()
+    router.on(EVENTS.ERROR, handler)
+    await router._navigate('/test', 'push')
+    expect(handler).toHaveBeenCalledTimes(1)
+    expect(handler.mock.calls[0][0].error).toBeInstanceOf(NavigationAbortError)
+  })
+})
+
+describe('pushRoute guard', () => {
+  it('throws SafaError when pushRoute called before start()', async () => {
+    const router = createMockRouter()
+    await expect(router.pushRoute('home')).rejects.toThrow('Router not started')
+  })
+
+  it('getRoute returns null before start()', () => {
+    const router = createMockRouter()
+    expect(router.getRoute('/test')).toBeNull()
+  })
+})
+
+describe('Route data loader', () => {
+  it('passes loader data to page component', async () => {
+    const loader = vi.fn(async () => ({ users: ['a', 'b'] }))
+    const page = vi.fn((ctx) => `<p>${ctx.data.users.join(',')}</p>`)
+    const RouteTreeModule = await import('../src/RouteTree.js')
+    const routes = { '/users': { page, loader } }
+    const router = createMockRouter()
+    router.config.routes = routes
+    router._routeTree = new RouteTreeModule.RouteTree(routes)
+    router._targetEl = { innerHTML: '' }
+    router._navId = 0
+    const routeMatch = router._routeTree.resolve('/users')
+    expect(routeMatch).not.toBeNull()
+    expect(routeMatch.node.loader).toBe(loader)
+  })
+})
+
+describe('Route guard', () => {
+  async function createRouterWithGuard(guard, page) {
+    const RouteTreeModule = await import('../src/RouteTree.js')
+    const router = createMockRouter()
+    const routes = { '/admin': { page: page || (() => '<h1>Admin</h1>'), guard } }
+    router.config.routes = routes
+    router._routeTree = new RouteTreeModule.RouteTree(routes)
+    router._targetEl = { innerHTML: '' }
+    router._navId = 0
+    return router
+  }
+
+  it('redirects when guard returns false', async () => {
+    const router = await createRouterWithGuard(async () => false)
+    router._navigate = vi.fn()
+    await router._resolve('/admin', 'push')
+    expect(router._navigate).toHaveBeenCalledWith('/', 'replace', {}, {}, 1)
+  })
+
+  it('redirects when guard returns a string path', async () => {
+    const router = await createRouterWithGuard(async () => '/login')
+    router._navigate = vi.fn()
+    await router._resolve('/admin', 'push')
+    expect(router._navigate).toHaveBeenCalledWith('/login', 'replace', {}, {}, 1)
+  })
+
+  it('allows navigation when guard returns true', async () => {
+    const router = await createRouterWithGuard(async () => true)
+    router._navigate = vi.fn()
+    await router._resolve('/admin', 'push')
+    expect(router._navigate).not.toHaveBeenCalled()
+  })
+})
+
+describe('Per-route transition', () => {
+  it('uses route-specific transition config over global', () => {
+    const router = createMockRouter({
+      transitionDuration: 300,
+      transitionEnterClass: 'global-enter',
+    })
+    router._routeData = {
+      node: {
+        meta: {
+          transition: {
+            duration: 500,
+            enterClass: 'custom-enter',
+          },
+        },
+      },
+    }
+    const cfg = router._getTransitionConfig()
+    expect(cfg.transitionDuration).toBe(500)
+    expect(cfg.transitionEnterClass).toBe('custom-enter')
+    expect(cfg.transitionExitClass).toBe('page-exit')
+  })
+
+  it('falls back to global config when no route transition', () => {
+    const router = createMockRouter({
+      transitionDuration: 300,
+      transitionExitClass: 'global-exit',
+    })
+    router._routeData = null
+    const cfg = router._getTransitionConfig()
+    expect(cfg).toBeNull()
+  })
+})
+
+describe('navigate() deprecation', () => {
+  it('calls push internally', async () => {
+    const router = createMockRouter()
+    router.push = vi.fn()
+    await router.navigate('/test')
+    expect(router.push).toHaveBeenCalledWith('/test')
+  })
+})
+
+describe('buildQuery', () => {
+  it('builds query string from object', () => {
+    expect(buildQuery({ a: '1', b: '2' })).toBe('?a=1&b=2')
+    expect(buildQuery({})).toBe('')
   })
 })
