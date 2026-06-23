@@ -146,7 +146,14 @@ export class SafaRouter {
   }
 
   reload() { this._resolve(this._pathname, 'replace') }
-  navigate(url) { return this.push(url) }
+
+  /** @deprecated Use push(url) instead */
+  navigate(url) {
+    if (typeof console !== 'undefined' && console.warn) {
+      console.warn('[SafaRouter] navigate() is deprecated. Use push() instead.')
+    }
+    return this.push(url)
+  }
 
   getConfig() { return { ...this.config } }
 
