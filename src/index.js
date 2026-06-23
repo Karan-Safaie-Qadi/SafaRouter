@@ -7,6 +7,7 @@ export { Link } from './Link.js'
 export { PluginManager } from './PluginManager.js'
 export { TransitionsManager } from './TransitionsManager.js'
 export { ScrollManager } from './ScrollManager.js'
+export { ErrorManager } from './ErrorManager.js'
 export {
   SafaError,
   RouteNotFoundError,
