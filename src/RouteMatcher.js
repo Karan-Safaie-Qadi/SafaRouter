@@ -109,6 +109,11 @@ export class RouteMatcher {
     return this
   }
 
+  addMultiple(patterns) {
+    for (const p of patterns) this.add(p)
+    return this
+  }
+
   match(url) {
     for (const p of this._patterns) {
       const params = p.match(url)
