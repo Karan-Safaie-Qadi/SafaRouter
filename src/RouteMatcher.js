@@ -113,6 +113,12 @@ export class RouteMatcher {
     this._patterns = []
   }
 
+  static create(patterns) {
+    const matcher = new RouteMatcher()
+    if (patterns) matcher.addMultiple(patterns)
+    return matcher
+  }
+
   add(pattern) {
     const rp = new RoutePattern(pattern)
     this._patterns.push(rp)
