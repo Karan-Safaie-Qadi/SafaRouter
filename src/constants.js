@@ -4,12 +4,16 @@ export const EVENTS = {
   NAVIGATE: 'navigate',
   ROUTE_CHANGE: 'routechange',
   AFTER_NAVIGATE: 'afternavigate',
+  BEFORE_RENDER: 'beforerender',
+  AFTER_RENDER: 'afterrender',
   ERROR: 'error',
   NOT_FOUND: 'notfound',
   LOADING: 'loading',
   READY: 'ready',
   DESTROY: 'destroy',
   LINK_CLICK: 'linkclick',
+  PLUGIN_INSTALL: 'plugininstall',
+  PLUGIN_EJECT: 'plugineject',
 }
 
 export const SEGMENT_TYPES = {
@@ -44,4 +48,10 @@ export const DEFAULT_CONFIG = {
   cacheRoutes: true,
   titleTemplate: '%s — SafaRouter',
   transitionDuration: 0,
+  transitionEnterClass: 'page-enter',
+  transitionExitClass: 'page-exit',
+  transitionEnterActiveClass: 'page-enter-active',
+  transitionExitActiveClass: 'page-exit-active',
+  scrollRestoration: 'auto',
+  plugins: [],
 }

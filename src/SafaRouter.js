@@ -2,13 +2,16 @@ import { RouteTree } from './RouteTree.js'
 import { HistoryManager } from './HistoryManager.js'
 import { MiddlewareChain } from './MiddlewareChain.js'
 import { Link } from './Link.js'
-import { normalizePath, parseQuery, emit, createURL, isExternalURL, isDynamicSegment } from './utils.js'
+import { PluginManager } from './PluginManager.js'
+import { TransitionsManager } from './TransitionsManager.js'
+import { ScrollManager } from './ScrollManager.js'
+import { normalizePath, parseQuery, emit, createURL, isExternalURL } from './utils.js'
 import { EVENTS, DEFAULT_CONFIG } from './constants.js'
 import { RouteLoadError, SafaError } from './errors.js'
 
 export class SafaRouter {
-  static version = '1.1.2'
-  static VERSION = '1.1.2'
+  static version = '1.2.0'
+  static VERSION = '1.2.0'
 
   constructor(options = {}) {
     this.config = { ...DEFAULT_CONFIG, ...options }
@@ -25,7 +28,7 @@ export class SafaRouter {
     })
     this._middleware = new MiddlewareChain()
     this._cache = new Map()
-    this._scrollMemory = new Map()
+    this._scrollManager = new ScrollManager()
 
     this._pathname = '/'
     this._params = {}
@@ -40,6 +43,15 @@ export class SafaRouter {
     this._globalError = this.config.error || null
     this._globalLayout = this.config.layout || null
     this._customTitle = null
+
+    this._transitions = new TransitionsManager({
+      transitionDuration: this.config.transitionDuration,
+      transitionEnterClass: this.config.transitionEnterClass,
+      transitionExitClass: this.config.transitionExitClass,
+      transitionEnterActiveClass: this.config.transitionEnterActiveClass,
+      transitionExitActiveClass: this.config.transitionExitActiveClass,
+    })
+    this._plugins = new PluginManager(this)
 
     this._boundNav = this._onHistoryChange.bind(this)
   }
@@ -63,6 +75,13 @@ export class SafaRouter {
     this._routeTree = new RouteTree(this.config.routes || {})
     this._history.init()
     this._unsubHistory = this._history.onChange(this._boundNav)
+
+    if (Array.isArray(this.config.plugins)) {
+      for (const plugin of this.config.plugins) {
+        this._plugins.use(plugin)
+      }
+    }
+
     await this._resolve(this._history.path, 'replace')
     emit(this._events, EVENTS.READY, { pathname: this._pathname })
     this._started = true
@@ -73,6 +92,7 @@ export class SafaRouter {
 
   destroy() {
     this._started = false
+    this._plugins.ejectAll()
     if (this._unsubHistory) {
       this._unsubHistory()
       this._unsubHistory = null
@@ -80,6 +100,7 @@ export class SafaRouter {
     this._history.destroy()
     for (const k of Object.keys(this._events)) this._events[k] = []
     this._cache.clear()
+    this._scrollManager.clear()
     this._targetEl = null
     emit(this._events, EVENTS.DESTROY, {})
   }
@@ -94,6 +115,15 @@ export class SafaRouter {
     if (isExternalURL(url)) { window.location.replace(url); return }
     const u = createURL(url) || new URL(url, location.origin)
     await this._navigate(normalizePath(u.pathname), 'replace', parseQuery(u.search), state)
+  }
+
+  async pushRoute(routeName, params = {}, query = {}) {
+    const routes = this.config.routes || {}
+    const flat = this._routeTree.flatten()
+    const matched = flat.find(r => r.meta?.name === routeName || r.path === routeName)
+    if (!matched) throw new SafaError(`Route "${routeName}" not found`, 'ROUTE_NOT_FOUND')
+    const qs = Object.keys(query).length ? '?' + new URLSearchParams(query).toString() : ''
+    return this.push(matched.path + qs)
   }
 
   back() { this._history.back() }
@@ -131,6 +161,33 @@ export class SafaRouter {
   onBeforeNavigate(fn) { return this.on(EVENTS.BEFORE_NAVIGATE, fn) }
 
   createLink(config) { return new Link({ ...config, router: this }) }
+
+  plugin(plugin) { return this._plugins.use(plugin) }
+
+  ejectPlugin(name) { return this._plugins.eject(name) }
+
+  getPlugin(name) { return this._plugins.get(name) }
+
+  get plugins() { return this._plugins.list() }
+
+  useNamed(name, fn, priority = 0) {
+    this._middleware.useNamed(name, fn, priority)
+    return this
+  }
+
+  middleware(name) {
+    return this._middleware.remove(name)
+  }
+
+  insertMiddlewareBefore(refName, fn, priority = 0) {
+    this._middleware.insertBefore(refName, fn, priority)
+    return this
+  }
+
+  insertMiddlewareAfter(refName, fn, priority = 0) {
+    this._middleware.insertAfter(refName, fn, priority)
+    return this
+  }
 
   async prefetch(path) {
     const normalized = normalizePath(path)
@@ -301,7 +358,7 @@ export class SafaRouter {
 
       if (this._navId !== navId) return
 
-      this._saveScroll()
+      this._scrollManager.save(this._pathname)
 
       if (method === 'push') this._history.push(path, state)
       else if (method === 'replace') this._history.replace(path, state)
@@ -311,9 +368,11 @@ export class SafaRouter {
       this._query = query
       this._isLoading = false
 
-      this._render(pageContent, layoutFns)
+      emit(this._events, EVENTS.BEFORE_RENDER, { pathname: path })
+      await this._render(pageContent, layoutFns)
+      emit(this._events, EVENTS.AFTER_RENDER, { pathname: path })
 
-      this._restoreScroll()
+      this._scrollManager.restore(this._pathname, this.config.scrollToTop)
       this._updateTitle()
       this._focus()
 
@@ -336,15 +395,14 @@ export class SafaRouter {
           ? pageContent({ params: this._params, query: this._query, router: this })
           : (pageContent || ''))
 
-    const duration = this.config.transitionDuration
-    if (duration > 0) {
-      this._targetEl.style.opacity = '0'
-      this._targetEl.style.transition = `opacity ${duration}ms ease`
-    }
-    this._targetEl.innerHTML = html
-    this._bindLinks()
-    if (duration > 0) {
-      requestAnimationFrame(() => { this._targetEl.style.opacity = '1' })
+    if (this.config.transitionDuration > 0) {
+      await this._transitions.run(this._targetEl, async () => {
+        this._targetEl.innerHTML = html
+        this._bindLinks()
+      })
+    } else {
+      this._targetEl.innerHTML = html
+      this._bindLinks()
     }
   }
 
@@ -358,21 +416,6 @@ export class SafaRouter {
     const layoutFn = layoutFns[idx]
     const content = await this._renderWithLayouts(pageContent, layoutFns, idx + 1)
     return layoutFn({ children: content, params: this._params, router: this })
-  }
-
-  _saveScroll() {
-    this._scrollMemory.set(this._pathname, window.scrollY)
-  }
-
-  _restoreScroll() {
-    if (this.config.scrollToTop) {
-      window.scrollTo({ top: 0 })
-      return
-    }
-    const saved = this._scrollMemory.get(this._pathname)
-    if (saved !== undefined) {
-      window.scrollTo(0, saved)
-    }
   }
 
   _updateTitle() {
@@ -415,11 +458,20 @@ export class SafaRouter {
     if (!mod) return null
     try {
       if (typeof mod === 'string') {
+        if (mod.endsWith('.js') || mod.endsWith('.mjs')) {
+          try {
+            const resolved = await import(mod)
+            const page = resolved.default || resolved
+            return page
+          } catch {
+            // fall through to fetch
+          }
+        }
         let url = mod
         if (this._params && Object.keys(this._params).length > 0) {
           for (const [k, v] of Object.entries(this._params)) {
             const val = Array.isArray(v) ? v.join('/') : String(v)
-            url = url.replace(`[${k}]`, val)
+            url = url.replaceAll(`[${k}]`, val)
           }
         }
         const res = await fetch(url)
@@ -523,7 +575,7 @@ export class SafaRouter {
     if (action === 'popstate') {
       this._resolve(path, 'replace')
       if (state && state._scrollY !== undefined && !this.config.scrollToTop) {
-        window.scrollTo(0, state._scrollY)
+        requestAnimationFrame(() => window.scrollTo(0, state._scrollY))
       }
     }
   }

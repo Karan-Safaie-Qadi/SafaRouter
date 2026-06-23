@@ -13,7 +13,9 @@
   ],
   "scripts": {
     "start": "npx serve test-app -l 3000",
-    "test": "echo \"Tests coming soon\"",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
     "lint": "echo \"Add lint tool\"",
     "prepublishOnly": "npm test"
   },
