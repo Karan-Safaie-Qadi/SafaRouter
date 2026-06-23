@@ -188,6 +188,10 @@ export class SafaRouter {
     }
   }
 
+  clearCache() {
+    this._cache.clear()
+  }
+
   _seedMatcher() {
     const walk = (routes, base) => {
       if (!routes || typeof routes !== 'object') return
