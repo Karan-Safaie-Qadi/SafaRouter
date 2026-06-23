@@ -43,12 +43,24 @@ http.createServer((req, res) => {
 
   if (urlPath.startsWith('/test-app/')) {
     if (serveSync('.' + urlPath, res)) return
+    const ext = path.extname(urlPath)
+    if (ext) {
+      res.writeHead(404)
+      res.end('Not found')
+      return
+    }
     serveSync('./test-app/index.html', res)
     return
   }
 
   if (serveSync('./test-app' + urlPath, res)) return
 
+  const ext = path.extname(urlPath)
+  if (ext) {
+    res.writeHead(404)
+    res.end('Not found')
+    return
+  }
   serveSync('./test-app/index.html', res)
 }).listen(PORT, () => {
   console.log(`Server: http://localhost:${PORT}/test-app/`)

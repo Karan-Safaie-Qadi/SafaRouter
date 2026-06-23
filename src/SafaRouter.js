@@ -12,8 +12,8 @@ import { ErrorManager } from './ErrorManager.js'
 import { AccessController } from './AccessController.js'
 
 export class SafaRouter {
-  static version = '1.3.0'
-  static VERSION = '1.3.0'
+  static version = '1.3.1'
+  static VERSION = '1.3.1'
 
   constructor(options = {}) {
     this.config = deepMerge(DEFAULT_CONFIG, options)
@@ -784,7 +784,10 @@ export class SafaRouter {
     // Try ErrorManager specific error pages first (e.g. 404.html, 4xx.html)
     const showStack = this.config.errors?.stackTraces !== false
     let notFoundPage = null
-    try { notFoundPage = await this._errorManager.resolvePage(status, this.config.errors?.pageDir, signal) } catch {}
+    try {
+      const errPageDir = this.config.errors?.pageDir ? this._resolveUrl(this.config.errors.pageDir) : null
+      notFoundPage = await this._errorManager.resolvePage(status, errPageDir, signal)
+    } catch {}
     if (notFoundPage) {
       if (method === 'push') this._history.push(path, state)
       else if (method === 'replace') this._history.replace(path, state)
@@ -901,7 +904,10 @@ export class SafaRouter {
 
     // Try ErrorManager specific error pages first (e.g. 403.html, 500.html, 503.html)
     let mgrPage = null
-    try { mgrPage = await this._errorManager.resolvePage(status, this.config.errors?.pageDir, signal) } catch {}
+    try {
+      const errPageDir = this.config.errors?.pageDir ? this._resolveUrl(this.config.errors.pageDir) : null
+      mgrPage = await this._errorManager.resolvePage(status, errPageDir, signal)
+    } catch {}
     if (mgrPage) {
       if (this._targetEl) {
         let layoutFn = this._globalLayout
