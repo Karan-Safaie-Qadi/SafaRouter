@@ -94,9 +94,17 @@ export function createURL(path, base = location.origin) {
 
 export function isExternalURL(url) {
   if (!url) return false
-  try {
-    return new URL(url).origin !== location.origin
-  } catch {
-    return false
+  if (url.startsWith('//')) return true
+  if (url.startsWith('http://') || url.startsWith('https://')) {
+    try {
+      return new URL(url).origin !== location.origin
+    } catch {
+      return true
+    }
   }
+  return false
+}
+
+export function isSamePath(a, b) {
+  return normalizePath(a) === normalizePath(b)
 }
