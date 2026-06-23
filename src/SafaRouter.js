@@ -234,7 +234,18 @@ export class SafaRouter {
         return
       }
 
-      const route = this._routeTree.resolve(path)
+      let route = this._routeTree.resolve(path)
+      if (!route && this.config.pagesDir) {
+        const htmlPath = this._resolveHtmlPath(path)
+        if (htmlPath) {
+          route = {
+            node: { page: htmlPath, loading: null, error: null, notFound: null, meta: null },
+            params: {},
+            layouts: this._routeTree.root.getLayoutChain(),
+          }
+        }
+      }
+
       if (!route) {
         await this._handleNotFound(path, method, query)
         this._isLoading = false
@@ -363,6 +374,11 @@ export class SafaRouter {
   async _loadComponent(mod) {
     if (!mod) return null
     try {
+      if (typeof mod === 'string') {
+        const res = await fetch(mod)
+        if (!res.ok) throw new Error(`Failed to load ${mod} (${res.status})`)
+        return res.text()
+      }
       if (typeof mod === 'function') {
         let result
         try {
@@ -379,10 +395,17 @@ export class SafaRouter {
       return mod
     } catch (e) {
       throw new RouteLoadError(
-        typeof mod === 'function' ? mod.name || 'anonymous' : 'module',
+        typeof mod === 'string' ? mod : (typeof mod === 'function' ? mod.name || 'anonymous' : 'module'),
         e
       )
     }
+  }
+
+  _resolveHtmlPath(fullPath) {
+    const dir = (this.config.pagesDir || '').replace(/\/+$/, '')
+    if (!dir) return null
+    if (fullPath === '/') return `${dir}/index.html`
+    return `${dir}${fullPath}.html`
   }
 
   async _handleNotFound(path, method) {
