@@ -89,7 +89,7 @@ export class RouteTree {
         if (val.loading) node.loading = val.loading
         if (val.error) node.error = val.error
         if (val.notFound) node.notFound = val.notFound
-        this._build(node, val.children || val, fp)
+        if (val.children) this._build(node, val.children, fp)
       } else if (typeof val === 'function') {
         node.page = val
       }
