@@ -28,12 +28,14 @@ export class HistoryManager {
   }
 
   push(url, state = {}) {
-    history.pushState(state, '', this._url(url))
+    const scrollY = window.scrollY
+    history.pushState({ ...state, _scrollY: scrollY }, '', this._url(url))
     this._notify(url, 'push')
   }
 
   replace(url, state = {}) {
-    history.replaceState(state, '', this._url(url))
+    const scrollY = window.scrollY
+    history.replaceState({ ...state, _scrollY: scrollY }, '', this._url(url))
     this._notify(url, 'replace')
   }
 
