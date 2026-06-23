@@ -6,25 +6,39 @@ export class ErrorManager {
     this._cache = new Map()
     this._maxCacheSize = 50
     this._defaultPages = this._buildDefaultPages()
+    this._logHandler = null
+    this._overrides = {}
+  }
+
+  setStatusEnabled(statusCode, enabled) {
+    if (!this._overrides[statusCode]) {
+      this._overrides[statusCode] = {}
+    }
+    this._overrides[statusCode].enabled = enabled
+  }
+
+  setGroupEnabled(group, enabled) {
+    const errors = this._config.errors || {}
+    if (!errors.groups) errors.groups = {}
+    if (!errors.groups[group]) errors.groups[group] = {}
+    errors.groups[group].enabled = enabled
   }
 
   getStatusConfig(statusCode) {
     const errors = this._config.errors || {}
     const globalEnabled = errors.enabled !== false
+    const override = this._overrides[statusCode]
+    if (override && override.enabled === false) return { enabled: false }
     const statusConfig = errors.status?.[statusCode]
-    if (statusConfig && statusConfig.enabled === false) {
-      return { enabled: false }
-    }
+    if (statusConfig && statusConfig.enabled === false) return { enabled: false }
     const group = ERROR_GROUP_MAP[statusCode] || ERROR_GROUPS.CLIENT_ERROR
     const groupConfig = errors.groups?.[group]
-    if (groupConfig && groupConfig.enabled === false) {
-      return { enabled: false }
-    }
-    const redirect = errors.redirect?.[statusCode]
+    if (groupConfig && groupConfig.enabled === false) return { enabled: false }
+    const redirect = override?.redirect || errors.redirect?.[statusCode]
     return {
       enabled: globalEnabled,
-      page: statusConfig?.page || groupConfig?.page || null,
-      component: statusConfig?.component || groupConfig?.component || null,
+      page: override?.page || statusConfig?.page || groupConfig?.page || null,
+      component: override?.component || statusConfig?.component || groupConfig?.component || null,
       redirect: redirect || null,
       group,
     }
@@ -99,6 +113,24 @@ export class ErrorManager {
 
   clearCache() {
     this._cache.clear()
+  }
+
+  setLogHandler(handler) {
+    this._logHandler = handler
+  }
+
+  log(statusCode, path, error) {
+    const entry = { statusCode, path, error, timestamp: Date.now() }
+    if (this._logHandler) {
+      try { this._logHandler(entry) } catch { /* ignore handler errors */ }
+    }
+    if (this._config.errorLogging?.enabled !== false) {
+      console.error(`[SafaRouter] ${statusCode} ${path}:`, error?.message || error)
+    }
+  }
+
+  getLogHandler() {
+    return this._logHandler
   }
 
   _cachePut(key, value) {
