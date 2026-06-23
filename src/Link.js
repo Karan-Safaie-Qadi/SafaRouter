@@ -10,8 +10,16 @@ export class Link {
     this._unsub = null
   }
 
-  render() {
+  render(container) {
     this._el = document.createElement('a')
+    if (container) {
+      if (typeof container === 'string') {
+        const el = document.querySelector(container)
+        if (el) el.appendChild(this._el)
+      } else if (container instanceof Node) {
+        container.appendChild(this._el)
+      }
+    }
     this._el.href = this._router?.config?.useHash
       ? `#${this._href}`
       : this._href
