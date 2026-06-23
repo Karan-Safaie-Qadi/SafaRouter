@@ -202,6 +202,15 @@ export class SafaRouter {
         return
       }
 
+      if (route.node.loading) {
+        const loadingFn = await this._loadComponent(route.node.loading)
+        if (loadingFn && this._targetEl) {
+          this._targetEl.innerHTML = typeof loadingFn === 'function'
+            ? loadingFn({ path, router: this })
+            : loadingFn
+        }
+      }
+
       const pageFn = await this._loadComponent(route.node.page)
       const layoutFns = []
       for (const l of route.layouts) {
