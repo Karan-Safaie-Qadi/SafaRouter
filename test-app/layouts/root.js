@@ -22,7 +22,7 @@ export default function rootLayout({ children, router }) {
 
   const navEl = document.getElementById('nav')
   if (navEl && !navEl.hasChildNodes()) {
-    navEl.innerHTML = `<span class="brand">SafaRouter</span><div class="nav-loader"></div>${navItems}`
+    navEl.innerHTML = `<span class="brand" aria-label="SafaRouter home">SafaRouter</span><div class="nav-loader" role="progressbar" aria-label="Loading"></div>${navItems}`
     navEl.querySelectorAll('[data-safa-link]').forEach((el) => {
       el.addEventListener('click', (e) => {
         e.preventDefault()
