@@ -384,6 +384,10 @@ code.highlight {
   border-top: 1px solid var(--color-border);
 }
 
+#footer strong {
+  color: var(--color-accent);
+}
+
 /* ── Print ──────────────────────────────── */
 
 @media print {
