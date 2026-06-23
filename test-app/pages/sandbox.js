@@ -34,6 +34,15 @@ export default function sandboxPage({ router }) {
           <button class="sandbox-btn api-reload">reload()</button>
         </div>
       </div>
+
+      <div class="card">
+        <h2>Edge Cases</h2>
+        <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+          <button class="sandbox-btn" data-sandbox="/nonexistent/deep/route">Deep 404</button>
+          <button class="sandbox-btn" data-sandbox="//double-slash">Double slash</button>
+          <button class="sandbox-btn api-error">Trigger error</button>
+        </div>
+      </div>
     </div>
   `
 }
@@ -45,4 +54,7 @@ export function afterRender(router) {
   document.querySelector('.api-back')?.addEventListener('click', () => router.back())
   document.querySelector('.api-forward')?.addEventListener('click', () => router.forward())
   document.querySelector('.api-reload')?.addEventListener('click', () => router.reload())
+  document.querySelector('.api-error')?.addEventListener('click', () => {
+    throw new Error('Test error from sandbox')
+  })
 }
