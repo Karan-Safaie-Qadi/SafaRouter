@@ -1,3 +1,10 @@
+let _elIdCounter = 0
+function _elId(el) {
+  if (el.id) return el.id
+  if (!el._scrollId) el._scrollId = `_scroll_${++_elIdCounter}`
+  return el._scrollId
+}
+
 export class ScrollManager {
   constructor() {
     this._memory = new Map()
@@ -8,7 +15,7 @@ export class ScrollManager {
   save(pathname) {
     this._memory.set(pathname, window.scrollY)
     for (const [el, rect] of this._elementScroll) {
-      const key = `${pathname}::${el}`
+      const key = `${pathname}::${_elId(el)}`
       this._memory.set(key, rect)
     }
   }
@@ -50,7 +57,7 @@ export class ScrollManager {
   }
 
   restoreElementScroll(pathname, container) {
-    const key = `${pathname}::${container}`
+    const key = `${pathname}::${_elId(container)}`
     const saved = this._memory.get(key)
     if (saved !== undefined) {
       container.scrollTop = saved

@@ -10,8 +10,8 @@ import { EVENTS, DEFAULT_CONFIG } from './constants.js'
 import { RouteLoadError, SafaError } from './errors.js'
 
 export class SafaRouter {
-  static version = '1.2.5'
-  static VERSION = '1.2.5'
+  static version = '1.2.6'
+  static VERSION = '1.2.6'
 
   constructor(options = {}) {
     this.config = { ...DEFAULT_CONFIG, ...options }
@@ -29,6 +29,8 @@ export class SafaRouter {
     this._middleware = new MiddlewareChain()
     this._cache = new Map()
     this._maxCacheSize = this.config.maxCacheSize ?? 50
+    this._abortController = null
+    this._prefetched = new Set()
     this._scrollManager = new ScrollManager()
 
     this._pathname = '/'
@@ -226,6 +228,19 @@ export class SafaRouter {
     if (page && this.config.cacheRoutes) {
       this._cachePut(normalized, page)
     }
+    if (typeof document !== 'undefined' && !this._prefetched.has(normalized)) {
+      this._prefetched.add(normalized)
+      const candidates = this._resolvePagePath(normalized)
+      if (candidates) {
+        for (const url of candidates) {
+          const link = document.createElement('link')
+          link.rel = 'prefetch'
+          link.href = url
+          link.as = 'document'
+          document.head.appendChild(link)
+        }
+      }
+    }
   }
 
   clearCache() { this._cache.clear() }
@@ -261,23 +276,25 @@ export class SafaRouter {
     return this.config.routes && typeof this.config.routes === 'object' && Object.keys(this.config.routes).length > 0
   }
 
-  async _fetchPage(path) {
+  async _fetchPage(path, signal) {
     const candidates = this._resolvePagePath(path)
     if (!candidates) return null
     for (const p of candidates) {
       try {
-        const res = await fetch(p)
+        const res = await fetch(p, { signal })
         if (res.ok) {
           const text = await res.text()
           this._extractTitle(text)
           return text
         }
-      } catch { /* try next */ }
+      } catch {
+        if (signal?.aborted) throw new DOMException('Aborted', 'AbortError')
+      }
     }
     return null
   }
 
-  async _fetchSpecial(path, name) {
+  async _fetchSpecial(path, name, signal) {
     const dir = (this.config.pagesDir || '').replace(/\/+$/, '')
     if (!dir) return null
     const segs = path.split('/').filter(Boolean)
@@ -288,9 +305,11 @@ export class SafaRouter {
     ].filter(Boolean)
     for (const p of candidates) {
       try {
-        const res = await fetch(p)
+        const res = await fetch(p, { signal })
         if (res.ok) return res.text()
-      } catch { /* try next */ }
+      } catch {
+        if (signal?.aborted) throw new DOMException('Aborted', 'AbortError')
+      }
     }
     return null
   }
@@ -326,10 +345,34 @@ export class SafaRouter {
     await this._resolve(path, method, query, state, depth)
   }
 
+  _abortFetch() {
+    if (this._abortController) {
+      this._abortController.abort()
+      this._abortController = null
+    }
+  }
+
   async _resolve(path, method, query = {}, state = {}, depth = 0) {
     const navId = ++this._navId
+    this._abortFetch()
+    this._abortController = new AbortController()
+    const signal = this._abortController.signal
     this._isLoading = true
     this._customTitle = null
+
+    const timeout = this.config.navigationTimeout
+    let timeoutId
+    if (timeout > 0) {
+      timeoutId = setTimeout(() => {
+        if (this._navId !== navId) return
+        this._isLoading = false
+        this._abortFetch()
+        const err = new Error(`Navigation timed out after ${timeout}ms`)
+        emit(this._events, EVENTS.ERROR, { error: err, path })
+        console.error('[SafaRouter]', err.message)
+      }, timeout)
+    }
+
     emit(this._events, EVENTS.LOADING, { path, loading: true })
     emit(this._events, EVENTS.BEFORE_NAVIGATE, { path, method })
 
@@ -365,17 +408,17 @@ export class SafaRouter {
         }
         this._routeData = routeMatch
       } else if (this.config.pagesDir) {
-        const loadingHtml = await this._fetchSpecial(path, 'loading.html')
+        const loadingHtml = await this._fetchSpecial(path, 'loading.html', signal)
         if (loadingHtml && this._targetEl) {
           this._targetEl.innerHTML = loadingHtml
         }
         pageContent = this._cacheGet(path)
         if (!pageContent) {
-          pageContent = await this._fetchPage(path)
+          pageContent = await this._fetchPage(path, signal)
           if (pageContent && this.config.cacheRoutes) this._cachePut(path, pageContent)
         }
         if (pageContent === null) {
-          const notFoundHtml = await this._fetchSpecial(path, 'not-found.html')
+          const notFoundHtml = await this._fetchSpecial(path, 'not-found.html', signal)
           if (this._navId !== navId) { this._isLoading = false; return }
           if (notFoundHtml) {
             if (method === 'push') this._history.push(path, state)
@@ -385,7 +428,7 @@ export class SafaRouter {
             if (this._targetEl) this._targetEl.innerHTML = notFoundHtml
             return
           }
-          await this._handleNotFound(path, method, navId, state)
+          await this._handleNotFound(path, method, navId, state, signal)
           this._isLoading = false
           return
         }
@@ -404,7 +447,7 @@ export class SafaRouter {
         }
         this._routeData = { node: { page: null }, params: {}, layouts: [] }
       } else {
-        await this._handleNotFound(path, method, navId, state)
+        await this._handleNotFound(path, method, navId, state, signal)
         this._isLoading = false
         return
       }
@@ -437,8 +480,12 @@ export class SafaRouter {
       })
       emit(this._events, EVENTS.AFTER_NAVIGATE, { pathname: path })
     } catch (err) {
+      if (err?.name === 'AbortError') { this._isLoading = false; return }
       this._isLoading = false
-      await this._handleError(path, err, navId)
+      await this._handleError(path, err, navId, signal)
+    } finally {
+      if (timeoutId) clearTimeout(timeoutId)
+      this._abortController = null
     }
   }
 
@@ -543,11 +590,11 @@ export class SafaRouter {
     }
   }
 
-  async _handleNotFound(path, method, navId, state = {}) {
+  async _handleNotFound(path, method, navId, state = {}, signal) {
     if (navId !== undefined && this._navId !== navId) { this._isLoading = false; return }
     emit(this._events, EVENTS.NOT_FOUND, { path })
 
-    const notFoundHtml = this.config.pagesDir ? await this._fetchSpecial(path, 'not-found.html') : null
+    const notFoundHtml = this.config.pagesDir ? await this._fetchSpecial(path, 'not-found.html', signal) : null
     if (notFoundHtml) {
       if (method === 'push') this._history.push(path, state)
       else if (method === 'replace') this._history.replace(path, state)
@@ -580,7 +627,7 @@ export class SafaRouter {
     if (this._targetEl) this._targetEl.innerHTML = this._fallback404(path)
   }
 
-  async _handleError(path, err, navId) {
+  async _handleError(path, err, navId, signal) {
     if (navId !== undefined && this._navId !== navId) { this._isLoading = false; return }
     console.error('[SafaRouter]', err)
     emit(this._events, EVENTS.ERROR, { path, error: err })
@@ -599,7 +646,7 @@ export class SafaRouter {
       } catch { /* fall through */ }
     }
 
-    const errorHtml = this.config.pagesDir ? await this._fetchSpecial(path, 'error.html') : null
+    const errorHtml = this.config.pagesDir ? await this._fetchSpecial(path, 'error.html', signal) : null
     if (errorHtml) {
       if (this._targetEl) this._targetEl.innerHTML = errorHtml
       return

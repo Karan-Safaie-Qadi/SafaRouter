@@ -67,6 +67,7 @@ declare module 'safa-router' {
     prefetch?: boolean
     cacheRoutes?: boolean
     maxCacheSize?: number
+    navigationTimeout?: number
     titleTemplate?: string
     transitionDuration?: number
     transitionEnterClass?: string

@@ -47,6 +47,7 @@ export const DEFAULT_CONFIG = {
   prefetch: true,
   cacheRoutes: true,
   maxCacheSize: 50,
+  navigationTimeout: 15000,
   titleTemplate: '%s — SafaRouter',
   transitionDuration: 0,
   transitionEnterClass: 'page-enter',
