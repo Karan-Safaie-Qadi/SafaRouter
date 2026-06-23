@@ -385,7 +385,13 @@ export class SafaRouter {
         // fall through
       }
     }
-    if (this._targetEl) this._targetEl.innerHTML = this._fallbackError(err)
+    if (this._targetEl) {
+      try {
+        this._targetEl.innerHTML = this._fallbackError(err)
+      } catch {
+        this._targetEl.textContent = `Error: ${err.message}`
+      }
+    }
   }
 
   _fallback404(path) {
