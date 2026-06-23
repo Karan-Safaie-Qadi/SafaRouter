@@ -66,6 +66,13 @@ export class Link {
     this._el.classList.toggle(this._activeClass, active)
   }
 
+  setHref(href) {
+    this._href = href
+    if (this._el) {
+      this._el.href = this._router?.config?.useHash ? `#${href}` : href
+    }
+  }
+
   destroy() {
     if (this._unsub) {
       this._unsub()
