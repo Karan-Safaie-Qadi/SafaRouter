@@ -213,6 +213,9 @@ export class SafaRouter {
       if (this.config.scrollToTop) {
         window.scrollTo({ top: 0, behavior: 'smooth' })
       }
+
+      this._focus()
+    } catch (err) {
     } catch (err) {
       this._isLoading = false
       await this._handleError(path, err)
@@ -245,6 +248,15 @@ export class SafaRouter {
     const html = await renderLayer(0)
     this._targetEl.innerHTML = html
     this._bindLinks()
+  }
+
+  _focus() {
+    if (!this._targetEl) return
+    const h1 = this._targetEl.querySelector('h1')
+    if (h1) {
+      h1.setAttribute('tabindex', '-1')
+      h1.focus({ preventScroll: true })
+    }
   }
 
   _bindLinks() {
