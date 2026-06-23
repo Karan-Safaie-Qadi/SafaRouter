@@ -395,21 +395,23 @@ export class SafaRouter {
   }
 
   _fallback404(path) {
+    const homeLink = `<a href="/" style="color:var(--color-accent);text-decoration:underline;">Back to home</a>`
     return [
-      '<div class="safa-error safa-404">',
-      `<h1>404</h1>`,
-      `<p>Page not found: <code>${path}</code></p>`,
-      '<a href="/">Back to home</a>',
+      '<div class="safa-error safa-404" style="text-align:center;padding:3rem 0;">',
+      `<h1 style="font-size:4rem;font-weight:800;margin-bottom:0.5rem;">404</h1>`,
+      `<p style="margin-bottom:1rem;">Page not found: <code>${path}</code></p>`,
+      homeLink,
       '</div>',
     ].join('')
   }
 
   _fallbackError(err) {
+    const homeLink = `<a href="/" style="color:var(--color-accent);text-decoration:underline;">Back to home</a>`
     return [
-      '<div class="safa-error">',
-      '<h1>Something went wrong</h1>',
-      `<pre>${err.message}</pre>`,
-      '<a href="/">Back to home</a>',
+      '<div class="safa-error" style="text-align:center;padding:3rem 0;">',
+      '<h1 style="font-size:2rem;font-weight:800;margin-bottom:0.5rem;">Something went wrong</h1>',
+      `<pre style="text-align:left;margin:1rem 0;">${err.message}</pre>`,
+      homeLink,
       '</div>',
     ].join('')
   }
