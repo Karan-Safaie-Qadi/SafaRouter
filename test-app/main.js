@@ -7,6 +7,8 @@ import blogPage from './pages/blog.js'
 import blogPostPage from './pages/blog-post.js'
 import dashboardPage from './pages/dashboard.js'
 import dashboardSettingsPage from './pages/dashboard-settings.js'
+import profilePage from './pages/profile.js'
+import contactPage from './pages/contact.js'
 import notFoundPage from './pages/not-found.js'
 import errorPage from './pages/error-page.js'
 
@@ -28,6 +30,22 @@ const router = new SafaRouter({
       children: {
         '[slug]': {
           page: blogPostPage,
+        },
+      },
+    },
+
+    '/contact': {
+      page: contactPage,
+    },
+
+    '(main)': {
+      children: {
+        'profile': {
+          children: {
+            '[id]': {
+              page: profilePage,
+            },
+          },
         },
       },
     },

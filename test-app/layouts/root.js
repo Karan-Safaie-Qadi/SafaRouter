@@ -4,6 +4,8 @@ export default function rootLayout({ children, router }) {
     { href: '/', label: 'Home' },
     { href: '/about', label: 'About' },
     { href: '/blog', label: 'Blog' },
+    { href: '/contact', label: 'Contact' },
+    { href: '/profile/me', label: 'Profile' },
     { href: '/dashboard', label: 'Dashboard' },
   ]
 
