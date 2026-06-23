@@ -103,6 +103,16 @@ router.use(async (ctx, next) => {
   return next()
 })
 
+router.onError(({ path, error }) => {
+  console.warn(`[Demo] Navigation error at ${path}:`, error.message)
+})
+
+router.onRouteChange(({ pathname, params }) => {
+  if (params && Object.keys(params).length > 0) {
+    console.log(`[Demo] Route: ${pathname}`, params)
+  }
+})
+
 /* ── Start ─────────────────────────────────── */
 
 router.start().catch((err) => {
