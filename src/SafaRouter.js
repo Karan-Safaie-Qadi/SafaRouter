@@ -627,6 +627,8 @@ export class SafaRouter {
       this._updateTitle()
       this._focus()
 
+      console.log(`به صفحه ی ${path} خوش آمدید\nصفا باشه`)
+
       emit(this._events, EVENTS.ROUTE_CHANGE, {
         pathname: path, params: this._params, query: this._query,
       })
@@ -781,6 +783,7 @@ export class SafaRouter {
     const status = statusCode || HTTP_STATUS.NOT_FOUND
     emit(this._events, EVENTS.NOT_FOUND, { path, statusCode: status })
 
+    console.warn(`⚠️ صفحه ی ${path} یافت نشد\nصفا باشه`)
     this._errorManager.log(status, path, new Error(`Not found: ${path}`))
 
     this._routeData = null
@@ -879,8 +882,8 @@ export class SafaRouter {
     const showStack = this.config.errors?.stackTraces !== false
 
     this._routeData = null
+    console.error(`❌ خطا در صفحه ی ${path}: ${err.message || err}\nصفا باشه`)
     this._errorManager.log(status, path, err)
-    console.error('[SafaRouter]', err)
     emit(this._events, EVENTS.ERROR, { path, error: err, statusCode: status })
 
     const routeError = this._routeData?.node?.error
