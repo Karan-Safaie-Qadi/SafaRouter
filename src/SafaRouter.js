@@ -64,6 +64,10 @@ export class SafaRouter {
     return this
   }
 
+  isStarted() {
+    return this._started
+  }
+
   destroy() {
     this._started = false
     if (this._unsubHistory) {
