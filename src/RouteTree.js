@@ -144,7 +144,7 @@ export class RouteTree {
       }
       const ca = node._findCatchAll()
       if (ca && ca.page) {
-        const name = ca.segment.replace(/^\[\.\.\.|\]\]?$/g, '')
+        const name = ca.segment.replace(/^\[+\.\.\.|\]\]?$/g, '')
         return { node: ca, params: { ...params, [name]: [] }, layouts: ca.getLayoutChain() }
       }
       return null
@@ -170,7 +170,7 @@ export class RouteTree {
 
     const ca = node._findCatchAll()
     if (ca) {
-      const name = ca.segment.replace(/^\[\.\.\.|\]\]?$/g, '')
+      const name = ca.segment.replace(/^\[+\.\.\.|\]\]?$/g, '')
       return {
         node: ca,
         params: { ...params, [name]: segs.slice(idx) },
