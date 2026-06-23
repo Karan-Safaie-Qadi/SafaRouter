@@ -32,6 +32,13 @@ export default function rootLayout({ children, router }) {
     router.on('loading', ({ loading }) => {
       navEl.classList.toggle('is-loading', loading)
     })
+    router.on('routechange', () => {
+      navEl.querySelectorAll('a').forEach(a => {
+        const href = a.getAttribute('href')
+        a.classList.toggle('active', href === router.pathname ||
+          (href !== '/' && href && router.pathname.startsWith(href)))
+      })
+    })
   }
 
   return `<div class="page-enter">${children}</div>`
