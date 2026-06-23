@@ -11,4 +11,5 @@ export {
   RouteLoadError,
 } from './errors.js'
 export { normalizePath, parseQuery, joinPaths, createURL, isExternalURL, useRouter } from './utils.js'
+export { bindLinks, prefetchOnHover } from './link-helper.js'
 export { EVENTS, DEFAULT_CONFIG } from './constants.js'
