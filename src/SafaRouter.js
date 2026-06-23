@@ -527,6 +527,20 @@ export class SafaRouter {
     }
   }
 
+  _getTransitionConfig() {
+    const routeTransition = this._routeData?.node?.meta?.transition
+    if (routeTransition) {
+      return {
+        transitionDuration: routeTransition.duration ?? this.config.transitionDuration,
+        transitionEnterClass: routeTransition.enterClass ?? this.config.transitionEnterClass,
+        transitionExitClass: routeTransition.exitClass ?? this.config.transitionExitClass,
+        transitionEnterActiveClass: routeTransition.enterActiveClass ?? this.config.transitionEnterActiveClass,
+        transitionExitActiveClass: routeTransition.exitActiveClass ?? this.config.transitionExitActiveClass,
+      }
+    }
+    return null
+  }
+
   async _render(pageContent, layoutFns) {
     if (!this._targetEl) return
 
@@ -538,7 +552,10 @@ export class SafaRouter {
           ? pageContent({ params: this._params, query: this._query, router: this, data })
           : (pageContent || ''))
 
-    if (this.config.transitionDuration > 0) {
+    const transCfg = this._getTransitionConfig()
+    const duration = transCfg?.transitionDuration ?? this.config.transitionDuration
+
+    if (duration > 0) {
       await this._transitions.run(this._targetEl, async () => {
         this._targetEl.innerHTML = html
         this._bindLinks()
