@@ -51,6 +51,14 @@ export class HistoryManager {
     history.go(delta)
   }
 
+  get length() {
+    return history.length
+  }
+
+  get state() {
+    return history.state
+  }
+
   onChange(fn) {
     this._listeners.push(fn)
     return () => {
