@@ -24,6 +24,10 @@ export function isCatchAllSegment(segment) {
   return /^\[\.\.\./.test(segment)
 }
 
+export function isOptionalCatchAll(segment) {
+  return /^\[\[\.\.\./.test(segment)
+}
+
 export function isRouteGroup(segment) {
   return /^\(/.test(segment) && /\)$/.test(segment)
 }
