@@ -161,6 +161,10 @@ export class SafaRouter {
     return this.on(EVENTS.ROUTE_CHANGE, fn)
   }
 
+  onBeforeNavigate(fn) {
+    return this.on(EVENTS.BEFORE_NAVIGATE, fn)
+  }
+
   createLink(config) {
     return new Link({ ...config, router: this })
   }
