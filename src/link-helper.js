@@ -1,5 +1,5 @@
-export function bindLinks(router) {
-  document.addEventListener('click', (e) => {
+export function bindLinks(router, scope = document) {
+  scope.addEventListener('click', (e) => {
     const link = e.target.closest('[data-safa-link]')
     if (!link) return
     if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return
