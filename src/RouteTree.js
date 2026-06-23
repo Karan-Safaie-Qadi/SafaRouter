@@ -144,15 +144,17 @@ export class RouteTree {
 
   flatten() {
     const result = []
-    const walk = (node, prefix) => {
+    const walk = (node) => {
       if (node.page) {
-        result.push({ path: node.fullPath, page: node.page })
+        result.push({ path: node.fullPath, page: node.page, meta: node.meta })
       }
-      for (const child of node.children) {
-        walk(child, node.fullPath)
-      }
+      for (const child of node.children) walk(child)
     }
-    walk(this.root, '/')
+    walk(this.root)
     return result
+  }
+
+  find(pathname) {
+    return this.resolve(pathname)
   }
 }
