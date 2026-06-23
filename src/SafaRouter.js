@@ -13,6 +13,9 @@ export class SafaRouter {
 
   constructor(options = {}) {
     this.config = { ...DEFAULT_CONFIG, ...options }
+    if (this.config.pageDir && !this.config.pagesDir) {
+      this.config.pagesDir = this.config.pageDir
+    }
 
     this._events = {}
     for (const key of Object.values(EVENTS)) this._events[key] = []
@@ -35,6 +38,7 @@ export class SafaRouter {
 
     this._globalNotFound = this.config.notFound || null
     this._globalError = this.config.error || null
+    this._globalLayout = this.config.layout || null
 
     this._boundNav = this._onHistoryChange.bind(this)
   }
@@ -55,7 +59,7 @@ export class SafaRouter {
       )
     }
 
-    this._routeTree = new RouteTree(this.config.routes)
+    this._routeTree = new RouteTree(this.config.routes || {})
     this._seedMatcher()
     this._history.init()
     this._unsubHistory = this._history.onChange(this._boundNav)
@@ -100,41 +104,21 @@ export class SafaRouter {
     await this._navigate(normalizePath(u.pathname), 'replace', parseQuery(u.search), state)
   }
 
-  back() {
-    this._history.back()
-  }
-
-  forward() {
-    this._history.forward()
-  }
+  back() { this._history.back() }
+  forward() { this._history.forward() }
 
   reload() {
     this._resolve(this._pathname, 'replace')
   }
 
-  navigate(url) {
-    return this.push(url)
-  }
+  navigate(url) { return this.push(url) }
 
-  getConfig() {
-    return { ...this.config }
-  }
+  getConfig() { return { ...this.config } }
 
-  get pathname() {
-    return this._pathname
-  }
-
-  get params() {
-    return { ...this._params }
-  }
-
-  get query() {
-    return { ...this._query }
-  }
-
-  get loading() {
-    return this._isLoading
-  }
+  get pathname() { return this._pathname }
+  get params() { return { ...this._params } }
+  get query() { return { ...this._query } }
+  get loading() { return this._isLoading }
 
   on(name, fn) {
     if (!this._events[name]) this._events[name] = []
@@ -149,26 +133,12 @@ export class SafaRouter {
     this._events[name] = this._events[name].filter((f) => f !== fn)
   }
 
-  use(fn) {
-    this._middleware.use(fn)
-    return this
-  }
+  use(fn) { this._middleware.use(fn); return this }
 
-  onError(fn) {
-    return this.on(EVENTS.ERROR, fn)
-  }
-
-  onNotFound(fn) {
-    return this.on(EVENTS.NOT_FOUND, fn)
-  }
-
-  onRouteChange(fn) {
-    return this.on(EVENTS.ROUTE_CHANGE, fn)
-  }
-
-  onBeforeNavigate(fn) {
-    return this.on(EVENTS.BEFORE_NAVIGATE, fn)
-  }
+  onError(fn) { return this.on(EVENTS.ERROR, fn) }
+  onNotFound(fn) { return this.on(EVENTS.NOT_FOUND, fn) }
+  onRouteChange(fn) { return this.on(EVENTS.ROUTE_CHANGE, fn) }
+  onBeforeNavigate(fn) { return this.on(EVENTS.BEFORE_NAVIGATE, fn) }
 
   createLink(config) {
     return new Link({ ...config, router: this })
@@ -177,21 +147,13 @@ export class SafaRouter {
   async prefetch(path) {
     const normalized = normalizePath(path)
     if (this._cache.has(normalized)) return
-    const route = this._routeTree.resolve(normalized)
-    if (!route) return
-    try {
-      const mod = await this._loadComponent(route.node.page)
-      if (mod && this.config.cacheRoutes) {
-        this._cache.set(normalized, mod)
-      }
-    } catch {
-      // prefetch failures are silently ignored
+    const page = await this._fetchPage(normalized)
+    if (page && this.config.cacheRoutes) {
+      this._cache.set(normalized, page)
     }
   }
 
-  clearCache() {
-    this._cache.clear()
-  }
+  clearCache() { this._cache.clear() }
 
   _seedMatcher() {
     const walk = (routes, base) => {
@@ -212,7 +174,31 @@ export class SafaRouter {
         }
       }
     }
-    walk(this.config.routes, '/')
+    walk(this.config.routes || {}, '/')
+  }
+
+  _resolvePagePath(path) {
+    const dir = (this.config.pagesDir || '').replace(/\/+$/, '')
+    if (!dir) return null
+    const normal = normalizePath(path)
+    if (normal === '/') return `${dir}/index.html`
+    return `${dir}${normal}.html`
+  }
+
+  _hasRoutes() {
+    return this.config.routes && typeof this.config.routes === 'object' && Object.keys(this.config.routes).length > 0
+  }
+
+  async _fetchPage(path) {
+    const htmlPath = this._resolvePagePath(path)
+    if (!htmlPath) return null
+    try {
+      const res = await fetch(htmlPath)
+      if (!res.ok) return null
+      return res.text()
+    } catch {
+      return null
+    }
   }
 
   async _navigate(path, method, query = {}, state = {}) {
@@ -234,52 +220,57 @@ export class SafaRouter {
         return
       }
 
-      let route = this._routeTree.resolve(path)
-      if (!route && this.config.pagesDir) {
-        const htmlPath = this._resolveHtmlPath(path)
-        if (htmlPath) {
-          route = {
-            node: { page: htmlPath, loading: null, error: null, notFound: null, meta: null },
-            params: {},
-            layouts: this._routeTree.root.getLayoutChain(),
+      const routeMatch = this._hasRoutes() ? this._routeTree.resolve(path) : null
+      let pageContent, layoutFns = []
+      let resolvedPath = path
+
+      if (routeMatch) {
+        if (routeMatch.node.loading) {
+          const loadingFn = await this._loadComponent(routeMatch.node.loading)
+          if (loadingFn && this._targetEl) {
+            this._targetEl.innerHTML = typeof loadingFn === 'function'
+              ? loadingFn({ path, router: this })
+              : loadingFn
           }
         }
-      }
-
-      if (!route) {
-        await this._handleNotFound(path, method, query)
+        pageContent = await this._loadComponent(routeMatch.node.page)
+        for (const l of routeMatch.layouts) {
+          if (!l) continue
+          const lfn = await this._loadComponent(l)
+          if (lfn) layoutFns.push(lfn)
+        }
+        if (this._globalLayout) {
+          const lfn = await this._loadComponent(this._globalLayout)
+          if (lfn) layoutFns.unshift(lfn)
+        }
+        this._routeData = routeMatch
+      } else if (this.config.pagesDir) {
+        pageContent = await this._fetchPage(path)
+        if (pageContent === null) {
+          await this._handleNotFound(path, method)
+          this._isLoading = false
+          return
+        }
+        if (this._globalLayout) {
+          const lfn = await this._loadComponent(this._globalLayout)
+          if (lfn) layoutFns.push(lfn)
+        }
+        this._routeData = { node: { page: null }, params: {}, layouts: [] }
+      } else {
+        await this._handleNotFound(path, method)
         this._isLoading = false
         return
-      }
-
-      if (route.node.loading) {
-        const loadingFn = await this._loadComponent(route.node.loading)
-        if (loadingFn && this._targetEl) {
-          this._targetEl.innerHTML = typeof loadingFn === 'function'
-            ? loadingFn({ path, router: this })
-            : loadingFn
-        }
-      }
-
-      const pageFn = await this._loadComponent(route.node.page)
-      const layoutFns = []
-      for (const l of route.layouts) {
-        if (!l) continue
-        const lfn = await this._loadComponent(l)
-        if (lfn) layoutFns.push(lfn)
       }
 
       if (method === 'push') this._history.push(path, state)
       else if (method === 'replace') this._history.replace(path, state)
 
-      const matched = this._matcher.match(path)
       this._pathname = path
-      this._params = matched ? matched.params : route.params
+      this._params = routeMatch?.params || {}
       this._query = query
-      this._routeData = route
       this._isLoading = false
 
-      this._render(pageFn, layoutFns)
+      this._render(pageContent, layoutFns)
 
       emit(this._events, EVENTS.ROUTE_CHANGE, {
         pathname: path,
@@ -300,30 +291,15 @@ export class SafaRouter {
     }
   }
 
-  async _render(pageFn, layoutFns) {
+  async _render(pageContent, layoutFns) {
     if (!this._targetEl) return
 
-    const renderLayer = (idx) => {
-      if (idx >= layoutFns.length) {
-        if (typeof pageFn === 'function') {
-          return pageFn({
-            params: this._params,
-            query: this._query,
-            router: this,
-          })
-        }
-        return pageFn || ''
-      }
-      const layoutFn = layoutFns[idx]
-      const content = renderLayer(idx + 1)
-      return layoutFn({
-        children: content,
-        params: this._params,
-        router: this,
-      })
-    }
+    const html = layoutFns.length > 0
+      ? await this._renderWithLayouts(pageContent, layoutFns, 0)
+      : (typeof pageContent === 'function'
+          ? pageContent({ params: this._params, query: this._query, router: this })
+          : (pageContent || ''))
 
-    const html = await renderLayer(0)
     const duration = this.config.transitionDuration
     if (duration > 0) {
       this._targetEl.style.opacity = '0'
@@ -336,6 +312,18 @@ export class SafaRouter {
         this._targetEl.style.opacity = '1'
       })
     }
+  }
+
+  async _renderWithLayouts(pageContent, layoutFns, idx) {
+    if (idx >= layoutFns.length) {
+      if (typeof pageContent === 'function') {
+        return pageContent({ params: this._params, query: this._query, router: this })
+      }
+      return pageContent || ''
+    }
+    const layoutFn = layoutFns[idx]
+    const content = await this._renderWithLayouts(pageContent, layoutFns, idx + 1)
+    return layoutFn({ children: content, params: this._params, router: this })
   }
 
   _updateTitle() {
@@ -381,11 +369,7 @@ export class SafaRouter {
       }
       if (typeof mod === 'function') {
         let result
-        try {
-          result = mod()
-        } catch {
-          return mod
-        }
+        try { result = mod() } catch { return mod }
         if (result && typeof result.then === 'function') {
           const resolved = await result
           return resolved && resolved.default ? resolved.default : resolved
@@ -401,13 +385,6 @@ export class SafaRouter {
     }
   }
 
-  _resolveHtmlPath(fullPath) {
-    const dir = (this.config.pagesDir || '').replace(/\/+$/, '')
-    if (!dir) return null
-    if (fullPath === '/') return `${dir}/index.html`
-    return `${dir}${fullPath}.html`
-  }
-
   async _handleNotFound(path, method) {
     emit(this._events, EVENTS.NOT_FOUND, { path })
 
@@ -418,13 +395,10 @@ export class SafaRouter {
         if (method === 'push') this._history.push(path)
         else if (method === 'replace') this._history.replace(path)
         this._pathname = path
-        const html =
-          typeof fn === 'function' ? fn({ path, router: this }) : fn
+        const html = typeof fn === 'function' ? fn({ path, router: this }) : fn
         if (this._targetEl) this._targetEl.innerHTML = html
         return
-      } catch {
-        // fall through
-      }
+      } catch { /* fall through */ }
     }
     if (this._targetEl) this._targetEl.innerHTML = this._fallback404(path)
   }
@@ -436,15 +410,10 @@ export class SafaRouter {
     if (this._globalError) {
       try {
         const fn = await this._loadComponent(this._globalError)
-        const html =
-          typeof fn === 'function'
-            ? fn({ error: err, path, router: this })
-            : fn
+        const html = typeof fn === 'function' ? fn({ error: err, path, router: this }) : fn
         if (this._targetEl) this._targetEl.innerHTML = html
         return
-      } catch {
-        // fall through
-      }
+      } catch { /* fall through */ }
     }
     if (this._targetEl) {
       try {
@@ -477,13 +446,8 @@ export class SafaRouter {
     ].join('')
   }
 
-  get currentRoute() {
-    return this._routeData
-  }
-
-  get matchedRoute() {
-    return this._matcher.match(this._pathname)
-  }
+  get currentRoute() { return this._routeData }
+  get matchedRoute() { return this._matcher.match(this._pathname) }
 
   getRoute(path) {
     return this._routeTree.resolve(normalizePath(path))

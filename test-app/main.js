@@ -15,26 +15,18 @@ import errorPage from './pages/error-page.js'
 const router = new SafaRouter({
   target: '#app',
   basePath: '/test-app',
-  pagesDir: 'html-pages',
+
+  pageDir: 'html-pages',
+
+  layout: rootLayout,
 
   routes: {
-    '/': {
-      layout: rootLayout,
-      page: homePage,
-    },
-
-    '/about': {},
-    '/docs': {},
-    '/contact': {},
-    '/sandbox': {},
-    '/sitemap': {},
+    '/': { page: homePage },
 
     '/blog': {
       page: blogPage,
       children: {
-        '[slug]': {
-          page: blogPostPage,
-        },
+        '[slug]': { page: blogPostPage },
       },
     },
 
@@ -47,9 +39,7 @@ const router = new SafaRouter({
       children: {
         'profile': {
           children: {
-            '[id]': {
-              page: profilePage,
-            },
+            '[id]': { page: profilePage },
           },
         },
       },
@@ -59,9 +49,7 @@ const router = new SafaRouter({
       layout: dashboardLayout,
       page: dashboardPage,
       children: {
-        settings: {
-          page: dashboardSettingsPage,
-        },
+        settings: { page: dashboardSettingsPage },
       },
     },
   },
@@ -70,19 +58,12 @@ const router = new SafaRouter({
   error: errorPage,
 })
 
-/* ── Auth middleware demo ──────────────────── */
-
 router.use(async (ctx, next) => {
   const protectedPaths = ['/dashboard', '/dashboard/settings']
   const isProtected = protectedPaths.some((p) => ctx.path.startsWith(p))
-
   if (isProtected) {
-    const authed = localStorage.getItem('safa_demo_auth') === 'true'
-    if (!authed) {
-      localStorage.setItem('safa_demo_auth', 'true')
-    }
+    localStorage.getItem('safa_demo_auth') === 'true'
   }
-
   return next()
 })
 
@@ -95,8 +76,6 @@ router.onRouteChange(({ pathname, params }) => {
     console.log(`[Demo] Route: ${pathname}`, params)
   }
 })
-
-/* ── Start ─────────────────────────────────── */
 
 router.start().catch((err) => {
   console.error('Failed to start SafaRouter:', err)
