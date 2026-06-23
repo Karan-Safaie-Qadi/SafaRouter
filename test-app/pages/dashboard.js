@@ -1,4 +1,4 @@
-export default function dashboardPage({ router }) {
+export default function dashboardPage({ router, params }) {
   return `
     <div class="page-enter">
       <h2>Dashboard Overview</h2>
@@ -11,18 +11,22 @@ export default function dashboardPage({ router }) {
         <div class="card">
           <h3>Visitors</h3>
           <p style="font-size: 2rem; font-weight: 700; color: var(--color-accent);">12,458</p>
+          <p style="font-size: 0.8rem; color: var(--color-text-muted);">+12% from last month</p>
         </div>
         <div class="card">
           <h3>Page Views</h3>
           <p style="font-size: 2rem; font-weight: 700; color: var(--color-success);">43,201</p>
+          <p style="font-size: 0.8rem; color: var(--color-text-muted);">+8% from last month</p>
         </div>
         <div class="card">
           <h3>Bounce Rate</h3>
           <p style="font-size: 2rem; font-weight: 700; color: var(--color-warning);">24.7%</p>
+          <p style="font-size: 0.8rem; color: var(--color-text-muted);">-3% from last month</p>
         </div>
         <div class="card">
           <h3>Active Users</h3>
           <p style="font-size: 2rem; font-weight: 700; color: var(--color-accent);">312</p>
+          <p style="font-size: 0.8rem; color: var(--color-text-muted);">Right now</p>
         </div>
       </div>
 
