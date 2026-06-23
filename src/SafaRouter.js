@@ -245,7 +245,6 @@ export class SafaRouter {
       this._updateTitle()
       this._focus()
     } catch (err) {
-    } catch (err) {
       this._isLoading = false
       await this._handleError(path, err)
     }
