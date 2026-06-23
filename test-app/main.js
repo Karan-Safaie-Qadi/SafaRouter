@@ -19,6 +19,7 @@ import errorPage from './pages/error-page.js'
 
 const router = new SafaRouter({
   target: '#app',
+  basePath: '/test-app',
 
   routes: {
     '/': {

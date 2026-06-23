@@ -22,6 +22,7 @@ class RouteNode {
 
   getLayoutChain() {
     const chain = []
+    if (this.layout) chain.push(this.layout)
     let cur = this.parent
     while (cur) {
       if (cur.layout) chain.unshift(cur.layout)
@@ -80,7 +81,25 @@ export class RouteTree {
     for (const [key, val] of Object.entries(routes)) {
       const isGroup = isRouteGroup(key)
       const fp = isGroup ? normalizePath(base) : normalizePath(`${base}/${key}`)
-      const node = new RouteNode({ segment: key, fullPath: fp })
+      const isRoot = fp === '/' || key === '/'
+
+      if (isRoot) {
+        if (typeof val === 'object' && val !== null) {
+          if (val.meta) parent.meta = val.meta
+          if (val.layout) parent.layout = val.layout
+          if (val.page) parent.page = val.page
+          if (val.loading) parent.loading = val.loading
+          if (val.error) parent.error = val.error
+          if (val.notFound) parent.notFound = val.notFound
+          if (val.children) this._build(parent, val.children, fp)
+        } else if (typeof val === 'function') {
+          parent.page = val
+        }
+        continue
+      }
+
+      const seg = isGroup ? key : key.replace(/^\//, '')
+      const node = new RouteNode({ segment: seg, fullPath: fp })
 
       if (typeof val === 'object' && val !== null) {
         if (val.meta) node.meta = val.meta

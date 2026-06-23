@@ -363,9 +363,20 @@ export class SafaRouter {
   async _loadComponent(mod) {
     if (!mod) return null
     try {
-      const result = typeof mod === 'function' ? mod() : mod
-      const resolved = result instanceof Promise ? await result : result
-      return resolved && resolved.default ? resolved.default : resolved
+      if (typeof mod === 'function') {
+        let result
+        try {
+          result = mod()
+        } catch {
+          return mod
+        }
+        if (result && typeof result.then === 'function') {
+          const resolved = await result
+          return resolved && resolved.default ? resolved.default : resolved
+        }
+        return result !== undefined ? result : mod
+      }
+      return mod
     } catch (e) {
       throw new RouteLoadError(
         typeof mod === 'function' ? mod.name || 'anonymous' : 'module',
