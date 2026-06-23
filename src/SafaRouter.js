@@ -251,6 +251,26 @@ export class SafaRouter {
 
   clearCache() { this._cache.clear() }
 
+  _observeLinks() {
+    if (typeof IntersectionObserver === 'undefined') return
+    if (this._linkObserver) this._linkObserver.disconnect()
+    this._linkObserver = new IntersectionObserver((entries) => {
+      for (const entry of entries) {
+        if (entry.isIntersecting) {
+          const href = entry.target.getAttribute('href')
+          if (href && !isExternalURL(href)) this.prefetch(href)
+          this._linkObserver.unobserve(entry.target)
+        }
+      }
+    }, { rootMargin: '200px' })
+    if (!this._targetEl) return
+    const links = this._targetEl.querySelectorAll('a[href]')
+    for (const link of links) {
+      if (link.getAttribute('target') === '_blank') continue
+      this._linkObserver.observe(link)
+    }
+  }
+
   _resolvePagePath(path) {
     const dir = (this.config.pagesDir || '').replace(/\/+$/, '')
     if (!dir) return null
@@ -559,10 +579,12 @@ export class SafaRouter {
       await this._transitions.run(this._targetEl, async () => {
         this._targetEl.innerHTML = html
         this._bindLinks()
+        if (this.config.prefetchStrategy === 'visible') this._observeLinks()
       })
     } else {
       this._targetEl.innerHTML = html
       this._bindLinks()
+      if (this.config.prefetchStrategy === 'visible') this._observeLinks()
     }
   }
 
