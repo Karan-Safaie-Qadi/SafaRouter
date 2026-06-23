@@ -535,8 +535,16 @@ export class SafaRouter {
           if (lfn) layoutFns.push(lfn)
         }
         if (this._globalLayout) {
-          const lfn = await this._loadComponent(this._globalLayout)
-          if (lfn) layoutFns.unshift(lfn)
+          let lfn = this._globalLayout
+          if (typeof lfn === 'string') {
+            const res = await fetch(lfn)
+            if (res.ok) {
+              const html = await res.text()
+              lfn = ({ children }) => this._renderHtmlLayout(html, children)
+            }
+          }
+          const loaded = await this._loadComponent(lfn)
+          if (loaded) layoutFns.unshift(loaded)
         }
         this._routeData = routeMatch
       } else if (this.config.pagesDir) {
