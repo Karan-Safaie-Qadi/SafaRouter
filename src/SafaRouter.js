@@ -396,9 +396,20 @@ export class SafaRouter {
     ].join('')
   }
 
-  _onHistoryChange({ path, action }) {
+  get currentRoute() {
+    return this._routeData
+  }
+
+  get matchedRoute() {
+    return this._matcher.match(this._pathname)
+  }
+
+  _onHistoryChange({ path, action, state }) {
     if (action === 'popstate') {
       this._resolve(path, 'replace')
+      if (state && state._scrollY !== undefined && !this.config.scrollToTop) {
+        window.scrollTo(0, state._scrollY)
+      }
     }
   }
 }
