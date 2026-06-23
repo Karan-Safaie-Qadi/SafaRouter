@@ -10,6 +10,8 @@ class RouteNode {
     this.loading = null
     this.error = null
     this.notFound = null
+    this.loader = null
+    this.guard = null
     this.children = []
     this.parent = null
     this.isGroup = isRouteGroup(segment)
@@ -90,6 +92,8 @@ export class RouteTree {
           if (val.loading) parent.loading = val.loading
           if (val.error) parent.error = val.error
           if (val.notFound) parent.notFound = val.notFound
+          if (val.loader) parent.loader = val.loader
+          if (val.guard) parent.guard = val.guard
           if (val.children) this._build(parent, val.children, base)
         } else if (typeof val === 'function') {
           parent.page = val
@@ -120,6 +124,8 @@ export class RouteTree {
             if (val.loading) child.loading = val.loading
             if (val.error) child.error = val.error
             if (val.notFound) child.notFound = val.notFound
+            if (val.loader) child.loader = val.loader
+            if (val.guard) child.guard = val.guard
             if (val.children) this._build(child, val.children, childBase)
           } else if (typeof val === 'function') {
             child.page = val

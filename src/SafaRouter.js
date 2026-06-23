@@ -401,6 +401,30 @@ export class SafaRouter {
       let pageContent, layoutFns = []
 
       if (routeMatch) {
+        // ── Route guard ──
+        const guard = routeMatch.node.guard
+        if (guard) {
+          let guardResult
+          try {
+            guardResult = await guard({ params: routeMatch.params, query, router: this })
+          } catch {}
+          if (this._navId !== navId) { this._isLoading = false; return }
+          if (guardResult === false || typeof guardResult === 'string') {
+            const redirectPath = typeof guardResult === 'string' ? guardResult : '/'
+            return this._navigate(redirectPath, 'replace', {}, {}, depth + 1)
+          }
+        }
+
+        // ── Route data loader ──
+        const loader = routeMatch.node.loader
+        if (loader) {
+          try {
+            const data = await loader({ params: routeMatch.params, query, router: this })
+            if (this._navId !== navId) { this._isLoading = false; return }
+            routeMatch.data = data
+          } catch { /* loader error ignored — page renders without data */ }
+        }
+
         if (routeMatch.node.loading) {
           const loadingFn = await this._loadComponent(routeMatch.node.loading)
           if (this._navId !== navId) { this._isLoading = false; return }
@@ -506,10 +530,12 @@ export class SafaRouter {
   async _render(pageContent, layoutFns) {
     if (!this._targetEl) return
 
+    const data = this._routeData?.data
+
     const html = layoutFns.length > 0
-      ? await this._renderWithLayouts(pageContent, layoutFns, 0)
+      ? await this._renderWithLayouts(pageContent, layoutFns, 0, data)
       : (typeof pageContent === 'function'
-          ? pageContent({ params: this._params, query: this._query, router: this })
+          ? pageContent({ params: this._params, query: this._query, router: this, data })
           : (pageContent || ''))
 
     if (this.config.transitionDuration > 0) {
@@ -523,16 +549,16 @@ export class SafaRouter {
     }
   }
 
-  async _renderWithLayouts(pageContent, layoutFns, idx) {
+  async _renderWithLayouts(pageContent, layoutFns, idx, data) {
     if (idx >= layoutFns.length) {
       if (typeof pageContent === 'function') {
-        return pageContent({ params: this._params, query: this._query, router: this })
+        return pageContent({ params: this._params, query: this._query, router: this, data })
       }
       return pageContent || ''
     }
     const layoutFn = layoutFns[idx]
-    const content = await this._renderWithLayouts(pageContent, layoutFns, idx + 1)
-    return layoutFn({ children: content, params: this._params, query: this._query, router: this })
+    const content = await this._renderWithLayouts(pageContent, layoutFns, idx + 1, data)
+    return layoutFn({ children: content, params: this._params, query: this._query, router: this, data })
   }
 
   _updateTitle() {
