@@ -7,7 +7,7 @@ import { TransitionsManager } from './TransitionsManager.js'
 import { ScrollManager } from './ScrollManager.js'
 import { normalizePath, parseQuery, emit, createURL, isExternalURL } from './utils.js'
 import { EVENTS, DEFAULT_CONFIG } from './constants.js'
-import { RouteLoadError, SafaError } from './errors.js'
+import { RouteLoadError, SafaError, NavigationAbortError } from './errors.js'
 
 export class SafaRouter {
   static version = '1.2.8'
@@ -390,7 +390,11 @@ export class SafaRouter {
       await this._middleware.run(ctx)
       if (this._navId !== navId) { this._isLoading = false; return }
       if (ctx.redirect) return this._navigate(ctx.redirect, 'replace', ctx.query, {}, depth + 1)
-      if (ctx.cancelled) { this._isLoading = false; return }
+      if (ctx.cancelled) {
+        emit(this._events, EVENTS.ERROR, { path, error: new NavigationAbortError() })
+        this._isLoading = false
+        return
+      }
 
       const routeMatch = this._hasRoutes() ? this._routeTree.resolve(path) : null
       let pageContent, layoutFns = []
