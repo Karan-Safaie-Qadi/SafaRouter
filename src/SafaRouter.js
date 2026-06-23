@@ -111,6 +111,10 @@ export class SafaRouter {
     return this.push(url)
   }
 
+  getConfig() {
+    return { ...this.config }
+  }
+
   get pathname() {
     return this._pathname
   }
