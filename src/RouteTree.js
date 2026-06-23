@@ -161,4 +161,8 @@ export class RouteTree {
   find(pathname) {
     return this.resolve(pathname)
   }
+
+  getRoute(pathname) {
+    return this.resolve(pathname)
+  }
 }
