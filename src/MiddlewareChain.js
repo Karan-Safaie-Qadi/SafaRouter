@@ -27,10 +27,18 @@ export class MiddlewareChain {
 
   clear() {
     this._stack = []
+    return this
   }
 
   remove(fn) {
     this._stack = this._stack.filter(f => f !== fn)
+    return this
+  }
+
+  clone() {
+    const chain = new MiddlewareChain()
+    chain._stack = [...this._stack]
+    return chain
   }
 
   get length() {
