@@ -296,6 +296,29 @@ router.use(async (ctx, next) => {
 })
 ```
 
+### Using with other frameworks
+
+**React example:**
+
+```javascript
+const router = new SafaRouter({ /* config */ })
+
+function App() {
+  const [route, setRoute] = useState({ pathname: '/', params: {} })
+  useEffect(() => router.on('routechange', setRoute), [])
+  return <div id="app" />
+}
+```
+
+**Vue example:**
+
+```javascript
+const router = new SafaRouter({ /* config */ })
+const app = Vue.createApp({
+  mounted() { router.start('#app') }
+})
+```
+
 ### Component signature
 
 Every component (page, layout, notFound, error) receives an object:
