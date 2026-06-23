@@ -183,6 +183,15 @@ pre {
   to { transform: rotate(360deg); }
 }
 
+/* ── Code blocks ────────────────────────── */
+
+code.highlight {
+  background: var(--color-accent);
+  color: var(--color-bg);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
 /* ── Cards ──────────────────────────────── */
 
 .card {
