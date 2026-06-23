@@ -1,9 +1,10 @@
 import { normalizePath, isRouteGroup, isDynamicSegment } from './utils.js'
 
 class RouteNode {
-  constructor({ segment, fullPath } = {}) {
+  constructor({ segment, fullPath, meta } = {}) {
     this.segment = segment || ''
     this.fullPath = fullPath || ''
+    this.meta = meta || null
     this.page = null
     this.layout = null
     this.loading = null
@@ -78,6 +79,7 @@ export class RouteTree {
       const node = new RouteNode({ segment: key, fullPath: fp })
 
       if (typeof val === 'object' && val !== null) {
+        if (val.meta) node.meta = val.meta
         if (val.layout) node.layout = val.layout
         if (val.page) node.page = val.page
         if (val.loading) node.loading = val.loading

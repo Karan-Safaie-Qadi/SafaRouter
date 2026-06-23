@@ -214,6 +214,7 @@ export class SafaRouter {
         window.scrollTo({ top: 0, behavior: 'smooth' })
       }
 
+      this._updateTitle()
       this._focus()
     } catch (err) {
     } catch (err) {
@@ -248,6 +249,16 @@ export class SafaRouter {
     const html = await renderLayer(0)
     this._targetEl.innerHTML = html
     this._bindLinks()
+  }
+
+  _updateTitle() {
+    const template = this.config.titleTemplate
+    if (!template) return
+    const title = this._routeData?.node?.meta?.title ||
+                  this._routeData?.node?.segment ||
+                  this._pathname.replace(/[/-]/g, ' ').trim() ||
+                  'Home'
+    document.title = template.replace('%s', title.charAt(0).toUpperCase() + title.slice(1))
   }
 
   _focus() {

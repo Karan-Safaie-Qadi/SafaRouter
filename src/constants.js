@@ -40,4 +40,5 @@ export const DEFAULT_CONFIG = {
   scrollToTop: true,
   prefetch: false,
   cacheRoutes: true,
+  titleTemplate: '%s — SafaRouter',
 }
