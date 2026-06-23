@@ -28,6 +28,7 @@ export class SafaRouter {
     })
     this._middleware = new MiddlewareChain()
     this._cache = new Map()
+    this._maxCacheSize = this.config.maxCacheSize ?? 50
     this._scrollManager = new ScrollManager()
 
     this._pathname = '/'
@@ -201,12 +202,29 @@ export class SafaRouter {
     return this
   }
 
+  _cachePut(key, value) {
+    if (this._cache.has(key)) this._cache.delete(key)
+    while (this._maxCacheSize > 0 && this._cache.size >= this._maxCacheSize) {
+      const oldest = this._cache.keys().next().value
+      if (oldest !== undefined) this._cache.delete(oldest)
+    }
+    this._cache.set(key, value)
+  }
+
+  _cacheGet(key) {
+    if (!this._cache.has(key)) return undefined
+    const val = this._cache.get(key)
+    this._cache.delete(key)
+    this._cache.set(key, val)
+    return val
+  }
+
   async prefetch(path) {
     const normalized = normalizePath(path)
-    if (this._cache.has(normalized)) return
+    if (this._cacheGet(normalized)) return
     const page = await this._fetchPage(normalized)
     if (page && this.config.cacheRoutes) {
-      this._cache.set(normalized, page)
+      this._cachePut(normalized, page)
     }
   }
 
@@ -295,7 +313,12 @@ export class SafaRouter {
   }
 
   async _navigate(path, method, query = {}, state = {}, depth = 0) {
-    if (depth > 10) { console.error('[SafaRouter] Redirect loop detected'); return }
+    if (depth > 10) {
+      const err = new Error('Redirect loop detected')
+      console.error('[SafaRouter]', err.message)
+      emit(this._events, EVENTS.ERROR, { error: err, path })
+      return
+    }
     if (depth === 0) {
       const sameQuery = JSON.stringify(query) === JSON.stringify(this._query)
       if (path === this._pathname && sameQuery) return
@@ -346,7 +369,11 @@ export class SafaRouter {
         if (loadingHtml && this._targetEl) {
           this._targetEl.innerHTML = loadingHtml
         }
-        pageContent = this._cache.get(path) || await this._fetchPage(path)
+        pageContent = this._cacheGet(path)
+        if (!pageContent) {
+          pageContent = await this._fetchPage(path)
+          if (pageContent && this.config.cacheRoutes) this._cachePut(path, pageContent)
+        }
         if (pageContent === null) {
           const notFoundHtml = await this._fetchSpecial(path, 'not-found.html')
           if (this._navId !== navId) { this._isLoading = false; return }
@@ -358,7 +385,7 @@ export class SafaRouter {
             if (this._targetEl) this._targetEl.innerHTML = notFoundHtml
             return
           }
-          await this._handleNotFound(path, method, navId)
+          await this._handleNotFound(path, method, navId, state)
           this._isLoading = false
           return
         }
@@ -377,7 +404,7 @@ export class SafaRouter {
         }
         this._routeData = { node: { page: null }, params: {}, layouts: [] }
       } else {
-        await this._handleNotFound(path, method, navId)
+        await this._handleNotFound(path, method, navId, state)
         this._isLoading = false
         return
       }
@@ -516,14 +543,14 @@ export class SafaRouter {
     }
   }
 
-  async _handleNotFound(path, method, navId) {
+  async _handleNotFound(path, method, navId, state = {}) {
     if (navId !== undefined && this._navId !== navId) { this._isLoading = false; return }
     emit(this._events, EVENTS.NOT_FOUND, { path })
 
     const notFoundHtml = this.config.pagesDir ? await this._fetchSpecial(path, 'not-found.html') : null
     if (notFoundHtml) {
-      if (method === 'push') this._history.push(path)
-      else if (method === 'replace') this._history.replace(path)
+      if (method === 'push') this._history.push(path, state)
+      else if (method === 'replace') this._history.replace(path, state)
       this._pathname = path
       if (this._targetEl) {
         this._targetEl.innerHTML = this._globalLayout
@@ -538,8 +565,8 @@ export class SafaRouter {
     if (notFound) {
       try {
         const fn = await this._loadComponent(notFound)
-        if (method === 'push') this._history.push(path)
-        else if (method === 'replace') this._history.replace(path)
+        if (method === 'push') this._history.push(path, state)
+        else if (method === 'replace') this._history.replace(path, state)
         this._pathname = path
         let html = typeof fn === 'function' ? fn({ path, router: this }) : fn
         if (this._globalLayout) {

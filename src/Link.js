@@ -1,3 +1,5 @@
+import { isSamePath } from './utils.js'
+
 export class Link {
   constructor(config = {}) {
     this._href = config.href || '/'
@@ -81,9 +83,7 @@ export class Link {
   _refresh() {
     if (!this._el || !this._router) return
     const cur = this._router.pathname
-    const active =
-      cur === this._href ||
-      (this._href !== '/' && (cur.startsWith(this._href + '/') || cur === this._href))
+    const active = isSamePath(cur, this._href) || (this._href !== '/' && cur.startsWith(this._href + '/'))
     this._el.classList.toggle(this._activeClass, active)
   }
 

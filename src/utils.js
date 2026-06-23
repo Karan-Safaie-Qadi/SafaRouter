@@ -18,6 +18,22 @@ export function parseQuery(search) {
   return result
 }
 
+export function buildQuery(params) {
+  if (!params || typeof params !== 'object' || Array.isArray(params)) return ''
+  const parts = []
+  for (const key of Object.keys(params)) {
+    const val = params[key]
+    if (Array.isArray(val)) {
+      for (const v of val) {
+        parts.push(`${encodeURIComponent(key)}=${encodeURIComponent(v)}`)
+      }
+    } else if (val !== undefined && val !== null) {
+      parts.push(`${encodeURIComponent(key)}=${encodeURIComponent(val)}`)
+    }
+  }
+  return parts.length ? '?' + parts.join('&') : ''
+}
+
 export function joinPaths(...parts) {
   return normalizePath(parts.filter(Boolean).join('/'))
 }
@@ -65,15 +81,25 @@ export function useRouter(router) {
   }
 
   const subscribers = new Set()
+  let disposed = false
 
-  const unsubscribe = router.on('routechange', () => {
+  const onRouteChange = () => {
     state = {
       pathname: router.pathname,
       params: router.params,
       query: router.query,
       loading: router.loading,
     }
-    for (const fn of subscribers) fn(state)
+    for (const fn of subscribers) {
+      try { fn(state) } catch {}
+    }
+  }
+
+  const routeUnsub = router.on('routechange', onRouteChange)
+  const destroyUnsub = router.on('destroy', () => {
+    disposed = true
+    subscribers.clear()
+    routeUnsub()
   })
 
   return {
@@ -81,14 +107,19 @@ export function useRouter(router) {
     subscribe(fn) {
       subscribers.add(fn)
       fn(state)
-      return () => subscribers.delete(fn)
+      return () => { subscribers.delete(fn) }
     },
     push: router.push.bind(router),
     replace: router.replace.bind(router),
     back: router.back.bind(router),
     forward: router.forward.bind(router),
     navigate: router.navigate.bind(router),
-    unsubscribe,
+    unsubscribe() {
+      disposed = true
+      subscribers.clear()
+      routeUnsub()
+      destroyUnsub()
+    },
   }
 }
 

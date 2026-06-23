@@ -46,6 +46,7 @@ export const DEFAULT_CONFIG = {
   scrollToTop: true,
   prefetch: true,
   cacheRoutes: true,
+  maxCacheSize: 50,
   titleTemplate: '%s — SafaRouter',
   transitionDuration: 0,
   transitionEnterClass: 'page-enter',

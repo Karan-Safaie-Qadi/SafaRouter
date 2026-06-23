@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import {
-  normalizePath, parseQuery, joinPaths,
+  normalizePath, parseQuery, buildQuery, joinPaths,
   isDynamicSegment, isCatchAllSegment, isOptionalCatchAll,
   isRouteGroupSegment, extractParamName,
   isExternalURL, isSamePath, debounce,
@@ -29,6 +29,33 @@ describe('parseQuery', () => {
   it('returns empty object for empty input', () => {
     expect(parseQuery('')).toEqual({})
     expect(parseQuery('?')).toEqual({})
+  })
+  it('returns arrays for duplicate keys', () => {
+    const result = parseQuery('?a=1&a=2')
+    expect(result).toEqual({ a: ['1', '2'] })
+  })
+})
+
+describe('buildQuery', () => {
+  it('builds query string from object', () => {
+    expect(buildQuery({ a: '1', b: '2' })).toBe('?a=1&b=2')
+  })
+  it('returns empty string for empty object', () => {
+    expect(buildQuery({})).toBe('')
+  })
+  it('skips undefined and null values', () => {
+    expect(buildQuery({ a: '1', b: undefined, c: null })).toBe('?a=1')
+  })
+  it('handles array values for duplicate keys', () => {
+    expect(buildQuery({ a: ['1', '2'] })).toBe('?a=1&a=2')
+  })
+  it('encodes special characters', () => {
+    expect(buildQuery({ q: 'hello world' })).toBe('?q=hello%20world')
+  })
+  it('returns empty string for invalid input', () => {
+    expect(buildQuery(null)).toBe('')
+    expect(buildQuery(undefined)).toBe('')
+    expect(buildQuery('')).toBe('')
   })
 })
 

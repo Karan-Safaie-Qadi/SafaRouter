@@ -66,6 +66,7 @@ declare module 'safa-router' {
     scrollToTop?: boolean
     prefetch?: boolean
     cacheRoutes?: boolean
+    maxCacheSize?: number
     titleTemplate?: string
     transitionDuration?: number
     transitionEnterClass?: string
@@ -285,7 +286,8 @@ declare module 'safa-router' {
 
   // ─── Utils ─────────────────────────────────────────
   export function normalizePath(path: string): string
-  export function parseQuery(search: string): Record<string, string>
+  export function parseQuery(search: string): Record<string, string | string[]>
+  export function buildQuery(params: Record<string, string | string[] | undefined | null>): string
   export function joinPaths(...parts: string[]): string
   export function createURL(path: string, base?: string): URL | null
   export function isExternalURL(url: string): boolean
