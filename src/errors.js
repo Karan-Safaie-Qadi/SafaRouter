@@ -4,6 +4,10 @@ export class SafaError extends Error {
     this.name = 'SafaError'
     this.code = code
   }
+
+  toJSON() {
+    return { name: this.name, message: this.message, code: this.code }
+  }
 }
 
 export class RouteNotFoundError extends SafaError {
