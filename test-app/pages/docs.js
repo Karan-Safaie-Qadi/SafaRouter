@@ -51,6 +51,16 @@ export default function docsPage() {
 })</pre>
       </div>
       <div class="card">
+        <h2>Hash Mode</h2>
+        <p>Set <code>useHash: true</code> in config for hash-based routing. Useful when you can't configure your server for SPA fallback.</p>
+        <pre>const router = new SafaRouter({
+  useHash: true,
+  target: '#app',
+  routes: { '/': { page: home } }
+})</pre>
+      </div>
+
+      <div class="card">
         <h2>Event System</h2>
         <p>SafaRouter emits events throughout the navigation lifecycle. Subscribe with <code>router.on(event, fn)</code>.</p>
         <pre>router.on('routechange', ({ pathname, params }) => {
