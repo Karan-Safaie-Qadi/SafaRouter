@@ -12,6 +12,8 @@ import contactPage from './pages/contact.js'
 import docsPage from './pages/docs.js'
 import sandboxPage from './pages/sandbox.js'
 import sitemapPage from './pages/sitemap.js'
+import loadingDemoPage from './pages/loading-demo.js'
+import loadingState from './pages/loading-state.js'
 import notFoundPage from './pages/not-found.js'
 import errorPage from './pages/error-page.js'
 
@@ -51,6 +53,11 @@ const router = new SafaRouter({
 
     '/sitemap': {
       page: sitemapPage,
+    },
+
+    '/slow': {
+      loading: loadingState,
+      page: loadingDemoPage,
     },
 
     '(main)': {
