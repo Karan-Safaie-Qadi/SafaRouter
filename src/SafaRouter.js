@@ -135,6 +135,18 @@ export class SafaRouter {
     return this
   }
 
+  onError(fn) {
+    return this.on(EVENTS.ERROR, fn)
+  }
+
+  onNotFound(fn) {
+    return this.on(EVENTS.NOT_FOUND, fn)
+  }
+
+  onRouteChange(fn) {
+    return this.on(EVENTS.ROUTE_CHANGE, fn)
+  }
+
   createLink(config) {
     return new Link({ ...config, router: this })
   }
