@@ -63,6 +63,10 @@ export class HistoryManager {
     return history.state
   }
 
+  clearState() {
+    history.replaceState(null, '', location.href)
+  }
+
   onChange(fn) {
     this._listeners.push(fn)
     return () => {
