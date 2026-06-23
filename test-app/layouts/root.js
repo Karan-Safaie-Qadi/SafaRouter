@@ -3,6 +3,7 @@ export default function rootLayout({ children, router }) {
   const links = [
     { href: '/', label: 'Home' },
     { href: '/about', label: 'About' },
+    { href: '/docs', label: 'Docs' },
     { href: '/blog', label: 'Blog' },
     { href: '/contact', label: 'Contact' },
     { href: '/profile/me', label: 'Profile' },

@@ -9,6 +9,7 @@ import dashboardPage from './pages/dashboard.js'
 import dashboardSettingsPage from './pages/dashboard-settings.js'
 import profilePage from './pages/profile.js'
 import contactPage from './pages/contact.js'
+import docsPage from './pages/docs.js'
 import notFoundPage from './pages/not-found.js'
 import errorPage from './pages/error-page.js'
 
@@ -36,6 +37,10 @@ const router = new SafaRouter({
 
     '/contact': {
       page: contactPage,
+    },
+
+    '/docs': {
+      page: docsPage,
     },
 
     '(main)': {
