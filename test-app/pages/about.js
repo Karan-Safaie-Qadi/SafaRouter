@@ -3,7 +3,7 @@ export default function aboutPage() {
     <div class="page-enter">
       <h1>About SafaRouter</h1>
       <p style="color: var(--color-text-muted); margin-bottom: 1.5rem;">
-        A routing library that brings the App Router developer experience
+        Version <strong>1.0.0</strong> &mdash; A routing library that brings the App Router developer experience
         to every frontend project.
       </p>
 
