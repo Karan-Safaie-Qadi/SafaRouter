@@ -416,6 +416,10 @@ export class SafaRouter {
     return this._matcher.match(this._pathname)
   }
 
+  getRoute(path) {
+    return this._routeTree.resolve(normalizePath(path))
+  }
+
   _onHistoryChange({ path, action, state }) {
     if (action === 'popstate') {
       this._resolve(path, 'replace')
