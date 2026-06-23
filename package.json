@@ -4,12 +4,17 @@
   "description": "A professional standalone frontend router inspired by Next.js App Router — works with any framework or vanilla JS",
   "type": "module",
   "main": "src/index.js",
+  "types": "safa-router.d.ts",
   "exports": {
-    ".": "./src/index.js",
+    ".": {
+      "import": "./src/index.js",
+      "types": "./safa-router.d.ts"
+    },
     "./*": "./src/*.js"
   },
   "files": [
-    "src/"
+    "src/",
+    "safa-router.d.ts"
   ],
   "scripts": {
     "start": "npx serve test-app -l 3000",
