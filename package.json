@@ -1,0 +1,38 @@
+{
+  "name": "safa-router",
+  "version": "1.0.0",
+  "description": "A professional standalone frontend router inspired by Next.js App Router — works with any framework or vanilla JS",
+  "type": "module",
+  "main": "src/index.js",
+  "exports": {
+    ".": "./src/index.js",
+    "./*": "./src/*.js"
+  },
+  "files": [
+    "src/"
+  ],
+  "scripts": {
+    "start": "npx serve test-app -l 3000",
+    "test": "echo \"Tests coming soon\""
+  },
+  "keywords": [
+    "router",
+    "frontend-router",
+    "spa-router",
+    "app-router",
+    "nextjs-router",
+    "vanilla-js",
+    "client-side-routing",
+    "single-page-app"
+  ],
+  "author": "",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pishro-dev/safa-router.git"
+  },
+  "bugs": {
+    "url": "https://github.com/pishro-dev/safa-router/issues"
+  },
+  "homepage": "https://github.com/pishro-dev/safa-router#readme"
+}
