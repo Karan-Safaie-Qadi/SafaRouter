@@ -104,6 +104,7 @@ export class SafaRouter {
     for (const k of Object.keys(this._events)) this._events[k] = []
     this._cache.clear()
     this._prefetched.clear()
+    if (this._linkObserver) { this._linkObserver.disconnect(); this._linkObserver = null }
     this._scrollManager.clear()
     this._targetEl = null
     emit(this._events, EVENTS.DESTROY, {})
