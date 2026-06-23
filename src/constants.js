@@ -38,7 +38,8 @@ export const DEFAULT_CONFIG = {
   basePath: '',
   useHash: false,
   scrollToTop: true,
-  prefetch: false,
+  prefetch: true,
   cacheRoutes: true,
   titleTemplate: '%s — SafaRouter',
+  transitionDuration: 0,
 }

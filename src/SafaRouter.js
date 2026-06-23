@@ -262,8 +262,18 @@ export class SafaRouter {
     }
 
     const html = await renderLayer(0)
+    const duration = this.config.transitionDuration
+    if (duration > 0) {
+      this._targetEl.style.opacity = '0'
+      this._targetEl.style.transition = `opacity ${duration}ms ease`
+    }
     this._targetEl.innerHTML = html
     this._bindLinks()
+    if (duration > 0) {
+      requestAnimationFrame(() => {
+        this._targetEl.style.opacity = '1'
+      })
+    }
   }
 
   _updateTitle() {
