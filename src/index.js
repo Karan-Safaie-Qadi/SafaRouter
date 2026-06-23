@@ -9,6 +9,7 @@ export {
   RouteNotFoundError,
   NavigationError,
   RouteLoadError,
+  NavigationAbortError,
 } from './errors.js'
 export { normalizePath, parseQuery, joinPaths, createURL, isExternalURL, isSamePath, useRouter } from './utils.js'
 export { bindLinks, prefetchOnHover } from './link-helper.js'
