@@ -362,6 +362,14 @@ pre {
   border-top: 1px solid var(--color-border);
 }
 
+/* ── Print ──────────────────────────────── */
+
+@media print {
+  #nav, #footer, .sandbox-btn { display: none; }
+  body { background: #fff; color: #000; }
+  .card { border: 1px solid #ccc; break-inside: avoid; }
+}
+
 /* ── Responsive ─────────────────────────── */
 
 @media (max-width: 640px) {
@@ -372,4 +380,8 @@ pre {
   .features { grid-template-columns: 1fr; }
   .dashboard-layout { grid-template-columns: 1fr; }
   #app { padding: 1rem 0.75rem; }
+}
+
+@media (min-width: 1200px) {
+  #app { max-width: 1024px; }
 }
