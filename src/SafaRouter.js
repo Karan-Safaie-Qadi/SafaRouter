@@ -820,8 +820,12 @@ export class SafaRouter {
       } catch { /* fall through */ }
     }
     const showStack = this.config.errors?.stackTraces !== false
-    const errorPage = this._errorManager.getDefaultPage(status)
-    if (this._targetEl) this._targetEl.innerHTML = this._fallback404(path, status, showStack)
+    let notFoundPage = null
+    try { notFoundPage = await this._errorManager.resolvePage(status, this.config.errors?.pageDir, signal) } catch {}
+    if (this._targetEl) {
+      try { this._targetEl.innerHTML = notFoundPage || this._fallback404(path, status, showStack) }
+      catch { this._targetEl.textContent = `Not Found: ${path}` }
+    }
     this._updateTitle()
   }
 
@@ -885,9 +889,10 @@ export class SafaRouter {
         return
       } catch { /* fall through */ }
     }
-    const errorPage = this._errorManager.resolvePage(status, this.config.errors?.pageDir, signal)
+    let mgrPage = null
+    try { mgrPage = await this._errorManager.resolvePage(status, this.config.errors?.pageDir, signal) } catch {}
     if (this._targetEl) {
-      try { this._targetEl.innerHTML = this._fallbackError(err, status, showStack) }
+      try { this._targetEl.innerHTML = mgrPage || this._fallbackError(err, status, showStack) }
       catch { this._targetEl.textContent = `Error: ${err.message}` }
     }
     this._updateTitle()
