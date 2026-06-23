@@ -7,7 +7,21 @@ class RoutePattern {
     this.path = normalizePath(pattern)
     this.segments = this.path === '/' ? [] : this.path.split('/').filter(Boolean)
     this.paramNames = []
+    this._validate()
     this._compile()
+  }
+
+  _validate() {
+    const names = new Set()
+    for (const seg of this.segments) {
+      const m = seg.match(/^\[(?:\.\.\.)?([^\]]+)\]$/)
+      if (m) {
+        if (names.has(m[1])) {
+          throw new Error(`Duplicate param name "${m[1]}" in pattern "${this.raw}"`)
+        }
+        names.add(m[1])
+      }
+    }
   }
 
   _compile() {
