@@ -39,5 +39,8 @@
   "bugs": {
     "url": "https://github.com/Karan-Safaie-Qadi/SafaRouter/issues"
   },
-  "homepage": "https://github.com/Karan-Safaie-Qadi/SafaRouter#readme"
+  "homepage": "https://github.com/Karan-Safaie-Qadi/SafaRouter#readme",
+  "devDependencies": {
+    "vitest": "^4.1.9"
+  }
 }

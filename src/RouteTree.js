@@ -80,8 +80,7 @@ export class RouteTree {
 
     for (const [key, val] of Object.entries(routes)) {
       const isGroup = isRouteGroup(key)
-      const fp = isGroup ? normalizePath(base) : normalizePath(`${base}/${key}`)
-      const isRoot = fp === '/' || key === '/'
+      const isRoot = key === '/' || key === ''
 
       if (isRoot) {
         if (typeof val === 'object' && val !== null) {
@@ -91,29 +90,45 @@ export class RouteTree {
           if (val.loading) parent.loading = val.loading
           if (val.error) parent.error = val.error
           if (val.notFound) parent.notFound = val.notFound
-          if (val.children) this._build(parent, val.children, fp)
+          if (val.children) this._build(parent, val.children, base)
         } else if (typeof val === 'function') {
           parent.page = val
         }
         continue
       }
 
-      const seg = isGroup ? key : key.replace(/^\//, '')
-      const node = new RouteNode({ segment: seg, fullPath: fp })
+      const segs = (isGroup ? key : key.replace(/^\//, '')).split('/')
+      let cursor = parent
+      let currentBase = base
 
-      if (typeof val === 'object' && val !== null) {
-        if (val.meta) node.meta = val.meta
-        if (val.layout) node.layout = val.layout
-        if (val.page) node.page = val.page
-        if (val.loading) node.loading = val.loading
-        if (val.error) node.error = val.error
-        if (val.notFound) node.notFound = val.notFound
-        if (val.children) this._build(node, val.children, fp)
-      } else if (typeof val === 'function') {
-        node.page = val
+      for (let si = 0; si < segs.length; si++) {
+        const seg = segs[si]
+        const isLast = si === segs.length - 1
+        const childBase = isGroup ? currentBase : normalizePath(`${currentBase}/${seg}`)
+
+        let child = cursor._findChild(seg)
+        if (!child) {
+          child = new RouteNode({ segment: seg, fullPath: childBase })
+          cursor.addChild(child)
+        }
+
+        if (isLast) {
+          if (typeof val === 'object' && val !== null) {
+            if (val.meta) child.meta = val.meta
+            if (val.layout) child.layout = val.layout
+            if (val.page) child.page = val.page
+            if (val.loading) child.loading = val.loading
+            if (val.error) child.error = val.error
+            if (val.notFound) child.notFound = val.notFound
+            if (val.children) this._build(child, val.children, childBase)
+          } else if (typeof val === 'function') {
+            child.page = val
+          }
+        }
+
+        cursor = child
+        currentBase = childBase
       }
-
-      parent.addChild(node)
     }
   }
 

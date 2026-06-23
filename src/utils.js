@@ -13,7 +13,8 @@ export function parseQuery(search) {
 }
 
 export function joinPaths(...parts) {
-  return normalizePath(parts.filter(Boolean).join('/'))
+  const joined = parts.filter(Boolean).join('/')
+  return joined.startsWith('/') ? normalizePath(joined) : '/' + normalizePath(joined)
 }
 
 export function isDynamicSegment(segment) {
