@@ -10,8 +10,8 @@ import { EVENTS, DEFAULT_CONFIG } from './constants.js'
 import { RouteLoadError, SafaError } from './errors.js'
 
 export class SafaRouter {
-  static version = '1.2.2'
-  static VERSION = '1.2.2'
+  static version = '1.2.3'
+  static VERSION = '1.2.3'
 
   constructor(options = {}) {
     this.config = { ...DEFAULT_CONFIG, ...options }
@@ -133,12 +133,13 @@ export class SafaRouter {
   }
 
   back() {
-    emit(this._events, EVENTS.BEFORE_NAVIGATE, { path: null, method: 'back' })
-    this._isLoading = true
-    emit(this._events, EVENTS.LOADING, { loading: true })
+    emit(this._events, EVENTS.BEFORE_NAVIGATE, { path: this._pathname, method: 'back' })
     this._history.back()
   }
-  forward() { this._history.forward() }
+  forward() {
+    emit(this._events, EVENTS.BEFORE_NAVIGATE, { path: this._pathname, method: 'forward' })
+    this._history.forward()
+  }
 
   reload() { this._resolve(this._pathname, 'replace') }
   navigate(url) { return this.push(url) }
@@ -319,6 +320,7 @@ export class SafaRouter {
       if (routeMatch) {
         if (routeMatch.node.loading) {
           const loadingFn = await this._loadComponent(routeMatch.node.loading)
+          if (this._navId !== navId) { this._isLoading = false; return }
           if (loadingFn && this._targetEl) {
             this._targetEl.innerHTML = typeof loadingFn === 'function'
               ? loadingFn({ path, router: this })
@@ -352,10 +354,11 @@ export class SafaRouter {
             if (this._targetEl) this._targetEl.innerHTML = notFoundHtml
             return
           }
-          await this._handleNotFound(path, method)
+          await this._handleNotFound(path, method, navId)
           this._isLoading = false
           return
         }
+        if (this._navId !== navId) { this._isLoading = false; return }
         if (this._globalLayout) {
           let lfn = this._globalLayout
           if (typeof lfn === 'string') {
@@ -370,7 +373,7 @@ export class SafaRouter {
         }
         this._routeData = { node: { page: null }, params: {}, layouts: [] }
       } else {
-        await this._handleNotFound(path, method)
+        await this._handleNotFound(path, method, navId)
         this._isLoading = false
         return
       }
@@ -404,7 +407,7 @@ export class SafaRouter {
       emit(this._events, EVENTS.AFTER_NAVIGATE, { pathname: path })
     } catch (err) {
       this._isLoading = false
-      await this._handleError(path, err)
+      await this._handleError(path, err, navId)
     }
   }
 
@@ -437,7 +440,7 @@ export class SafaRouter {
     }
     const layoutFn = layoutFns[idx]
     const content = await this._renderWithLayouts(pageContent, layoutFns, idx + 1)
-    return layoutFn({ children: content, params: this._params, router: this })
+    return layoutFn({ children: content, params: this._params, query: this._query, router: this })
   }
 
   _updateTitle() {
@@ -482,13 +485,9 @@ export class SafaRouter {
     try {
       if (typeof mod === 'string') {
         if (mod.endsWith('.js') || mod.endsWith('.mjs')) {
-          try {
-            const resolved = await import(mod)
-            const page = resolved.default || resolved
-            return page
-          } catch {
-            // fall through to fetch
-          }
+          const resolved = await import(mod)
+          const page = resolved.default || resolved
+          return page
         }
         let url = mod
         if (this._params && Object.keys(this._params).length > 0) {
@@ -513,7 +512,8 @@ export class SafaRouter {
     }
   }
 
-  async _handleNotFound(path, method) {
+  async _handleNotFound(path, method, navId) {
+    if (navId !== undefined && this._navId !== navId) { this._isLoading = false; return }
     emit(this._events, EVENTS.NOT_FOUND, { path })
 
     const notFoundHtml = this.config.pagesDir ? await this._fetchSpecial(path, 'not-found.html') : null
@@ -548,9 +548,24 @@ export class SafaRouter {
     if (this._targetEl) this._targetEl.innerHTML = this._fallback404(path)
   }
 
-  async _handleError(path, err) {
+  async _handleError(path, err, navId) {
+    if (navId !== undefined && this._navId !== navId) { this._isLoading = false; return }
     console.error('[SafaRouter]', err)
     emit(this._events, EVENTS.ERROR, { path, error: err })
+
+    const routeError = this._routeData?.node?.error
+    if (routeError) {
+      try {
+        const fn = await this._loadComponent(routeError)
+        let html = typeof fn === 'function' ? fn({ error: err, path, router: this }) : fn
+        if (this._globalLayout) {
+          const lfn = await this._loadComponent(this._globalLayout)
+          if (lfn) html = await this._renderWithLayouts(html, [lfn], 0)
+        }
+        if (this._targetEl) this._targetEl.innerHTML = html
+        return
+      } catch { /* fall through */ }
+    }
 
     const errorHtml = this.config.pagesDir ? await this._fetchSpecial(path, 'error.html') : null
     if (errorHtml) {
@@ -613,8 +628,12 @@ export class SafaRouter {
     if (action === 'back') return
     if (action === 'popstate') {
       this._resolve(path, 'replace')
-      if (state && state._scrollY !== undefined && !this.config.scrollToTop) {
-        requestAnimationFrame(() => window.scrollTo(0, state._scrollY))
+      if (state && state._scrollY !== undefined) {
+        if (this.config.scrollToTop) {
+          window.scrollTo(0, 0)
+        } else {
+          requestAnimationFrame(() => window.scrollTo(0, state._scrollY))
+        }
       }
     }
   }

@@ -8,10 +8,17 @@ export class HistoryManager {
 
   init() {
     window.addEventListener('popstate', this._bound)
+    if (this._useHash) {
+      this._boundHash = () => this._notify(this.path, 'hashchange')
+      window.addEventListener('hashchange', this._boundHash)
+    }
   }
 
   destroy() {
     window.removeEventListener('popstate', this._bound)
+    if (this._boundHash) {
+      window.removeEventListener('hashchange', this._boundHash)
+    }
     this._listeners = []
   }
 

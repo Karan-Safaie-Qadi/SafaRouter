@@ -8,7 +8,13 @@ export function parseQuery(search) {
   if (!search || search === '?') return {}
   const params = new URLSearchParams(search)
   const result = {}
-  for (const [key, value] of params) result[key] = value
+  for (const [key, value] of params) {
+    if (key in result) {
+      result[key] = [].concat(result[key], value)
+    } else {
+      result[key] = value
+    }
+  }
   return result
 }
 
@@ -107,6 +113,7 @@ export function createURL(path, base = location.origin) {
 export function isExternalURL(url) {
   if (!url) return false
   if (url.startsWith('//')) return true
+  if (url.startsWith('mailto:') || url.startsWith('tel:') || url.startsWith('fax:')) return true
   if (url.startsWith('http://') || url.startsWith('https://')) {
     try {
       return new URL(url).origin !== location.origin

@@ -14,6 +14,8 @@ declare module 'safa-router' {
     pushRoute(routeName: string, params?: Record<string, any>, query?: Record<string, any>): Promise<void>
     back(): void
     forward(): void
+    onBeforeRender?(fn: (data: { pathname: string }) => void): () => void
+    onAfterRender?(fn: (data: { pathname: string }) => void): () => void
     reload(): void
     navigate(url: string): Promise<void>
 

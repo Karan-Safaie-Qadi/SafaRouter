@@ -13,12 +13,14 @@ export function bindLinks(router, scope = document) {
 
 export function prefetchOnHover(router) {
   let timer
-  document.addEventListener('mouseenter', (e) => {
+  const handler = (e) => {
     const link = e.target.closest('[data-safa-link]')
     if (!link) return
     const href = link.getAttribute('href')
     if (!href) return
     clearTimeout(timer)
     timer = setTimeout(() => router.prefetch(href), 100)
-  }, true)
+  }
+  document.addEventListener('mouseenter', handler, true)
+  return () => document.removeEventListener('mouseenter', handler, true)
 }

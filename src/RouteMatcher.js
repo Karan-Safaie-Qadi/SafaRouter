@@ -100,9 +100,9 @@ class RoutePattern {
     let path = this.raw
     for (const [key, val] of Object.entries(params)) {
       const v = Array.isArray(val) ? val.join('/') : String(val)
-      path = path.replaceAll(`[[...${key}]]`, v)
-      path = path.replaceAll(`[...${key}]`, v)
-      path = path.replaceAll(`[${key}]`, v)
+      path = path.split(`[[...${key}]]`).join(v)
+      path = path.split(`[...${key}]`).join(v)
+      path = path.split(`[${key}]`).join(v)
     }
     return normalizePath(path)
   }

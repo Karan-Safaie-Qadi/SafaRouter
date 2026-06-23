@@ -22,7 +22,7 @@ export function matchPattern(path, patterns = []) {
   return matcher.match(normalizePath(path))
 }
 
-export function renderRoute(path, routes = {}, context = {}) {
+export async function renderRoute(path, routes = {}, context = {}) {
   const match = matchRoute(path, routes)
   if (!match) return null
 

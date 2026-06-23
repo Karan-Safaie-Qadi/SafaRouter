@@ -14,6 +14,14 @@ export class Link {
   get element() { return this._el }
 
   render(container) {
+    if (this._el) {
+      this._el.remove()
+      this._el = null
+      if (this._unsub) {
+        this._unsub()
+        this._unsub = null
+      }
+    }
     this._el = document.createElement('a')
     if (container) {
       if (typeof container === 'string') {
