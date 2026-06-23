@@ -399,6 +399,11 @@ code.highlight {
   color: var(--color-accent);
 }
 
+#footer .version {
+  font-size: 0.7rem;
+  opacity: 0.6;
+}
+
 /* ── Print ──────────────────────────────── */
 
 @media print {
