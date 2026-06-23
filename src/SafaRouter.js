@@ -3,7 +3,7 @@ import { RouteTree } from './RouteTree.js'
 import { HistoryManager } from './HistoryManager.js'
 import { MiddlewareChain } from './MiddlewareChain.js'
 import { Link } from './Link.js'
-import { normalizePath, parseQuery, emit } from './utils.js'
+import { normalizePath, parseQuery, emit, createURL } from './utils.js'
 import { EVENTS, DEFAULT_CONFIG } from './constants.js'
 import { RouteLoadError, SafaError } from './errors.js'
 
@@ -76,12 +76,12 @@ export class SafaRouter {
   }
 
   async push(url) {
-    const u = new URL(url, location.origin)
+    const u = createURL(url) || new URL(url, location.origin)
     await this._navigate(normalizePath(u.pathname), 'push', parseQuery(u.search))
   }
 
   async replace(url) {
-    const u = new URL(url, location.origin)
+    const u = createURL(url) || new URL(url, location.origin)
     await this._navigate(normalizePath(u.pathname), 'replace', parseQuery(u.search))
   }
 

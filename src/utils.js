@@ -47,3 +47,20 @@ export function debounce(fn, delay) {
     timer = setTimeout(() => fn.apply(this, args), delay)
   }
 }
+
+export function createURL(path, base = location.origin) {
+  try {
+    return new URL(path, base)
+  } catch {
+    return null
+  }
+}
+
+export function isExternalURL(url) {
+  if (!url) return false
+  try {
+    return new URL(url).origin !== location.origin
+  } catch {
+    return false
+  }
+}

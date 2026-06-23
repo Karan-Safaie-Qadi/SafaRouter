@@ -10,5 +10,5 @@ export {
   NavigationError,
   RouteLoadError,
 } from './errors.js'
-export { normalizePath, parseQuery, joinPaths } from './utils.js'
+export { normalizePath, parseQuery, joinPaths, createURL, isExternalURL } from './utils.js'
 export { EVENTS, DEFAULT_CONFIG } from './constants.js'
