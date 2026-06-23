@@ -4,6 +4,7 @@ export default function blogPage({ router }) {
     { slug: 'routing-deep-dive', title: 'Routing Deep Dive', date: '2026-02-20' },
     { slug: 'middleware-guide', title: 'Middleware Guide', date: '2026-03-10' },
     { slug: 'app-router-patterns', title: 'App Router Patterns', date: '2026-04-05' },
+    { slug: 'safa-router-v1', title: 'SafaRouter v1.0.0 Released', date: '2026-06-23' },
   ]
 
   const articles = posts

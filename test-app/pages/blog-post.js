@@ -22,6 +22,11 @@ export default function blogPostPage({ params }) {
       date: '2026-04-05',
       body: 'Borrowed from Next.js App Router, the patterns include nested layouts, loading states, error boundaries, and not‑found pages. Each route segment can optionally define its own `layout`, `loading`, `error`, or `notFound`.',
     },
+    'safa-router-v1': {
+      title: 'SafaRouter v1.0.0 Released',
+      date: '2026-06-23',
+      body: 'SafaRouter brings the App Router developer experience to any frontend project. With nested layouts, dynamic segments, middleware, and zero dependencies — you can now use Next.js-style routing without Next.js.',
+    },
   }
 
   const post = posts[slug]
