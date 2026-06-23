@@ -14,9 +14,8 @@ declare module 'safa-router' {
     pushRoute(routeName: string, params?: Record<string, any>, query?: Record<string, any>): Promise<void>
     back(): void
     forward(): void
-    onBeforeRender?(fn: (data: { pathname: string }) => void): () => void
-    onAfterRender?(fn: (data: { pathname: string }) => void): () => void
     reload(): void
+    /** @deprecated Use push() instead */
     navigate(url: string): Promise<void>
 
     getConfig(): SafaRouterOptions
@@ -65,6 +64,7 @@ declare module 'safa-router' {
     useHash?: boolean
     scrollToTop?: boolean
     prefetch?: boolean
+    prefetchStrategy?: 'hover' | 'visible' | 'all'
     cacheRoutes?: boolean
     maxCacheSize?: number
     navigationTimeout?: number
@@ -74,6 +74,7 @@ declare module 'safa-router' {
     transitionExitClass?: string
     transitionEnterActiveClass?: string
     transitionExitActiveClass?: string
+    perRouteTransitions?: boolean
     plugins?: SafaPlugin[]
   }
 
@@ -89,13 +90,29 @@ declare module 'safa-router' {
     error?: PageComponent | string
     notFound?: PageComponent | string
     children?: RouteDefinition
-    meta?: { title?: string; name?: string; [key: string]: any }
+    meta?: { title?: string; name?: string; requiresAuth?: boolean; roles?: string[]; [key: string]: any }
+    loader?: RouteLoader
+    guard?: RouteGuard
+    transition?: RouteTransitionConfig
+  }
+
+  export type RouteLoader = (ctx: PageContext) => Record<string, any> | Promise<Record<string, any>>
+
+  export type RouteGuard = (ctx: PageContext) => boolean | string | Promise<boolean | string>
+
+  export interface RouteTransitionConfig {
+    duration?: number
+    enterClass?: string
+    exitClass?: string
+    enterActiveClass?: string
+    exitActiveClass?: string
   }
 
   export interface RouteMatch {
     node: RouteNodeData
     params: Record<string, any>
     layouts: LayoutComponent[]
+    data?: Record<string, any>
   }
 
   export interface RouteNodeData {
@@ -114,6 +131,7 @@ declare module 'safa-router' {
     params: Record<string, any>
     query: Record<string, any>
     router: SafaRouter
+    data?: Record<string, any>
   }
 
   export interface LayoutContext extends PageContext {
