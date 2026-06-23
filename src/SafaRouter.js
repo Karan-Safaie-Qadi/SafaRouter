@@ -8,6 +8,8 @@ import { EVENTS, DEFAULT_CONFIG } from './constants.js'
 import { RouteLoadError, SafaError } from './errors.js'
 
 export class SafaRouter {
+  static version = '1.0.0'
+
   constructor(options = {}) {
     this.config = { ...DEFAULT_CONFIG, ...options }
 
