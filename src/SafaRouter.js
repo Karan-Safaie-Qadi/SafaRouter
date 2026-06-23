@@ -210,7 +210,9 @@ export class SafaRouter {
       })
       emit(this._events, EVENTS.AFTER_NAVIGATE, { pathname: path })
 
-      if (this.config.scrollToTop) window.scrollTo(0, 0)
+      if (this.config.scrollToTop) {
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+      }
     } catch (err) {
       this._isLoading = false
       await this._handleError(path, err)
@@ -242,6 +244,21 @@ export class SafaRouter {
 
     const html = await renderLayer(0)
     this._targetEl.innerHTML = html
+    this._bindLinks()
+  }
+
+  _bindLinks() {
+    if (!this._targetEl) return
+    const links = this._targetEl.querySelectorAll('[data-safa-link]')
+    for (const el of links) {
+      el.addEventListener('click', (e) => {
+        if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return
+        if (e.button !== 0) return
+        e.preventDefault()
+        const href = el.getAttribute('href')
+        if (href) this.push(href)
+      })
+    }
   }
 
   async _loadComponent(mod) {
