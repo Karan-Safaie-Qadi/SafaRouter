@@ -10,9 +10,13 @@ export default function contactPage({ query }) {
         <h2>Query Params</h2>
         <p>Current query: <code>${JSON.stringify(query)}</code></p>
         <p style="margin-top: 0.75rem; font-size: 0.875rem;">
-          Try navigating to
-          <a href="/contact?subject=hello&lang=en" data-safa-link>/contact?subject=hello&lang=en</a>
+          Try navigating with query params:
         </p>
+        <div style="display:flex;flex-wrap:wrap;gap:0.5rem;margin-top:0.5rem;">
+          <a href="/contact?subject=hello&lang=en" data-safa-link class="sandbox-btn">?subject=hello&lang=en</a>
+          <a href="/contact?page=1&sort=asc" data-safa-link class="sandbox-btn">?page=1&sort=asc</a>
+          <a href="/contact" data-safa-link class="sandbox-btn">(no query)</a>
+        </div>
       </div>
 
       <div class="card">
