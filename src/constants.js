@@ -1,3 +1,4 @@
+/** Navigation lifecycle event names */
 export const EVENTS = {
   BEFORE_NAVIGATE: 'beforenavigate',
   NAVIGATE: 'navigate',
@@ -20,10 +21,10 @@ export const SEGMENT_TYPES = {
 }
 
 export const PARAM_PATTERNS = {
-  DYNAMIC: /^\[([^\[]+)\]$/,
-  CATCH_ALL: /^\[\.\.\.([^\[]+)\]$/,
-  OPTIONAL_CATCH_ALL: /^\[\[\.\.\.[^\[]+\]\]$/,
-  GROUP: /^\((.+)\)$/,
+  DYNAMIC: /^\[([^\]]+)\]$/,
+  CATCH_ALL: /^\[\.\.\.([^\]]+)\]$/,
+  OPTIONAL_CATCH_ALL: /^\[\[\.\.\.[^\]]+\]\]$/,
+  GROUP: /^\(([^)]+)\)$/,
 }
 
 export const PATTERN_SCORES = {
