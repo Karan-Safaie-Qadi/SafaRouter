@@ -1,0 +1,37 @@
+export default function aboutPage() {
+  return `
+    <div class="page-enter">
+      <h1>About SafaRouter</h1>
+      <p style="color: var(--color-text-muted); margin-bottom: 1.5rem;">
+        A routing library that brings the App Router developer experience
+        to every frontend project.
+      </p>
+
+      <div class="card">
+        <h2>Why another router?</h2>
+        <p>
+          Next.js App Router popularised a clean, file‑system based mental model
+          for routing. If you love that pattern but can&rsquo;t use Next.js &mdash;
+          because you&rsquo;re on Create React App, Vite, or a plain HTML project &mdash;
+          SafaRouter gives you the same conventions without the framework lock‑in.
+        </p>
+      </div>
+
+      <div class="card">
+        <h2>Key concepts</h2>
+        <ul style="padding-left: 1.25rem; display: flex; flex-direction: column; gap: 0.5rem;">
+          <li><strong>Layouts</strong> &mdash; wrap pages and persist across navigations</li>
+          <li><strong>Dynamic segments</strong> &mdash; <code>[slug]</code> for parameterised URLs</li>
+          <li><strong>Catch‑all routes</strong> &mdash; <code>[...path]</code> for flexible matching</li>
+          <li><strong>Middleware</strong> &mdash; intercept every navigation</li>
+          <li><strong>404 / Error pages</strong> &mdash; built‑in fallbacks with custom overrides</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h2>Try it</h2>
+        <p>Navigate to <a href="/blog" data-safa-link>Blog</a> to see dynamic routing in action, or visit <a href="/dashboard" data-safa-link>Dashboard</a> for a nested layout example.</p>
+      </div>
+    </div>
+  `
+}
