@@ -88,7 +88,7 @@ router.errorManager.resolvePage(404, 'html-pages/errors')
 
 // Error logging with custom handler
 router.errorManager.setLogHandler(entry => {
-  console.log(`[${entry.statusCode}] ${entry.path}`, entry.error)
+  console.log('[' + entry.statusCode + '] ' + entry.path, entry.error)
 })</pre>
       </div>
 
