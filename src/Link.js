@@ -10,6 +10,9 @@ export class Link {
     this._unsub = null
   }
 
+  get href() { return this._href }
+  get element() { return this._el }
+
   render(container) {
     this._el = document.createElement('a')
     if (container) {
