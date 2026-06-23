@@ -130,6 +130,7 @@ export class RouteMatcher {
 
   clear() {
     this._patterns = []
+    return this
   }
 
   get patterns() {
