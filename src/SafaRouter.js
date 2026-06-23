@@ -97,6 +97,10 @@ export class SafaRouter {
     this._resolve(this._pathname, 'replace')
   }
 
+  navigate(url) {
+    return this.push(url)
+  }
+
   get pathname() {
     return this._pathname
   }
