@@ -189,6 +189,25 @@ export class SafaRouter {
   onNotFound(fn) { return this.on(EVENTS.NOT_FOUND, fn) }
   onRouteChange(fn) { return this.on(EVENTS.ROUTE_CHANGE, fn) }
   onBeforeNavigate(fn) { return this.on(EVENTS.BEFORE_NAVIGATE, fn) }
+  onAccessDenied(fn) { return this.on(EVENTS.ACCESS_DENIED, fn) }
+  onMaintenance(fn) { return this.on(EVENTS.MAINTENANCE, fn) }
+
+  async retry(path, options = {}) {
+    const method = options.method || 'push'
+    const query = options.query || {}
+    const state = options.state || {}
+    const depth = options.depth || 0
+    const retries = options.retries || 3
+    for (let i = 0; i < retries; i++) {
+      try {
+        await this._navigate(path, method, query, state, depth)
+        return
+      } catch (err) {
+        if (i === retries - 1) throw err
+        await new Promise(r => setTimeout(r, 1000 * (i + 1)))
+      }
+    }
+  }
 
   createLink(config) { return new Link({ ...config, router: this }) }
 
