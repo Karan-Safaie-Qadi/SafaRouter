@@ -10,8 +10,8 @@ import { EVENTS, DEFAULT_CONFIG } from './constants.js'
 import { RouteLoadError, SafaError } from './errors.js'
 
 export class SafaRouter {
-  static version = '1.2.0'
-  static VERSION = '1.2.0'
+  static version = '1.2.1'
+  static VERSION = '1.2.1'
 
   constructor(options = {}) {
     this.config = { ...DEFAULT_CONFIG, ...options }
@@ -126,7 +126,12 @@ export class SafaRouter {
     return this.push(matched.path + qs)
   }
 
-  back() { this._history.back() }
+  back() {
+    emit(this._events, EVENTS.BEFORE_NAVIGATE, { path: null, method: 'back' })
+    this._isLoading = true
+    emit(this._events, EVENTS.LOADING, { loading: true })
+    this._history.back()
+  }
   forward() { this._history.forward() }
 
   reload() { this._resolve(this._pathname, 'replace') }
@@ -569,9 +574,20 @@ export class SafaRouter {
 
   get currentRoute() { return this._routeData }
 
+  get matchedRoute() {
+    if (typeof console !== 'undefined' && console.warn) {
+      console.warn('[SafaRouter] Deprecated: use `currentRoute` instead of `matchedRoute`')
+    }
+    return this._routeData
+  }
+
   getRoute(path) { return this._routeTree.resolve(normalizePath(path)) }
 
   _onHistoryChange({ path, action, state }) {
+    if (action === 'back') {
+      emit(this._events, EVENTS.BEFORE_NAVIGATE, { path, method: 'back' })
+      return
+    }
     if (action === 'popstate') {
       this._resolve(path, 'replace')
       if (state && state._scrollY !== undefined && !this.config.scrollToTop) {

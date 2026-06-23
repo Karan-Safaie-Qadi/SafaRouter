@@ -15,7 +15,7 @@ export class ScrollManager {
 
   restore(pathname, scrollToTop = false) {
     if (scrollToTop) {
-      window.scrollTo({ top: 0, behavior: 'instant' })
+      window.scrollTo(0, 0)
       return
     }
     const saved = this._memory.get(pathname)

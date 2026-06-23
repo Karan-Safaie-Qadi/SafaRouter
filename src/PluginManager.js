@@ -4,7 +4,7 @@ export class PluginManager {
     this._plugins = new Map()
   }
 
-  use(plugin) {
+  async use(plugin) {
     if (!plugin || typeof plugin !== 'object') {
       throw new Error('Plugin must be an object with a name property')
     }
@@ -17,15 +17,16 @@ export class PluginManager {
     }
 
     const wrapped = { ...plugin, _cleanup: [] }
+    this._plugins.set(plugin.name, wrapped)
 
     if (typeof plugin.install === 'function') {
-      const result = plugin.install(this._router)
-      if (result && typeof result.then === 'function') {
-        result.then(cleanup => {
-          if (typeof cleanup === 'function') wrapped._cleanup.push(cleanup)
-        })
-      } else if (typeof result === 'function') {
-        wrapped._cleanup.push(result)
+      try {
+        const result = await plugin.install(this._router)
+        if (typeof result === 'function') {
+          wrapped._cleanup.push(result)
+        }
+      } catch (err) {
+        console.error(`[SafaRouter] Plugin "${plugin.name}" install failed:`, err)
       }
     }
 
@@ -49,7 +50,6 @@ export class PluginManager {
       this._router.use(plugin.middleware)
     }
 
-    this._plugins.set(plugin.name, wrapped)
     return this
   }
 

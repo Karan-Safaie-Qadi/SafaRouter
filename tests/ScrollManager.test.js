@@ -23,7 +23,7 @@ describe('ScrollManager', () => {
   it('scrolls to top when scrollToTop is true', () => {
     const sm = new ScrollManager()
     sm.restore('/page', true)
-    expect(window.scrollTo).toHaveBeenCalledWith({ top: 0, behavior: 'instant' })
+    expect(window.scrollTo).toHaveBeenCalledWith(0, 0)
   })
 
   it('does nothing for unknown path', () => {

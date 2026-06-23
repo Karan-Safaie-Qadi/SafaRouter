@@ -44,6 +44,7 @@ export class HistoryManager {
   }
 
   back() {
+    this._notify(this.path, 'back')
     history.back()
   }
 

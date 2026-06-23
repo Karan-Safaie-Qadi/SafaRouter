@@ -35,24 +35,24 @@ describe('PluginManager', () => {
     expect(pm.list()).toEqual(['test'])
   })
 
-  it('throws if plugin has no name', () => {
+  it('throws if plugin has no name', async () => {
     const pm = new PluginManager(createMockRouter())
-    expect(() => pm.use({})).toThrow('name')
+    await expect(pm.use({})).rejects.toThrow('name')
   })
 
-  it('calls install function', () => {
+  it('calls install function', async () => {
     const router = createMockRouter()
     const pm = new PluginManager(router)
     const install = vi.fn()
-    pm.use({ name: 'test', install })
+    await pm.use({ name: 'test', install })
     expect(install).toHaveBeenCalledWith(router)
   })
 
-  it('ejects plugin and calls cleanup', () => {
+  it('ejects plugin and calls cleanup', async () => {
     const router = createMockRouter()
     const pm = new PluginManager(router)
     const cleanup = vi.fn()
-    pm.use({ name: 'test', install: () => cleanup })
+    await pm.use({ name: 'test', install: () => cleanup })
     expect(pm.eject('test')).toBe(true)
     expect(pm.has('test')).toBe(false)
   })

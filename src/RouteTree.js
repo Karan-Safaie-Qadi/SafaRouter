@@ -48,7 +48,7 @@ class RouteNode {
         const nested = c._findDynamic(segment)
         if (nested) return nested
       }
-      if (c.segment.startsWith('[') && c.segment.endsWith(']')) return c
+      if (c.segment.startsWith('[') && c.segment.endsWith(']') && !c.segment.startsWith('[.')) return c
     }
     return null
   }

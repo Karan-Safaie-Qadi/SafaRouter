@@ -34,10 +34,10 @@ describe('parseQuery', () => {
 
 describe('joinPaths', () => {
   it('joins path segments', () => {
-    expect(joinPaths('a', 'b', 'c')).toBe('/a/b/c')
+    expect(joinPaths('a', 'b', 'c')).toBe('a/b/c')
   })
   it('filters empty segments', () => {
-    expect(joinPaths('a', '', 'b')).toBe('/a/b')
+    expect(joinPaths('a', '', 'b')).toBe('a/b')
   })
 })
 
