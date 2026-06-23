@@ -70,6 +70,10 @@ export class RouteTree {
     this._build(this.root, routes, '/')
   }
 
+  static create(routes) {
+    return new RouteTree(routes)
+  }
+
   _build(parent, routes, base) {
     if (!routes || typeof routes !== 'object') return
 
