@@ -2,6 +2,10 @@ import { HTTP_STATUS_TEXT, ERROR_GROUP_MAP, ERROR_GROUPS } from './constants.js'
 
 export class ErrorManager {
   constructor(config = {}) {
+    if (!config.errors) config.errors = {}
+    if (!config.errors.groups) config.errors.groups = {}
+    if (!config.errors.status) config.errors.status = {}
+    if (!config.errors.redirect) config.errors.redirect = {}
     this._config = config
     this._cache = new Map()
     this._maxCacheSize = 50
@@ -11,17 +15,13 @@ export class ErrorManager {
   }
 
   setStatusEnabled(statusCode, enabled) {
-    if (!this._overrides[statusCode]) {
-      this._overrides[statusCode] = {}
-    }
+    if (!this._overrides[statusCode]) this._overrides[statusCode] = {}
     this._overrides[statusCode].enabled = enabled
   }
 
   setGroupEnabled(group, enabled) {
-    const errors = this._config.errors || {}
-    if (!errors.groups) errors.groups = {}
-    if (!errors.groups[group]) errors.groups[group] = {}
-    errors.groups[group].enabled = enabled
+    if (!this._config.errors.groups[group]) this._config.errors.groups[group] = {}
+    this._config.errors.groups[group].enabled = enabled
   }
 
   getStatusConfig(statusCode) {
@@ -57,7 +57,7 @@ export class ErrorManager {
       return this._defaultPages[statusCode]
     }
     const group = ERROR_GROUP_MAP[statusCode]
-    if (group === ERROR_GROUPS.SERVER_ERROR) {
+    if (group === ERROR_GROUPS.SERVER_ERROR || statusCode >= 500) {
       return this._defaultPages._serverError
     }
     return this._defaultPages._clientError

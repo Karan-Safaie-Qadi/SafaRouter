@@ -75,9 +75,15 @@ export class AccessController {
       if (p.exact && p.endsWithSlash && (p.pattern === npath || p.pattern + '/' === npath)) return true
       if (p.wildcard && npath.startsWith(p.pattern)) {
         const rest = npath.slice(p.pattern.length)
-        if (rest === '' || (rest.startsWith('/') && !rest.slice(1).includes('/'))) return true
+        if (rest === '' || !rest.includes('/')) return true
       }
-      if (p.doubleWildcard && npath.startsWith(p.pattern)) return true
+      if (p.doubleWildcard) {
+        const base = p.pattern.endsWith('/') ? p.pattern.slice(0, -1) : p.pattern
+        if (npath === base || npath.startsWith(p.pattern) || npath.startsWith(base + '/')) return true
+      }
+      if (p.endsWithSlash && !p.exact && !p.wildcard && !p.doubleWildcard) {
+        if (p.pattern === npath || p.pattern + '/' === npath) return true
+      }
     }
     return false
   }
