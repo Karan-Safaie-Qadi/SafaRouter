@@ -69,6 +69,17 @@ class RoutePattern {
     return s
   }
 
+  describe() {
+    return {
+      pattern: this.raw,
+      path: this.path,
+      segments: this.segments,
+      paramNames: this.paramNames,
+      score: this.score,
+      regex: this.regex.source,
+    }
+  }
+
   match(url) {
     const p = normalizePath(url)
     const m = p.match(this.regex)
