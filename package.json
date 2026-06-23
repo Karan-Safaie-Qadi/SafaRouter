@@ -13,7 +13,9 @@
   ],
   "scripts": {
     "start": "npx serve test-app -l 3000",
-    "test": "echo \"Tests coming soon\""
+    "test": "echo \"Tests coming soon\"",
+    "lint": "echo \"Add lint tool\"",
+    "prepublishOnly": "npm test"
   },
   "keywords": [
     "router",
@@ -23,7 +25,10 @@
     "nextjs-router",
     "vanilla-js",
     "client-side-routing",
-    "single-page-app"
+    "single-page-app",
+    "nested-layouts",
+    "middleware",
+    "dynamic-routes"
   ],
   "author": "",
   "license": "MIT",
