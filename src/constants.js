@@ -8,6 +8,7 @@ export const EVENTS = {
   LOADING: 'loading',
   READY: 'ready',
   DESTROY: 'destroy',
+  LINK_CLICK: 'linkclick',
 }
 
 export const SEGMENT_TYPES = {
