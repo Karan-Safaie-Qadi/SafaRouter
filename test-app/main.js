@@ -209,6 +209,7 @@ function initPageBindings(router) {
       status.textContent = '🟡 MAINTENANCE MODE'
       status.style.color = 'var(--color-warning)'
     }
+    router.reload()
   })
   document.querySelector('.api-maintenance-off')?.addEventListener('click', () => {
     router.setMaintenance(false)
@@ -217,6 +218,7 @@ function initPageBindings(router) {
       status.textContent = '🟢 Normal'
       status.style.color = 'var(--color-success)'
     }
+    router.reload()
   })
   document.querySelector('.api-block-temp')?.addEventListener('click', () => {
     router.blockRoute('/blocked/temp')

@@ -316,9 +316,11 @@ export class SafaRouter {
   }
 
   _resolveUrl(p) {
-    if (p.startsWith('/') || p.startsWith('http://') || p.startsWith('https://')) return p
+    if (p.startsWith('http://') || p.startsWith('https://')) return p
+    if (p.startsWith('./')) p = p.slice(2)
+    if (p.startsWith('/')) return normalizePath(p) || '/'
     const base = this.config.basePath ? this.config.basePath.replace(/\/+$/, '') + '/' : '/'
-    return base + p
+    return normalizePath(base + p)
   }
 
   _resolvePagePath(path) {
@@ -524,7 +526,9 @@ export class SafaRouter {
             const data = await loader({ params: routeMatch.params, query, router: this })
             if (this._navId !== navId) { this._isLoading = false; return }
             routeMatch.data = data
-          } catch { /* loader error ignored — page renders without data */ }
+          } catch (e) {
+            if (e instanceof HttpError) throw e
+          }
         }
 
         if (routeMatch.node.loading) {
@@ -874,6 +878,7 @@ export class SafaRouter {
     const status = statusCode || (err?.statusCode) || HTTP_STATUS.INTERNAL_SERVER_ERROR
     const showStack = this.config.errors?.stackTraces !== false
 
+    this._routeData = null
     this._errorManager.log(status, path, err)
     console.error('[SafaRouter]', err)
     emit(this._events, EVENTS.ERROR, { path, error: err, statusCode: status })
