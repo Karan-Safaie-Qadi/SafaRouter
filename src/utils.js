@@ -40,6 +40,42 @@ export function emit(events, name, data) {
   }
 }
 
+export function useRouter(router) {
+  let state = {
+    pathname: router.pathname,
+    params: router.params,
+    query: router.query,
+    loading: router.loading,
+  }
+
+  const subscribers = new Set()
+
+  const unsubscribe = router.on('routechange', () => {
+    state = {
+      pathname: router.pathname,
+      params: router.params,
+      query: router.query,
+      loading: router.loading,
+    }
+    for (const fn of subscribers) fn(state)
+  })
+
+  return {
+    get state() { return state },
+    subscribe(fn) {
+      subscribers.add(fn)
+      fn(state)
+      return () => subscribers.delete(fn)
+    },
+    push: router.push.bind(router),
+    replace: router.replace.bind(router),
+    back: router.back.bind(router),
+    forward: router.forward.bind(router),
+    navigate: router.navigate.bind(router),
+    unsubscribe,
+  }
+}
+
 export function debounce(fn, delay) {
   let timer
   return function (...args) {
