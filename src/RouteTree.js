@@ -1,4 +1,4 @@
-import { normalizePath, isRouteGroup, isDynamicSegment } from './utils.js'
+import { normalizePath, isRouteGroup } from './utils.js'
 
 class RouteNode {
   constructor({ segment, fullPath, meta } = {}) {
