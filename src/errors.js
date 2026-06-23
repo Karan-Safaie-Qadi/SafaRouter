@@ -37,3 +37,10 @@ export class RouteLoadError extends SafaError {
     this.original = original
   }
 }
+
+export class NavigationAbortError extends SafaError {
+  constructor(reason = 'Navigation cancelled by middleware') {
+    super(reason, 'NAVIGATION_ABORTED')
+    this.name = 'NavigationAbortError'
+  }
+}
