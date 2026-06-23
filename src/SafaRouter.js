@@ -330,9 +330,10 @@ export class SafaRouter {
   async _handleNotFound(path, method) {
     emit(this._events, EVENTS.NOT_FOUND, { path })
 
-    if (this._globalNotFound) {
+    const notFound = this._routeData?.node?.notFound || this._globalNotFound
+    if (notFound) {
       try {
-        const fn = await this._loadComponent(this._globalNotFound)
+        const fn = await this._loadComponent(notFound)
         if (method === 'push') this._history.push(path)
         else if (method === 'replace') this._history.replace(path)
         this._pathname = path
