@@ -34,11 +34,20 @@ export class Link {
     this._el.addEventListener('click', (e) => this._onClick(e))
 
     if (this._router) {
+      if (this._router.config.prefetch) {
+        this._el.addEventListener('mouseenter', () => this._prefetch(), { once: true })
+      }
       this._unsub = this._router.on('routechange', () => this._refresh())
       this._refresh()
     }
 
     return this._el
+  }
+
+  _prefetch() {
+    if (this._router && this._router.prefetch) {
+      this._router.prefetch(this._href)
+    }
   }
 
   _onClick(e) {
