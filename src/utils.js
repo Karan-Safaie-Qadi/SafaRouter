@@ -20,6 +20,10 @@ export function isDynamicSegment(segment) {
   return /^\[/.test(segment) && /\]$/.test(segment)
 }
 
+export function isCatchAllSegment(segment) {
+  return /^\[\.\.\./.test(segment)
+}
+
 export function isRouteGroup(segment) {
   return /^\(/.test(segment) && /\)$/.test(segment)
 }
