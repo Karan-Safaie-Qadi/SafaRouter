@@ -29,7 +29,7 @@ export function renderRoute(path, routes = {}, context = {}) {
   async function renderComponent(mod) {
     if (!mod) return ''
     if (typeof mod === 'function') {
-      const result = mod({ params: match.params, router: context.router })
+      const result = mod({ params: match.params, query: match.query, router: context.router })
       if (result && typeof result.then === 'function') return result
       return result
     }
@@ -43,7 +43,7 @@ export function renderRoute(path, routes = {}, context = {}) {
     const content = await renderWithLayouts(pageContent, layoutFns, idx + 1)
     const layoutFn = layoutFns[idx]
     if (typeof layoutFn === 'function') {
-      return layoutFn({ children: content, params: match.params, router: context.router })
+      return layoutFn({ children: content, params: match.params, query: match.query, router: context.router })
     }
     return String(layoutFn).replace(/\{\s*children\s*\}/gi, content)
   }

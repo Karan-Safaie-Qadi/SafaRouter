@@ -1,3 +1,5 @@
+import { EVENTS } from './constants.js'
+
 export class PluginManager {
   constructor(router) {
     this._router = router
@@ -44,6 +46,14 @@ export class PluginManager {
     }
     if (typeof plugin.onError === 'function') {
       const unsub = this._router.onError(plugin.onError)
+      wrapped._cleanup.push(unsub)
+    }
+    if (typeof plugin.onBeforeRender === 'function') {
+      const unsub = this._router.on(EVENTS.BEFORE_RENDER, plugin.onBeforeRender)
+      wrapped._cleanup.push(unsub)
+    }
+    if (typeof plugin.onAfterRender === 'function') {
+      const unsub = this._router.on(EVENTS.AFTER_RENDER, plugin.onAfterRender)
       wrapped._cleanup.push(unsub)
     }
     if (typeof plugin.middleware === 'function') {

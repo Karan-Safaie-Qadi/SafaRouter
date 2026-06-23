@@ -10,8 +10,8 @@ import { EVENTS, DEFAULT_CONFIG } from './constants.js'
 import { RouteLoadError, SafaError } from './errors.js'
 
 export class SafaRouter {
-  static version = '1.2.1'
-  static VERSION = '1.2.1'
+  static version = '1.2.2'
+  static VERSION = '1.2.2'
 
   constructor(options = {}) {
     this.config = { ...DEFAULT_CONFIG, ...options }
@@ -107,13 +107,19 @@ export class SafaRouter {
 
   async push(url, state = {}) {
     if (isExternalURL(url)) { window.location.href = url; return }
-    const u = createURL(url) || new URL(url, location.origin)
+    let u = createURL(url)
+    if (!u) {
+      try { u = new URL(url, location.origin) } catch { return }
+    }
     await this._navigate(normalizePath(u.pathname), 'push', parseQuery(u.search), state)
   }
 
   async replace(url, state = {}) {
     if (isExternalURL(url)) { window.location.replace(url); return }
-    const u = createURL(url) || new URL(url, location.origin)
+    let u = createURL(url)
+    if (!u) {
+      try { u = new URL(url, location.origin) } catch { return }
+    }
     await this._navigate(normalizePath(u.pathname), 'replace', parseQuery(u.search), state)
   }
 
@@ -271,6 +277,14 @@ export class SafaRouter {
   }
 
   _extractTitle(html) {
+    if (typeof DOMParser !== 'undefined') {
+      try {
+        const doc = new DOMParser().parseFromString(html, 'text/html')
+        const title = doc.querySelector('title')
+        this._customTitle = title ? title.textContent.trim() : null
+        return
+      } catch { /* fall through to regex */ }
+    }
     const m = html.match(/<title[^>]*>([^<]+)<\/title>/i)
     this._customTitle = m ? m[1].trim() : null
   }
@@ -295,8 +309,8 @@ export class SafaRouter {
     try {
       const ctx = { path, method, query, cancelled: false, redirect: null }
       await this._middleware.run(ctx)
-      if (this._navId !== navId) return
-      if (ctx.redirect) return this._navigate(ctx.redirect, 'replace', {}, {}, depth + 1)
+      if (this._navId !== navId) { this._isLoading = false; return }
+      if (ctx.redirect) return this._navigate(ctx.redirect, 'replace', ctx.query, {}, depth + 1)
       if (ctx.cancelled) { this._isLoading = false; return }
 
       const routeMatch = this._hasRoutes() ? this._routeTree.resolve(path) : null
@@ -361,21 +375,24 @@ export class SafaRouter {
         return
       }
 
-      if (this._navId !== navId) return
+      if (this._navId !== navId) { this._isLoading = false; return }
 
       this._scrollManager.save(this._pathname)
-
-      if (method === 'push') this._history.push(path, state)
-      else if (method === 'replace') this._history.replace(path, state)
 
       this._pathname = path
       this._params = routeMatch?.params || {}
       this._query = query
-      this._isLoading = false
 
       emit(this._events, EVENTS.BEFORE_RENDER, { pathname: path })
       await this._render(pageContent, layoutFns)
       emit(this._events, EVENTS.AFTER_RENDER, { pathname: path })
+
+      if (this._navId !== navId) { this._isLoading = false; return }
+
+      if (method === 'push') this._history.push(path, state)
+      else if (method === 'replace') this._history.replace(path, state)
+
+      this._isLoading = false
 
       this._scrollManager.restore(this._pathname, this.config.scrollToTop)
       this._updateTitle()
@@ -449,6 +466,7 @@ export class SafaRouter {
     if (!this._targetEl) return
     const links = this._targetEl.querySelectorAll('[data-safa-link]')
     for (const el of links) {
+      if (el.getAttribute('target') === '_blank') continue
       el.addEventListener('click', (e) => {
         if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return
         if (e.button !== 0) return
@@ -518,7 +536,11 @@ export class SafaRouter {
         if (method === 'push') this._history.push(path)
         else if (method === 'replace') this._history.replace(path)
         this._pathname = path
-        const html = typeof fn === 'function' ? fn({ path, router: this }) : fn
+        let html = typeof fn === 'function' ? fn({ path, router: this }) : fn
+        if (this._globalLayout) {
+          const lfn = await this._loadComponent(this._globalLayout)
+          if (lfn) html = await this._renderWithLayouts(html, [lfn], 0)
+        }
         if (this._targetEl) this._targetEl.innerHTML = html
         return
       } catch { /* fall through */ }
@@ -539,7 +561,11 @@ export class SafaRouter {
     if (this._globalError) {
       try {
         const fn = await this._loadComponent(this._globalError)
-        const html = typeof fn === 'function' ? fn({ error: err, path, router: this }) : fn
+        let html = typeof fn === 'function' ? fn({ error: err, path, router: this }) : fn
+        if (this._globalLayout) {
+          const lfn = await this._loadComponent(this._globalLayout)
+          if (lfn) html = await this._renderWithLayouts(html, [lfn], 0)
+        }
         if (this._targetEl) this._targetEl.innerHTML = html
         return
       } catch { /* fall through */ }
@@ -584,10 +610,7 @@ export class SafaRouter {
   getRoute(path) { return this._routeTree.resolve(normalizePath(path)) }
 
   _onHistoryChange({ path, action, state }) {
-    if (action === 'back') {
-      emit(this._events, EVENTS.BEFORE_NAVIGATE, { path, method: 'back' })
-      return
-    }
+    if (action === 'back') return
     if (action === 'popstate') {
       this._resolve(path, 'replace')
       if (state && state._scrollY !== undefined && !this.config.scrollToTop) {

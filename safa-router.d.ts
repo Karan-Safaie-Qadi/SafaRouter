@@ -23,6 +23,7 @@ declare module 'safa-router' {
     readonly query: Record<string, any>
     readonly loading: boolean
     readonly currentRoute: RouteMatch | null
+    readonly matchedRoute: RouteMatch | null
 
     on(event: string, fn: (data: any) => void): () => void
     off(event: string, fn: (data: any) => void): void
@@ -69,7 +70,6 @@ declare module 'safa-router' {
     transitionExitClass?: string
     transitionEnterActiveClass?: string
     transitionExitActiveClass?: string
-    scrollRestoration?: 'auto' | 'manual'
     plugins?: SafaPlugin[]
   }
 
@@ -212,6 +212,8 @@ declare module 'safa-router' {
     middleware?: MiddlewareFn
     onBeforeNavigate?: (data: { path: string; method: string }) => void
     onAfterNavigate?: (data: { pathname: string }) => void
+    onBeforeRender?: (data: { pathname: string }) => void
+    onAfterRender?: (data: { pathname: string }) => void
     onRouteChange?: (data: { pathname: string; params: any; query: any }) => void
     onError?: (data: { path: string; error: Error }) => void
   }
@@ -302,10 +304,6 @@ declare module 'safa-router' {
     navigate: SafaRouter['navigate']
     unsubscribe: () => void
   }
-
-  // ─── Helpers ────────────────────────────────────────
-  export function bindLinks(router: SafaRouter, scope?: Document | Element): void
-  export function prefetchOnHover(router: SafaRouter): void
 
   // ─── Constants ──────────────────────────────────────
   export const EVENTS: {

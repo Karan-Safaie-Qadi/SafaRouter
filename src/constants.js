@@ -43,7 +43,7 @@ export const DEFAULT_CONFIG = {
   target: '#app',
   basePath: '',
   useHash: false,
-  scrollToTop: false,
+  scrollToTop: true,
   prefetch: true,
   cacheRoutes: true,
   titleTemplate: '%s — SafaRouter',
@@ -52,6 +52,5 @@ export const DEFAULT_CONFIG = {
   transitionExitClass: 'page-exit',
   transitionEnterActiveClass: 'page-enter-active',
   transitionExitActiveClass: 'page-exit-active',
-  scrollRestoration: 'auto',
   plugins: [],
 }

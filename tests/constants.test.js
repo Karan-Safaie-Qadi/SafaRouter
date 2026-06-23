@@ -46,7 +46,7 @@ describe('DEFAULT_CONFIG', () => {
     expect(DEFAULT_CONFIG.target).toBe('#app')
     expect(DEFAULT_CONFIG.basePath).toBe('')
     expect(DEFAULT_CONFIG.useHash).toBe(false)
-    expect(DEFAULT_CONFIG.scrollToTop).toBe(false)
+    expect(DEFAULT_CONFIG.scrollToTop).toBe(true)
     expect(DEFAULT_CONFIG.prefetch).toBe(true)
   })
 })

@@ -64,8 +64,10 @@ export class Link {
   _onClick(e) {
     if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return
     if (e.button !== 0) return
+    if (this._el && this._el.getAttribute('target') === '_blank') return
     e.preventDefault()
     if (this._router) this._router.push(this._href)
+    else window.location.href = this._href
   }
 
   _refresh() {
