@@ -105,6 +105,15 @@ describe('useRouter auto-cleanup', () => {
     emit(router._events, EVENTS.ROUTE_CHANGE, { pathname: '/' })
     expect(fn).toHaveBeenCalledTimes(0)
   })
+
+  it('subscribe returns no-op after destroy', () => {
+    const router = createMockRouter()
+    const { subscribe } = useRouter(router)
+    emit(router._events, EVENTS.DESTROY, {})
+    const unsub = subscribe(vi.fn())
+    expect(unsub).toEqual(expect.any(Function))
+    unsub()
+  })
 })
 
 describe('Redirect loop ERROR event', () => {

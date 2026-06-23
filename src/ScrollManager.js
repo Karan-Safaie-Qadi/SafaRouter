@@ -13,6 +13,7 @@ export class ScrollManager {
   }
 
   save(pathname) {
+    if (typeof window === 'undefined') return
     this._memory.set(pathname, window.scrollY)
     for (const [el, rect] of this._elementScroll) {
       const key = `${pathname}::${_elId(el)}`

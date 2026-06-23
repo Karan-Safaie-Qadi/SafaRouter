@@ -1,7 +1,22 @@
 # Changelog
 
-## v1.2.8 (2026-06-23)
-- Fix: catch-all param name regex `^\[\.\.\.` → `^\[+\.\.\.` for `[[...slug]]` in RouteTree
+## v1.2.9 (2026-06-23)
+- Feat: route data loader (`loader` in route definition)
+- Feat: declarative route guards (`guard` in route definition)
+- Feat: per-route transition API (`meta.transition`)
+- Feat: IntersectionObserver prefetch strategy (`prefetchStrategy: 'visible'`)
+- Feat: `_updateTitle()` now called in 404/Error handlers
+- Fix: `NavigationAbortError` thrown on cancelled navigation
+- Fix: guard `pushRoute`/`getRoute` before `start()`
+- Fix: `navigate()` deprecated with console.warn
+- Fix: ScrollManager `window` guard for Node.js
+- Fix: `_updateTitle()` guarded against missing `document`
+- Fix: `IntersectionObserver` cleaned up in `destroy()`
+- Types: `RouteLoader`, `RouteGuard`, `RouteTransitionConfig`, `RouteMatch.data`
+- Types: `prefetchStrategy`, `perRouteTransitions` config options
+- Types: `navigate()` marked `@deprecated`
+- Docs: CHANGELOG.md covering v1.0.1 through v1.2.9
+- Tests: 126 tests across 10 files (11 new tests for new features)
 
 ## v1.2.7 (2026-06-23)
 - Fix: redirect loop now resets `_isLoading = false` and calls `_abortFetch()`
