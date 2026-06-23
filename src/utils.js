@@ -158,3 +158,18 @@ export function isExternalURL(url) {
 export function isSamePath(a, b) {
   return normalizePath(a) === normalizePath(b)
 }
+
+export function deepMerge(target, ...sources) {
+  const result = Array.isArray(target) ? [...target] : { ...target }
+  for (const src of sources) {
+    if (!src || typeof src !== 'object') continue
+    for (const key of Object.keys(src)) {
+      if (src[key] && typeof src[key] === 'object' && !Array.isArray(src[key])) {
+        result[key] = deepMerge(result[key] || {}, src[key])
+      } else {
+        result[key] = src[key]
+      }
+    }
+  }
+  return result
+}

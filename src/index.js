@@ -19,6 +19,6 @@ export {
   AccessDeniedError,
   MaintenanceModeError,
 } from './errors.js'
-export { normalizePath, parseQuery, buildQuery, joinPaths, createURL, isExternalURL, isSamePath, isDynamicSegment, isCatchAllSegment, isOptionalCatchAll, isRouteGroupSegment, useRouter, debounce } from './utils.js'
+export { normalizePath, parseQuery, buildQuery, joinPaths, createURL, isExternalURL, isSamePath, isDynamicSegment, isCatchAllSegment, isOptionalCatchAll, isRouteGroupSegment, useRouter, debounce, deepMerge } from './utils.js'
 export { EVENTS, DEFAULT_CONFIG, HTTP_STATUS, HTTP_STATUS_TEXT, ERROR_GROUPS, ERROR_GROUP_MAP } from './constants.js'
 export { matchRoute, matchPattern, renderRoute, routeExists, listRoutes } from './ssr.js'

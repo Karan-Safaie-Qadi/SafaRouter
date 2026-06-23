@@ -5,16 +5,18 @@ import { Link } from './Link.js'
 import { PluginManager } from './PluginManager.js'
 import { TransitionsManager } from './TransitionsManager.js'
 import { ScrollManager } from './ScrollManager.js'
-import { normalizePath, parseQuery, emit, createURL, isExternalURL } from './utils.js'
-import { EVENTS, DEFAULT_CONFIG } from './constants.js'
-import { RouteLoadError, SafaError, NavigationAbortError } from './errors.js'
+import { normalizePath, parseQuery, emit, createURL, isExternalURL, deepMerge } from './utils.js'
+import { EVENTS, DEFAULT_CONFIG, HTTP_STATUS, ERROR_GROUPS } from './constants.js'
+import { RouteLoadError, SafaError, NavigationAbortError, HttpError, AccessDeniedError, MaintenanceModeError } from './errors.js'
+import { ErrorManager } from './ErrorManager.js'
+import { AccessController } from './AccessController.js'
 
 export class SafaRouter {
-  static version = '1.2.9'
-  static VERSION = '1.2.9'
+  static version = '1.3.0'
+  static VERSION = '1.3.0'
 
   constructor(options = {}) {
-    this.config = { ...DEFAULT_CONFIG, ...options }
+    this.config = deepMerge(DEFAULT_CONFIG, options)
     if (this.config.pageDir && !this.config.pagesDir) {
       this.config.pagesDir = this.config.pageDir
     }
@@ -32,6 +34,8 @@ export class SafaRouter {
     this._abortController = null
     this._prefetched = new Set()
     this._scrollManager = new ScrollManager()
+    this._errorManager = new ErrorManager(this.config)
+    this._accessController = new AccessController(this.config)
 
     this._pathname = '/'
     this._params = {}
@@ -41,6 +45,7 @@ export class SafaRouter {
     this._started = false
     this._targetEl = null
     this._navId = 0
+    this._maintenanceMode = this.config.maintenanceMode?.enabled || false
 
     this._globalNotFound = this.config.notFound || null
     this._globalError = this.config.error || null
@@ -194,6 +199,25 @@ export class SafaRouter {
   getPlugin(name) { return this._plugins.get(name) }
 
   get plugins() { return this._plugins.list() }
+
+  get errorManager() { return this._errorManager }
+  get accessController() { return this._accessController }
+
+  isMaintenance() { return this._maintenanceMode }
+
+  setMaintenance(enabled, opts = {}) {
+    this._maintenanceMode = enabled
+    if (enabled) {
+      if (opts.page) this.config.maintenanceMode.page = opts.page
+      if (opts.component) this.config.maintenanceMode.component = opts.component
+      if (opts.allowedPaths) this.config.maintenanceMode.allowedPaths = opts.allowedPaths
+    }
+  }
+
+  blockRoute(pattern) { this._accessController.block(pattern); return this }
+  unblockRoute(pattern) { this._accessController.unblock(pattern); return this }
+  ignoreRoute(pattern) { this._accessController.ignore(pattern); return this }
+  unignoreRoute(pattern) { this._accessController.unignore(pattern); return this }
 
   useNamed(name, fn, priority = 0) {
     this._middleware.useNamed(name, fn, priority)
@@ -362,10 +386,11 @@ export class SafaRouter {
   async _navigate(path, method, query = {}, state = {}, depth = 0) {
     if (depth > 10) {
       const err = new Error('Redirect loop detected')
+      this._errorManager.log(HTTP_STATUS.LOOP_DETECTED, path, err)
       console.error('[SafaRouter]', err.message)
       this._isLoading = false
       this._abortFetch()
-      emit(this._events, EVENTS.ERROR, { error: err, path })
+      emit(this._events, EVENTS.ERROR, { error: err, path, statusCode: HTTP_STATUS.LOOP_DETECTED })
       emit(this._events, EVENTS.LOADING, { path, loading: false })
       return
     }
@@ -399,7 +424,8 @@ export class SafaRouter {
         this._isLoading = false
         this._abortFetch()
         const err = new Error(`Navigation timed out after ${timeout}ms`)
-        emit(this._events, EVENTS.ERROR, { error: err, path })
+        this._errorManager.log(HTTP_STATUS.REQUEST_TIMEOUT, path, err)
+        emit(this._events, EVENTS.ERROR, { error: err, path, statusCode: HTTP_STATUS.REQUEST_TIMEOUT })
         console.error('[SafaRouter]', err.message)
       }, timeout)
     }
@@ -413,9 +439,37 @@ export class SafaRouter {
       if (this._navId !== navId) { this._isLoading = false; return }
       if (ctx.redirect) return this._navigate(ctx.redirect, 'replace', ctx.query, {}, depth + 1)
       if (ctx.cancelled) {
-        emit(this._events, EVENTS.ERROR, { path, error: new NavigationAbortError() })
+        const abortErr = new NavigationAbortError()
+        this._errorManager.log(HTTP_STATUS.REQUEST_TIMEOUT, path, abortErr)
+        emit(this._events, EVENTS.ERROR, { path, error: abortErr, statusCode: HTTP_STATUS.REQUEST_TIMEOUT })
         this._isLoading = false
         return
+      }
+
+      // ── Maintenance mode check ──
+      if (this._maintenanceMode) {
+        const allowed = this.config.maintenanceMode?.allowedPaths || []
+        const bypasses = allowed.some(pat => {
+          if (pat.endsWith('**')) return path.startsWith(pat.slice(0, -2))
+          if (pat.endsWith('*')) return path.startsWith(pat.slice(0, -1))
+          return pat === path
+        })
+        if (!bypasses) {
+          emit(this._events, EVENTS.MAINTENANCE, { path })
+          const err = new MaintenanceModeError(path)
+          return this._handleError(path, err, navId, signal, HTTP_STATUS.SERVICE_UNAVAILABLE)
+        }
+      }
+
+      // ── Access control check ──
+      const blocked = this._accessController.isBlocked(path)
+      if (blocked) {
+        emit(this._events, EVENTS.ACCESS_DENIED, { path, reason: blocked.message })
+        this._pathname = path
+        return this._handleError(path, blocked, navId, signal, HTTP_STATUS.FORBIDDEN)
+      }
+      if (this._accessController.isIgnored(path)) {
+        return this._handleNotFound(path, method, navId, state, signal, null, HTTP_STATUS.NOT_FOUND)
       }
 
       const routeMatch = this._hasRoutes() ? this._routeTree.resolve(path) : null
@@ -548,6 +602,18 @@ export class SafaRouter {
     }
   }
 
+  async _retry(path, method, query, state, depth, retries = 3) {
+    for (let i = 0; i < retries; i++) {
+      try {
+        await this._navigate(path, method, query, state, depth)
+        return
+      } catch (err) {
+        if (i === retries - 1) throw err
+        await new Promise(r => setTimeout(r, 1000 * (i + 1)))
+      }
+    }
+  }
+
   _getTransitionConfig() {
     const routeTransition = this._routeData?.node?.meta?.transition
     if (routeTransition) {
@@ -671,9 +737,12 @@ export class SafaRouter {
     }
   }
 
-  async _handleNotFound(path, method, navId, state = {}, signal) {
+  async _handleNotFound(path, method, navId, state = {}, signal, statusCode = HTTP_STATUS.NOT_FOUND) {
     if (navId !== undefined && this._navId !== navId) { this._isLoading = false; return }
-    emit(this._events, EVENTS.NOT_FOUND, { path })
+    const status = statusCode || HTTP_STATUS.NOT_FOUND
+    emit(this._events, EVENTS.NOT_FOUND, { path, statusCode: status })
+
+    this._errorManager.log(status, path, new Error(`Not found: ${path}`))
 
     const notFoundHtml = this.config.pagesDir ? await this._fetchSpecial(path, 'not-found.html', signal) : null
     if (notFoundHtml) {
@@ -697,7 +766,7 @@ export class SafaRouter {
         if (method === 'push') this._history.push(path, state)
         else if (method === 'replace') this._history.replace(path, state)
         this._pathname = path
-        let html = typeof fn === 'function' ? fn({ path, router: this }) : fn
+        let html = typeof fn === 'function' ? fn({ path, router: this, statusCode: status }) : fn
         if (this._globalLayout) {
           const lfn = await this._loadComponent(this._globalLayout)
           if (lfn) html = await this._renderWithLayouts(html, [lfn], 0)
@@ -707,20 +776,26 @@ export class SafaRouter {
         return
       } catch { /* fall through */ }
     }
-    if (this._targetEl) this._targetEl.innerHTML = this._fallback404(path)
+    const showStack = this.config.errors?.stackTraces !== false
+    const errorPage = this._errorManager.getDefaultPage(status)
+    if (this._targetEl) this._targetEl.innerHTML = this._fallback404(path, status, showStack)
     this._updateTitle()
   }
 
-  async _handleError(path, err, navId, signal) {
+  async _handleError(path, err, navId, signal, statusCode) {
     if (navId !== undefined && this._navId !== navId) { this._isLoading = false; return }
+    const status = statusCode || (err?.statusCode) || HTTP_STATUS.INTERNAL_SERVER_ERROR
+    const showStack = this.config.errors?.stackTraces !== false
+
+    this._errorManager.log(status, path, err)
     console.error('[SafaRouter]', err)
-    emit(this._events, EVENTS.ERROR, { path, error: err })
+    emit(this._events, EVENTS.ERROR, { path, error: err, statusCode: status })
 
     const routeError = this._routeData?.node?.error
     if (routeError) {
       try {
         const fn = await this._loadComponent(routeError)
-        let html = typeof fn === 'function' ? fn({ error: err, path, router: this }) : fn
+        let html = typeof fn === 'function' ? fn({ error: err, path, router: this, statusCode: status }) : fn
         if (this._globalLayout) {
           const lfn = await this._loadComponent(this._globalLayout)
           if (lfn) html = await this._renderWithLayouts(html, [lfn], 0)
@@ -741,7 +816,7 @@ export class SafaRouter {
     if (this._globalError) {
       try {
         const fn = await this._loadComponent(this._globalError)
-        let html = typeof fn === 'function' ? fn({ error: err, path, router: this }) : fn
+        let html = typeof fn === 'function' ? fn({ error: err, path, router: this, statusCode: status }) : fn
         if (this._globalLayout) {
           const lfn = await this._loadComponent(this._globalLayout)
           if (lfn) html = await this._renderWithLayouts(html, [lfn], 0)
@@ -751,30 +826,33 @@ export class SafaRouter {
         return
       } catch { /* fall through */ }
     }
+    const errorPage = this._errorManager.resolvePage(status, this.config.errors?.pageDir, signal)
     if (this._targetEl) {
-      try { this._targetEl.innerHTML = this._fallbackError(err) }
+      try { this._targetEl.innerHTML = this._fallbackError(err, status, showStack) }
       catch { this._targetEl.textContent = `Error: ${err.message}` }
     }
     this._updateTitle()
   }
 
-  _fallback404(path) {
+  _fallback404(path, statusCode = 404, showStack = true) {
     const homeLink = `<a href="/" style="color:var(--color-accent);text-decoration:underline;">Back to home</a>`
     return [
       '<div class="safa-error safa-404" style="text-align:center;padding:3rem 0;">',
-      `<h1 style="font-size:4rem;font-weight:800;margin-bottom:0.5rem;">404</h1>`,
+      `<h1 style="font-size:4rem;font-weight:800;margin-bottom:0.5rem;">${statusCode}</h1>`,
       `<p style="margin-bottom:1rem;">Page not found: <code>${path}</code></p>`,
       homeLink,
       '</div>',
     ].join('')
   }
 
-  _fallbackError(err) {
+  _fallbackError(err, statusCode = 500, showStack = true) {
     const homeLink = `<a href="/" style="color:var(--color-accent);text-decoration:underline;">Back to home</a>`
+    const message = this._errorManager.formatError(err, showStack)
+    const code = statusCode || 500
     return [
       '<div class="safa-error" style="text-align:center;padding:3rem 0;">',
-      '<h1 style="font-size:2rem;font-weight:800;margin-bottom:0.5rem;">Something went wrong</h1>',
-      `<pre style="text-align:left;margin:1rem 0;">${err.message}</pre>`,
+      `<h1 style="font-size:2rem;font-weight:800;margin-bottom:0.5rem;">${code} — Something went wrong</h1>`,
+      `<pre style="text-align:left;margin:1rem 0;">${message}</pre>`,
       homeLink,
       '</div>',
     ].join('')
