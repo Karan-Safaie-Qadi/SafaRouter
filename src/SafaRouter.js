@@ -135,6 +135,21 @@ export class SafaRouter {
     return new Link({ ...config, router: this })
   }
 
+  async prefetch(path) {
+    const normalized = normalizePath(path)
+    if (this._cache.has(normalized)) return
+    const route = this._routeTree.resolve(normalized)
+    if (!route) return
+    try {
+      const mod = await this._loadComponent(route.node.page)
+      if (mod && this.config.cacheRoutes) {
+        this._cache.set(normalized, mod)
+      }
+    } catch {
+      // prefetch failures are silently ignored
+    }
+  }
+
   _seedMatcher() {
     const walk = (routes, base) => {
       if (!routes || typeof routes !== 'object') return
