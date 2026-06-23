@@ -17,6 +17,7 @@ declare module 'safa-router' {
     reload(): void
     /** @deprecated Use push() instead */
     navigate(url: string): Promise<void>
+    retry(path: string, options?: { method?: string; query?: Record<string, any>; state?: Record<string, any>; depth?: number; retries?: number }): Promise<void>
 
     getConfig(): SafaRouterOptions
     readonly pathname: string
@@ -36,10 +37,12 @@ declare module 'safa-router' {
     insertMiddlewareBefore(refName: string, fn: MiddlewareFn, priority?: number): this
     insertMiddlewareAfter(refName: string, fn: MiddlewareFn, priority?: number): this
 
-    onError(fn: (data: { path: string; error: Error }) => void): () => void
-    onNotFound(fn: (data: { path: string }) => void): () => void
+    onError(fn: (data: { path: string; error: Error; statusCode?: number }) => void): () => void
+    onNotFound(fn: (data: { path: string; statusCode?: number }) => void): () => void
     onRouteChange(fn: (data: { pathname: string; params: any; query: any }) => void): () => void
     onBeforeNavigate(fn: (data: { path: string; method: string }) => void): () => void
+    onAccessDenied(fn: (data: { path: string; reason?: string }) => void): () => void
+    onMaintenance(fn: (data: { path: string }) => void): () => void
 
     createLink(config: LinkConfig): Link
     prefetch(path: string): Promise<void>
@@ -50,6 +53,51 @@ declare module 'safa-router' {
     ejectPlugin(name: string): boolean
     getPlugin(name: string): any
     readonly plugins: string[]
+
+    readonly errorManager: ErrorManager
+    readonly accessController: AccessController
+    isMaintenance(): boolean
+    setMaintenance(enabled: boolean, opts?: { page?: string; component?: any; allowedPaths?: string[] }): void
+    blockRoute(pattern: string): this
+    unblockRoute(pattern: string): this
+    ignoreRoute(pattern: string): this
+    unignoreRoute(pattern: string): this
+  }
+
+  export interface ErrorConfig {
+    enabled?: boolean
+    stackTraces?: boolean
+    pageDir?: string | null
+    status?: {
+      [statusCode: number]: {
+        enabled?: boolean
+        page?: string | null
+        component?: any | null
+        redirect?: number | null
+      }
+    }
+    groups?: {
+      'client-error'?: { enabled?: boolean; page?: string | null; component?: any | null }
+      'server-error'?: { enabled?: boolean; page?: string | null; component?: any | null }
+    }
+    redirect?: { [statusCode: number]: number }
+  }
+
+  export interface AccessConfig {
+    blocked?: string[]
+    ignored?: string[]
+  }
+
+  export interface MaintenanceModeConfig {
+    enabled?: boolean
+    page?: string | null
+    component?: any | null
+    allowedPaths?: string[]
+  }
+
+  export interface ErrorLoggingConfig {
+    enabled?: boolean
+    handler?: ((entry: { statusCode: number; path: string; error: Error; timestamp: number }) => void) | null
   }
 
   export interface SafaRouterOptions {
@@ -76,6 +124,40 @@ declare module 'safa-router' {
     transitionExitActiveClass?: string
     perRouteTransitions?: boolean
     plugins?: SafaPlugin[]
+    errors?: ErrorConfig
+    access?: AccessConfig
+    maintenanceMode?: MaintenanceModeConfig
+    errorLogging?: ErrorLoggingConfig
+  }
+
+  // ─── ErrorManager ────────────────────────────────
+  export class ErrorManager {
+    constructor(config?: Record<string, any>)
+    getStatusConfig(statusCode: number): { enabled: boolean; page: string | null; component: any | null; redirect: number | null; group: string }
+    isEnabled(statusCode: number): boolean
+    getRedirect(statusCode: number): number | null
+    getDefaultPage(statusCode: number): string
+    loadCustomPage(statusCode: number, pageDir: string | null, signal?: AbortSignal): Promise<string | null>
+    resolvePage(statusCode: number, pageDir: string | null, signal?: AbortSignal): Promise<string>
+    formatError(error: Error | null, showStack?: boolean): string
+    clearCache(): void
+    setStatusEnabled(statusCode: number, enabled: boolean): void
+    setGroupEnabled(group: string, enabled: boolean): void
+    setLogHandler(handler: ((entry: { statusCode: number; path: string; error: Error; timestamp: number }) => void) | null): void
+    getLogHandler(): ((entry: { statusCode: number; path: string; error: Error; timestamp: number }) => void) | null
+    log(statusCode: number, path: string, error: Error): void
+  }
+
+  // ─── AccessController ────────────────────────────
+  export class AccessController {
+    constructor(config?: Record<string, any>)
+    block(pattern: string): void
+    unblock(pattern: string): void
+    ignore(pattern: string): void
+    unignore(pattern: string): void
+    isBlocked(path: string): AccessDeniedError | null
+    isIgnored(path: string): boolean
+    isAccessible(path: string): boolean
   }
 
   // ─── Route Tree ───────────────────────────────────
@@ -132,6 +214,7 @@ declare module 'safa-router' {
     query: Record<string, any>
     router: SafaRouter
     data?: Record<string, any>
+    statusCode?: number
   }
 
   export interface LayoutContext extends PageContext {
@@ -237,7 +320,7 @@ declare module 'safa-router' {
     onBeforeRender?: (data: { pathname: string }) => void
     onAfterRender?: (data: { pathname: string }) => void
     onRouteChange?: (data: { pathname: string; params: any; query: any }) => void
-    onError?: (data: { path: string; error: Error }) => void
+    onError?: (data: { path: string; error: Error; statusCode?: number }) => void
   }
 
   export class PluginManager {
@@ -317,6 +400,7 @@ declare module 'safa-router' {
   export function isRouteGroupSegment(segment: string): boolean
   export function extractParamName(segment: string): string | null
   export function debounce<T extends (...args: any[]) => any>(fn: T, delay: number): T
+  export function deepMerge<T extends Record<string, any>>(target: T, ...sources: Partial<T>[]): T
   export function useRouter(router: SafaRouter): {
     readonly state: { pathname: string; params: any; query: any; loading: boolean }
     subscribe(fn: (state: any) => void): () => void
@@ -344,9 +428,61 @@ declare module 'safa-router' {
     LINK_CLICK: 'linkclick'
     PLUGIN_INSTALL: 'plugininstall'
     PLUGIN_EJECT: 'plugineject'
+    ACCESS_DENIED: 'accessdenied'
+    MAINTENANCE: 'maintenance'
   }
 
   export const DEFAULT_CONFIG: SafaRouterOptions
+
+  export const HTTP_STATUS: {
+    BAD_REQUEST: 400
+    UNAUTHORIZED: 401
+    FORBIDDEN: 403
+    NOT_FOUND: 404
+    METHOD_NOT_ALLOWED: 405
+    NOT_ACCEPTABLE: 406
+    REQUEST_TIMEOUT: 408
+    CONFLICT: 409
+    GONE: 410
+    LENGTH_REQUIRED: 411
+    PRECONDITION_FAILED: 412
+    PAYLOAD_TOO_LARGE: 413
+    URI_TOO_LONG: 414
+    UNSUPPORTED_MEDIA_TYPE: 415
+    RANGE_NOT_SATISFIABLE: 416
+    EXPECTATION_FAILED: 417
+    IM_A_TEAPOT: 418
+    MISDIRECTED_REQUEST: 421
+    UNPROCESSABLE_ENTITY: 422
+    LOCKED: 423
+    FAILED_DEPENDENCY: 424
+    TOO_EARLY: 425
+    UPGRADE_REQUIRED: 426
+    PRECONDITION_REQUIRED: 428
+    TOO_MANY_REQUESTS: 429
+    REQUEST_HEADER_FIELDS_TOO_LARGE: 431
+    UNAVAILABLE_FOR_LEGAL_REASONS: 451
+    INTERNAL_SERVER_ERROR: 500
+    NOT_IMPLEMENTED: 501
+    BAD_GATEWAY: 502
+    SERVICE_UNAVAILABLE: 503
+    GATEWAY_TIMEOUT: 504
+    HTTP_VERSION_NOT_SUPPORTED: 505
+    VARIANT_ALSO_NEGOTIATES: 506
+    INSUFFICIENT_STORAGE: 507
+    LOOP_DETECTED: 508
+    NOT_EXTENDED: 510
+    NETWORK_AUTHENTICATION_REQUIRED: 511
+  }
+
+  export const HTTP_STATUS_TEXT: { [statusCode: number]: string }
+
+  export const ERROR_GROUPS: {
+    CLIENT_ERROR: 'client-error'
+    SERVER_ERROR: 'server-error'
+  }
+
+  export const ERROR_GROUP_MAP: { [statusCode: number]: string }
 
   // ─── Errors ─────────────────────────────────────────
   export class SafaError extends Error {
@@ -368,4 +504,24 @@ declare module 'safa-router' {
   }
 
   export class NavigationAbortError extends SafaError {}
+
+  export class HttpError extends SafaError {
+    statusCode: number
+    pathname: string
+    original: Error | null
+    group: string
+    toJSON(): { name: string; message: string; code: string; statusCode: number; pathname: string; group: string }
+  }
+
+  export class AccessDeniedError extends SafaError {
+    pathname: string
+    statusCode: 403
+    toJSON(): { name: string; message: string; code: string; statusCode: number; pathname: string }
+  }
+
+  export class MaintenanceModeError extends SafaError {
+    pathname: string
+    statusCode: 503
+    toJSON(): { name: string; message: string; code: string; statusCode: number; pathname: string }
+  }
 }
