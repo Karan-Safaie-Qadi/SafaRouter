@@ -128,6 +128,7 @@ export class SafaRouter {
   }
 
   async pushRoute(routeName, params = {}, query = {}) {
+    if (!this._started) throw new SafaError('Router not started. Call start() first.', 'NOT_STARTED')
     const routes = this.config.routes || {}
     const flat = this._routeTree.flatten()
     const matched = flat.find(r => r.meta?.name === routeName || r.path === routeName)
@@ -721,7 +722,10 @@ export class SafaRouter {
     return this._routeData
   }
 
-  getRoute(path) { return this._routeTree.resolve(normalizePath(path)) }
+  getRoute(path) {
+    if (!this._routeTree) return null
+    return this._routeTree.resolve(normalizePath(path))
+  }
 
   _onHistoryChange({ path, action, state }) {
     if (action === 'back') return
