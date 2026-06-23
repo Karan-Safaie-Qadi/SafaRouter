@@ -106,6 +106,12 @@ pre {
   border-bottom-color: var(--color-accent);
 }
 
+#nav .version {
+  font-size: 0.65rem;
+  opacity: 0.6;
+  font-weight: 400;
+}
+
 .nav-loader {
   position: absolute;
   bottom: 0;
@@ -192,6 +198,47 @@ pre {
 
 @keyframes spin {
   to { transform: rotate(360deg); }
+}
+
+/* ── Transition effects ─────────────────── */
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.slide-up {
+  animation: slideUp 500ms ease;
+}
+
+/* ── Maintenance Banner ─────────────────── */
+
+.maintenance-banner {
+  background: var(--color-warning);
+  color: #000;
+  text-align: center;
+  padding: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  border-radius: var(--radius);
+  margin-bottom: 1rem;
+}
+
+/* ── Error Log ──────────────────────────── */
+
+#error-log {
+  max-height: 200px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+#error-log::-webkit-scrollbar {
+  width: 4px;
+}
+
+#error-log::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 2px;
 }
 
 /* ── Code blocks ────────────────────────── */

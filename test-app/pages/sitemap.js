@@ -15,6 +15,12 @@ export default function sitemapPage({ router }) {
     { path: '/dashboard/settings', name: 'Settings' },
     { path: '/nonexistent', name: '404 Test' },
     { path: '/slow', name: 'Slow Page (Loading Demo)' },
+    { path: '/errors', name: 'Error Demo (v1.3.0)' },
+    { path: '/access', name: 'Access Control (v1.3.0)' },
+    { path: '/loader', name: 'Data Loader (v1.3.0)' },
+    { path: '/guard', name: 'Route Guard (v1.3.0)' },
+    { path: '/login', name: 'Login (v1.3.0)' },
+    { path: '/transition', name: 'Transitions (v1.3.0)' },
   ]
 
   const list = allRoutes

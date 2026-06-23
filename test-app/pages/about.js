@@ -3,7 +3,7 @@ export default function aboutPage() {
     <div class="page-enter">
       <h1>About SafaRouter</h1>
       <p style="color: var(--color-text-muted); margin-bottom: 1.5rem;">
-        Version <strong>1.0.0</strong> &mdash; A routing library that brings the App Router developer experience
+        Version <strong>1.3.0</strong> &mdash; A routing library that brings the App Router developer experience
         to every frontend project.
       </p>
 
@@ -25,12 +25,18 @@ export default function aboutPage() {
           <li><strong>Catch‑all routes</strong> &mdash; <code>[...path]</code> for flexible matching</li>
           <li><strong>Middleware</strong> &mdash; intercept every navigation</li>
           <li><strong>404 / Error pages</strong> &mdash; built‑in fallbacks with custom overrides</li>
+          <li><strong>ErrorManager</strong> &mdash; all HTTP status codes (400–511), custom pages, logging</li>
+          <li><strong>AccessController</strong> &mdash; blocked (403) / ignored (404) routes</li>
+          <li><strong>Route Guards</strong> &mdash; per-route auth with redirect</li>
+          <li><strong>Route Loaders</strong> &mdash; async data loading before render</li>
+          <li><strong>Per-route Transitions</strong> &mdash; custom animation per route</li>
+          <li><strong>Maintenance Mode</strong> &mdash; toggleable 503 with bypass</li>
         </ul>
       </div>
 
       <div class="card">
         <h2>Try it</h2>
-        <p>Navigate to <a href="/blog" data-safa-link>Blog</a> to see dynamic routing in action, or visit <a href="/dashboard" data-safa-link>Dashboard</a> for a nested layout example.</p>
+        <p>Visit the <a href="/errors" data-safa-link>Error Demo</a>, <a href="/access" data-safa-link>Access Control</a>, <a href="/loader" data-safa-link>Data Loader</a>, <a href="/guard" data-safa-link>Route Guard</a>, or <a href="/transition" data-safa-link>Transitions</a> demos.</p>
       </div>
     </div>
   `

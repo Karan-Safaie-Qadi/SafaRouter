@@ -7,6 +7,23 @@ export default function docsPage() {
       </p>
 
       <div class="card">
+        <h2>v1.3.0 — New Features</h2>
+        <p style="margin-bottom: 0.75rem;">
+          SafaRouter v1.3.0 introduces professional-grade error handling, access control, and more.
+        </p>
+        <ul style="padding-left: 1.25rem; display: flex; flex-direction: column; gap: 0.5rem;">
+          <li><strong>ErrorManager</strong> — handles all HTTP status codes (400–511) with per-status enable/disable, custom error page loading, LRU caching, error grouping (client/server), stack trace control, pluggable logger, and redirect rules</li>
+          <li><strong>AccessController</strong> — blocked routes (403) and ignored routes (silent 404) with glob-style patterns (<code>*</code> single-level, <code>**</code> recursive)</li>
+          <li><strong>Maintenance Mode</strong> — toggleable via <code>router.setMaintenance(true/false)</code> with allowed path bypasses</li>
+          <li><strong>Route data loaders</strong> — async functions that run before page render, passing data to the page component</li>
+          <li><strong>Route guards</strong> — per-route guard functions that can redirect unauthenticated users</li>
+          <li><strong>Per-route transitions</strong> — each route can define custom transition effects via <code>meta.transition</code></li>
+          <li><strong>New events</strong>: <code>EVENTS.ACCESS_DENIED</code>, <code>EVENTS.MAINTENANCE</code></li>
+          <li><strong>New methods</strong>: <code>blockRoute()</code>, <code>unblockRoute()</code>, <code>ignoreRoute()</code>, <code>unignoreRoute()</code>, <code>isMaintenance()</code>, <code>setMaintenance()</code>, <code>retry()</code></li>
+        </ul>
+      </div>
+
+      <div class="card">
         <h2>Route Tree Structure</h2>
         <p>Routes are defined as a nested object. Each key is a URL segment. The tree mirrors the Next.js App Router mental model.</p>
         <pre>{
@@ -61,6 +78,67 @@ export default function docsPage() {
       </div>
 
       <div class="card">
+        <h2>ErrorManager API</h2>
+        <pre>// All HTTP status codes handled
+router.errorManager.setStatusEnabled(404, false)  // disable 404
+router.errorManager.setGroupEnabled('server-error', false)  // disable 5xx
+
+// Custom error pages loaded from html-pages/errors/{code}.html
+router.errorManager.resolvePage(404, 'html-pages/errors')
+
+// Error logging with custom handler
+router.errorManager.setLogHandler(entry => {
+  console.log(`[${entry.statusCode}] ${entry.path}`, entry.error)
+})</pre>
+      </div>
+
+      <div class="card">
+        <h2>AccessController API</h2>
+        <pre>// Blocked routes (403)
+router.blockRoute('/admin')
+router.blockRoute('/private/**')
+
+// Ignored routes (silent 404)
+router.ignoreRoute('/hidden')
+router.ignoreRoute('/deprecated/*')
+
+// Check access
+router.accessController.isAccessible('/admin')   // false
+router.accessController.isAccessible('/about')    // true</pre>
+      </div>
+
+      <div class="card">
+        <h2>Maintenance Mode</h2>
+        <pre>// Enable maintenance
+router.setMaintenance(true)
+
+// Check status
+router.isMaintenance()  // true
+
+// Routes that bypass maintenance
+config: {
+  maintenanceMode: {
+    allowedPaths: ['/login', '/assets/**']
+  }
+}</pre>
+      </div>
+
+      <div class="card">
+        <h2>Route Loaders &amp; Guards</h2>
+        <pre>'/dashboard': {
+  page: dashboardPage,
+  guard: ({ params, query, router }) => {
+    const authed = checkAuth()
+    return authed || '/login'
+  },
+  loader: async ({ params, query, router }) => {
+    const data = await fetch('/api/data')
+    return data
+  },
+}</pre>
+      </div>
+
+      <div class="card">
         <h2>Event System</h2>
         <p>SafaRouter emits events throughout the navigation lifecycle. Subscribe with <code>router.on(event, fn)</code>.</p>
         <pre>router.on('routechange', ({ pathname, params }) => {
@@ -69,6 +147,14 @@ export default function docsPage() {
 
 router.on('error', ({ path, error }) => {
   console.error('Error at', path, error)
+})
+
+router.on('accessdenied', ({ path, reason }) => {
+  console.warn('Access denied to', path, reason)
+})
+
+router.on('maintenance', ({ path }) => {
+  console.info('Maintenance mode, blocked:', path)
 })</pre>
       </div>
     </div>

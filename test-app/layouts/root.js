@@ -7,6 +7,11 @@ export default function rootLayout({ children, router }) {
     { href: '/blog', label: 'Blog' },
     { href: '/contact', label: 'Contact' },
     { href: '/sandbox', label: 'Sandbox' },
+    { href: '/errors', label: 'Errors' },
+    { href: '/access', label: 'Access' },
+    { href: '/loader', label: 'Loader' },
+    { href: '/guard', label: 'Guard' },
+    { href: '/transition', label: 'FX' },
     { href: '/sitemap', label: 'Sitemap' },
     { href: '/slow', label: 'Slow Page' },
     { href: '/profile/me', label: 'Profile' },
@@ -22,11 +27,12 @@ export default function rootLayout({ children, router }) {
 
   const navEl = document.getElementById('nav')
   if (navEl && !navEl.hasChildNodes()) {
-    navEl.innerHTML = `<span class="brand" aria-label="SafaRouter home">SafaRouter</span><div class="nav-loader" role="progressbar" aria-label="Loading"></div>${navItems}`
+    navEl.innerHTML = `<span class="brand" aria-label="SafaRouter home">SafaRouter <span class="version" style="font-size:0.65rem;opacity:0.6;">v1.3.0</span></span><div class="nav-loader" role="progressbar" aria-label="Loading"></div>${navItems}`
     navEl.querySelectorAll('[data-safa-link]').forEach((el) => {
       el.addEventListener('click', (e) => {
         e.preventDefault()
-        router.push(el.getAttribute('href'))
+        const href = el.getAttribute('href')
+        if (href) router.push(href)
       })
     })
     router.on('loading', ({ loading }) => {
@@ -41,5 +47,9 @@ export default function rootLayout({ children, router }) {
     })
   }
 
-  return `<div class="page-enter">${children}</div>`
+  const maintenanceBanner = router.isMaintenance()
+    ? `<div style="background:var(--color-warning);color:#000;text-align:center;padding:0.5rem;font-size:0.875rem;font-weight:600;border-radius:var-radius;margin-bottom:1rem;">🔧 Maintenance Mode Active — 503 for all non-allowed routes</div>`
+    : ''
+
+  return `<div class="page-enter">${maintenanceBanner}${children}</div>`
 }

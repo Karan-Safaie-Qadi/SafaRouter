@@ -44,6 +44,31 @@ export default function homePage() {
         <h3>Dynamic routes</h3>
         <p>Support for <code>[slug]</code>, <code>[...catchAll]</code>, and route groups.</p>
       </div>
+      <div class="feature-card">
+        <div class="icon">🛑</div>
+        <h3>ErrorManager</h3>
+        <p>All HTTP status codes (400–511), custom error pages, error logging, and redirect rules.</p>
+      </div>
+      <div class="feature-card">
+        <div class="icon">🔐</div>
+        <h3>AccessController</h3>
+        <p>Blocked (403) and ignored (404) routes with glob-style pattern matching.</p>
+      </div>
+      <div class="feature-card">
+        <div class="icon">🔧</div>
+        <h3>Maintenance Mode</h3>
+        <p>Toggleable 503 maintenance with allowed path bypasses.</p>
+      </div>
+      <div class="feature-card">
+        <div class="icon">📊</div>
+        <h3>Route Data Loaders</h3>
+        <p>Async functions that provide data to pages before render.</p>
+      </div>
+      <div class="feature-card">
+        <div class="icon">🛡️</div>
+        <h3>Route Guards</h3>
+        <p>Declarative per-route auth guards with redirect support.</p>
+      </div>
     </section>
   `
 }
