@@ -7,7 +7,10 @@ export default function homePage() {
         <strong>Next.js App Router</strong>.
         Works with any framework — or no framework at all.
       </p>
-      <a href="/about" class="cta-link" data-safa-link>Learn more &rarr;</a>
+      <div style="display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap;">
+        <a href="/about" class="cta-link" data-safa-link style="padding:0.5rem 1.5rem;background:var(--color-accent);color:var(--color-bg);border-radius:6px;font-weight:600;">Learn more &rarr;</a>
+        <a href="/docs" class="cta-link" data-safa-link style="padding:0.5rem 1.5rem;border:1px solid var(--color-border);border-radius:6px;">Documentation</a>
+      </div>
     </section>
 
     <section class="features">
