@@ -315,6 +315,12 @@ export class SafaRouter {
     }
   }
 
+  _resolveUrl(p) {
+    if (p.startsWith('/') || p.startsWith('http://') || p.startsWith('https://')) return p
+    const base = this.config.basePath ? this.config.basePath.replace(/\/+$/, '') + '/' : '/'
+    return base + p
+  }
+
   _resolvePagePath(path) {
     const dir = (this.config.pagesDir || '').replace(/\/+$/, '')
     if (!dir) return null
@@ -351,7 +357,8 @@ export class SafaRouter {
     if (!candidates) return null
     for (const p of candidates) {
       try {
-        const res = await fetch(p, { signal })
+        const url = this._resolveUrl(p)
+        const res = await fetch(url, { signal })
         if (res.ok) {
           const text = await res.text()
           this._extractTitle(text)
@@ -376,7 +383,8 @@ export class SafaRouter {
     ].filter(Boolean)
     for (const p of candidates) {
       try {
-        const res = await fetch(p, { signal })
+        const url = this._resolveUrl(p)
+        const res = await fetch(url, { signal })
         if (res.ok) return res.text()
       } catch {
         if (signal?.aborted) throw new DOMException('Aborted', 'AbortError')
@@ -537,7 +545,7 @@ export class SafaRouter {
         if (this._globalLayout) {
           let lfn = this._globalLayout
           if (typeof lfn === 'string') {
-            const res = await fetch(lfn)
+            const res = await fetch(this._resolveUrl(lfn))
             if (res.ok) {
               const html = await res.text()
               lfn = ({ children }) => this._renderHtmlLayout(html, children)
@@ -576,7 +584,7 @@ export class SafaRouter {
         if (this._globalLayout) {
           let lfn = this._globalLayout
           if (typeof lfn === 'string') {
-            const res = await fetch(lfn)
+            const res = await fetch(this._resolveUrl(lfn))
             if (res.ok) {
               const html = await res.text()
               lfn = ({ children }) => this._renderHtmlLayout(html, children)
@@ -748,7 +756,7 @@ export class SafaRouter {
             url = url.replaceAll(`[${k}]`, val)
           }
         }
-        const res = await fetch(url)
+        const res = await fetch(this._resolveUrl(url))
         if (!res.ok) throw new Error(`Failed to load ${url} (${res.status})`)
         const text = await res.text()
         this._extractTitle(text)
@@ -784,7 +792,7 @@ export class SafaRouter {
       if (this._targetEl) {
         let layoutFn = this._globalLayout
         if (layoutFn && typeof layoutFn === 'string') {
-          const res = await fetch(layoutFn)
+          const res = await fetch(this._resolveUrl(layoutFn))
           if (res.ok) {
             const layoutHtml = await res.text()
             layoutFn = ({ children }) => this._renderHtmlLayout(layoutHtml, children)
@@ -808,7 +816,7 @@ export class SafaRouter {
       if (this._targetEl) {
         let layoutFn = this._globalLayout
         if (layoutFn && typeof layoutFn === 'string') {
-          const res = await fetch(layoutFn)
+          const res = await fetch(this._resolveUrl(layoutFn))
           if (res.ok) {
             const layoutHtml = await res.text()
             layoutFn = ({ children }) => this._renderHtmlLayout(layoutHtml, children)
@@ -835,7 +843,7 @@ export class SafaRouter {
         if (this._globalLayout) {
           let lfn = this._globalLayout
           if (typeof lfn === 'string') {
-            const res = await fetch(lfn)
+            const res = await fetch(this._resolveUrl(lfn))
             if (res.ok) {
               const layoutHtml = await res.text()
               lfn = ({ children }) => this._renderHtmlLayout(layoutHtml, children)
@@ -875,7 +883,7 @@ export class SafaRouter {
         if (this._globalLayout) {
           let lfn = this._globalLayout
           if (typeof lfn === 'string') {
-            const res = await fetch(lfn)
+            const res = await fetch(this._resolveUrl(lfn))
             if (res.ok) {
               const layoutHtml = await res.text()
               lfn = ({ children }) => this._renderHtmlLayout(layoutHtml, children)
@@ -898,7 +906,7 @@ export class SafaRouter {
       if (this._targetEl) {
         let layoutFn = this._globalLayout
         if (layoutFn && typeof layoutFn === 'string') {
-          const res = await fetch(layoutFn)
+          const res = await fetch(this._resolveUrl(layoutFn))
           if (res.ok) {
             const layoutHtml = await res.text()
             layoutFn = ({ children }) => this._renderHtmlLayout(layoutHtml, children)
@@ -930,7 +938,7 @@ export class SafaRouter {
         if (this._globalLayout) {
           let lfn = this._globalLayout
           if (typeof lfn === 'string') {
-            const res = await fetch(lfn)
+            const res = await fetch(this._resolveUrl(lfn))
             if (res.ok) {
               const layoutHtml = await res.text()
               lfn = ({ children }) => this._renderHtmlLayout(layoutHtml, children)
