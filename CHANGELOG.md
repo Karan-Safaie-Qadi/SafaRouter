@@ -16,7 +16,7 @@
 - Types: `prefetchStrategy`, `perRouteTransitions` config options
 - Types: `navigate()` marked `@deprecated`
 - Docs: CHANGELOG.md covering v1.0.1 through v1.2.9
-- Tests: 126 tests across 10 files (11 new tests for new features)
+- Tests: 127 tests across 10 files (12 new tests for new features)
 
 ## v1.2.7 (2026-06-23)
 - Fix: redirect loop now resets `_isLoading = false` and calls `_abortFetch()`
