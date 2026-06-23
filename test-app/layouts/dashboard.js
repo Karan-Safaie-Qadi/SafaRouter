@@ -10,7 +10,7 @@ export default function dashboardLayout({ children, router }) {
       const active = link.exact
         ? current === link.href
         : current.startsWith(link.href)
-      return `<a href="${link.href}" class="${active ? 'active' : ''}" data-safa-sidebar>${link.label}</a>`
+      return `<a href="${link.href}" class="${active ? 'active' : ''}" data-safa-link>${link.label}</a>`
     })
     .join('')
 

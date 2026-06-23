@@ -38,12 +38,14 @@ export default function loaderDemoPage({ params, query, router, data }) {
   await new Promise(r => setTimeout(r, 500))
   return {
     items: [
-      { id: 1, name: 'Item 1' },
-      { id: 2, name: 'Item 2' },
-      { id: 3, name: 'Item 3' },
+      { id: 1, name: 'Router Config' },
+      { id: 2, name: 'Route Tree' },
+      { id: 3, name: 'Middleware Chain' },
+      { id: 4, name: 'Error Manager' },
+      { id: 5, name: 'Access Controller' },
     ],
     timestamp: Date.now(),
-    server: 'mock-server-01',
+    server: 'safa-router-demo',
   }
 }</pre>
         <p style="margin-top: 0.75rem; font-size: 0.875rem; color: var(--color-text-muted);">

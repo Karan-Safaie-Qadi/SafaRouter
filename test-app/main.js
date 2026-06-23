@@ -15,6 +15,11 @@ import loaderDemoPage from './pages/loader-demo.js'
 import guardDemoPage from './pages/guard-demo.js'
 import loginPage from './pages/login.js'
 import transitionDemoPage from './pages/transition-demo.js'
+import aboutPage from './pages/about.js'
+import docsPage from './pages/docs.js'
+import contactPage from './pages/contact.js'
+import sandboxPage from './pages/sandbox.js'
+import sitemapPage from './pages/sitemap.js'
 
 const router = new SafaRouter({
   target: '#app',
@@ -57,6 +62,7 @@ const router = new SafaRouter({
 
     '/slow': {
       loading: loadingState,
+      loader: loadingDemoPage.loader,
       page: loadingDemoPage,
     },
 
@@ -81,6 +87,11 @@ const router = new SafaRouter({
     // ── v1.3.0 Demo Routes ──
 
     '/errors': { page: errorsDemoPage },
+    '/about': { page: aboutPage },
+    '/docs': { page: docsPage },
+    '/contact': { page: contactPage },
+    '/sandbox': { page: sandboxPage },
+    '/sitemap': { page: sitemapPage },
 
     // Dynamic error routes (e.g. /errors/404, /errors/500)
     '/errors/[code]': {
@@ -153,14 +164,6 @@ const router = new SafaRouter({
       },
     },
   },
-})
-
-router.use(async (ctx, next) => {
-  const protectedPaths = ['/dashboard', '/dashboard/settings']
-  if (protectedPaths.some(p => ctx.path.startsWith(p))) {
-    localStorage.getItem('safa_demo_auth')
-  }
-  return next()
 })
 
 router.afterEach(({ pathname }) => {
@@ -245,25 +248,26 @@ function initPageBindings(router) {
     router.push('/guard')
   })
 
-  if (router.errorManager) {
-    router.errorManager.setLogHandler((entry) => {
-      const log = document.getElementById('error-log')
-      if (!log) return
-      const firstChild = log.firstChild
-      if (firstChild && firstChild.nodeName === 'EM') {
-        log.innerHTML = ''
-      }
-      const line = document.createElement('div')
-      line.style.cssText = 'padding: 2px 0; border-bottom: 1px solid var(--color-border);'
-      line.textContent = `[${new Date(entry.timestamp).toLocaleTimeString()}] ${entry.statusCode} ${entry.path} — ${entry.error?.message || entry.error}`
-      log.insertBefore(line, log.firstChild)
-    })
-  }
-
   const statusEl = document.getElementById('maintenance-status')
   if (statusEl) {
     statusEl.textContent = router.isMaintenance() ? '🟡 MAINTENANCE MODE' : '🟢 Normal'
   }
+}
+
+function setupLogHandler(router) {
+  if (!router.errorManager) return
+  router.errorManager.setLogHandler((entry) => {
+    const log = document.getElementById('error-log')
+    if (!log) return
+    const firstChild = log.firstChild
+    if (firstChild && firstChild.nodeName === 'EM') {
+      log.innerHTML = ''
+    }
+    const line = document.createElement('div')
+    line.style.cssText = 'padding: 2px 0; border-bottom: 1px solid var(--color-border);'
+    line.textContent = `[${new Date(entry.timestamp).toLocaleTimeString()}] ${entry.statusCode} ${entry.path} — ${entry.error?.message || entry.error}`
+    log.insertBefore(line, log.firstChild)
+  })
 }
 
 router.on(EVENTS.AFTER_RENDER, () => {
@@ -276,6 +280,8 @@ router.on('routechange', () => {
     statusEl.textContent = router.isMaintenance() ? '🟡 MAINTENANCE MODE' : '🟢 Normal'
   }
 })
+
+setupLogHandler(router)
 
 router.start().catch(err => {
   console.error('Failed to start SafaRouter:', err)

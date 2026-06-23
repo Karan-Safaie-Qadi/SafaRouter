@@ -10,7 +10,7 @@ export default function transitionDemoPage({ router }) {
       <div class="card">
         <h2>Current Transition</h2>
         <p style="margin-bottom: 0.75rem;">
-          This route uses a <strong>slide-up</strong> animation with 500ms duration.
+          This route uses a <strong>fade</strong> animation with 500ms duration.
         </p>
         <div style="background: var(--color-bg); padding: 0.75rem; border-radius: 4px; font-family: monospace; font-size: 0.875rem;">
           <div>duration: <span style="color: var(--color-accent);">500</span></div>

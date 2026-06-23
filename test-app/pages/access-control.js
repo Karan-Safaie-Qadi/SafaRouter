@@ -55,10 +55,10 @@ router.unblockRoute('/api/temp')</pre>
           Use <code>isAccessible()</code> to check if a route can be navigated to:
         </p>
         <div style="display: flex; flex-direction: column; gap: 0.25rem; font-family: monospace; font-size: 0.875rem;">
-          <div>/admin: <strong style="color:var(--color-error)">${ac ? !ac.isAccessible('/admin') : 'N/A'}</strong></div>
-          <div>/hidden: <strong style="color:var(--color-error)">${ac ? !ac.isAccessible('/hidden') : 'N/A'}</strong></div>
-          <div>/about: <strong style="color:var(--color-success)">${ac ? ac.isAccessible('/about') : 'N/A'}</strong></div>
-          <div>/blog: <strong style="color:var(--color-success)">${ac ? ac.isAccessible('/blog') : 'N/A'}</strong></div>
+          <div><span style="display:inline-block;width:80px;">/admin</span> <span style="color:${ac && !ac.isAccessible('/admin') ? 'var(--color-error)' : 'var(--color-success)'}">${ac ? (!ac.isAccessible('/admin') ? '✗ Blocked' : '✓ Accessible') : 'N/A'}</span></div>
+          <div><span style="display:inline-block;width:80px;">/hidden</span> <span style="color:${ac && !ac.isAccessible('/hidden') ? 'var(--color-error)' : 'var(--color-success)'}">${ac ? (!ac.isAccessible('/hidden') ? '✗ Blocked' : '✓ Accessible') : 'N/A'}</span></div>
+          <div><span style="display:inline-block;width:80px;">/about</span> <span style="color:${ac && ac.isAccessible('/about') ? 'var(--color-success)' : 'var(--color-error)'}">${ac ? (ac.isAccessible('/about') ? '✓ Accessible' : '✗ Blocked') : 'N/A'}</span></div>
+          <div><span style="display:inline-block;width:80px;">/blog</span> <span style="color:${ac && ac.isAccessible('/blog') ? 'var(--color-success)' : 'var(--color-error)'}">${ac ? (ac.isAccessible('/blog') ? '✓ Accessible' : '✗ Blocked') : 'N/A'}</span></div>
         </div>
       </div>
     </div>

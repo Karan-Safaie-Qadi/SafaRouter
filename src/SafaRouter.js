@@ -771,6 +771,35 @@ export class SafaRouter {
 
     this._errorManager.log(status, path, new Error(`Not found: ${path}`))
 
+    this._routeData = null
+
+    // Try ErrorManager specific error pages first (e.g. 404.html, 4xx.html)
+    const showStack = this.config.errors?.stackTraces !== false
+    let notFoundPage = null
+    try { notFoundPage = await this._errorManager.resolvePage(status, this.config.errors?.pageDir, signal) } catch {}
+    if (notFoundPage) {
+      if (method === 'push') this._history.push(path, state)
+      else if (method === 'replace') this._history.replace(path, state)
+      this._pathname = path
+      if (this._targetEl) {
+        let layoutFn = this._globalLayout
+        if (layoutFn && typeof layoutFn === 'string') {
+          const res = await fetch(layoutFn)
+          if (res.ok) {
+            const layoutHtml = await res.text()
+            layoutFn = ({ children }) => this._renderHtmlLayout(layoutHtml, children)
+          }
+        }
+        this._targetEl.innerHTML = layoutFn
+          ? await this._renderWithLayouts(notFoundPage, [layoutFn], 0)
+          : notFoundPage
+      }
+      this._updateTitle()
+      emit(this._events, EVENTS.AFTER_RENDER, { pathname: this._pathname })
+      return
+    }
+
+    // Fallback: try generic not-found.html
     const notFoundHtml = this.config.pagesDir ? await this._fetchSpecial(path, 'not-found.html', signal) : null
     if (notFoundHtml) {
       if (method === 'push') this._history.push(path, state)
@@ -790,10 +819,11 @@ export class SafaRouter {
           : notFoundHtml
       }
       this._updateTitle()
+      emit(this._events, EVENTS.AFTER_RENDER, { pathname: this._pathname })
       return
     }
 
-    this._routeData = null
+    // Final fallback: globalNotFound component or built-in 404
     const notFound = this._globalNotFound
     if (notFound) {
       try {
@@ -816,17 +846,16 @@ export class SafaRouter {
         }
         if (this._targetEl) this._targetEl.innerHTML = html
         this._updateTitle()
+        emit(this._events, EVENTS.AFTER_RENDER, { pathname: this._pathname })
         return
       } catch { /* fall through */ }
     }
-    const showStack = this.config.errors?.stackTraces !== false
-    let notFoundPage = null
-    try { notFoundPage = await this._errorManager.resolvePage(status, this.config.errors?.pageDir, signal) } catch {}
     if (this._targetEl) {
-      try { this._targetEl.innerHTML = notFoundPage || this._fallback404(path, status, showStack) }
+      try { this._targetEl.innerHTML = this._fallback404(path, status, showStack) }
       catch { this._targetEl.textContent = `Not Found: ${path}` }
     }
     this._updateTitle()
+    emit(this._events, EVENTS.AFTER_RENDER, { pathname: this._pathname })
   }
 
   async _handleError(path, err, navId, signal, statusCode) {
@@ -857,17 +886,43 @@ export class SafaRouter {
         }
         if (this._targetEl) this._targetEl.innerHTML = html
         this._updateTitle()
+        emit(this._events, EVENTS.AFTER_RENDER, { pathname: this._pathname })
         return
       } catch { /* fall through */ }
     }
 
+    // Try ErrorManager specific error pages first (e.g. 403.html, 500.html, 503.html)
+    let mgrPage = null
+    try { mgrPage = await this._errorManager.resolvePage(status, this.config.errors?.pageDir, signal) } catch {}
+    if (mgrPage) {
+      if (this._targetEl) {
+        let layoutFn = this._globalLayout
+        if (layoutFn && typeof layoutFn === 'string') {
+          const res = await fetch(layoutFn)
+          if (res.ok) {
+            const layoutHtml = await res.text()
+            layoutFn = ({ children }) => this._renderHtmlLayout(layoutHtml, children)
+          }
+        }
+        this._targetEl.innerHTML = layoutFn
+          ? await this._renderWithLayouts(mgrPage, [layoutFn], 0)
+          : mgrPage
+      }
+      this._updateTitle()
+      emit(this._events, EVENTS.AFTER_RENDER, { pathname: this._pathname })
+      return
+    }
+
+    // Fallback: try generic error.html
     const errorHtml = this.config.pagesDir ? await this._fetchSpecial(path, 'error.html', signal) : null
     if (errorHtml) {
       if (this._targetEl) this._targetEl.innerHTML = errorHtml
       this._updateTitle()
+      emit(this._events, EVENTS.AFTER_RENDER, { pathname: this._pathname })
       return
     }
 
+    // Final fallback: globalError component or built-in error
     if (this._globalError) {
       try {
         const fn = await this._loadComponent(this._globalError)
@@ -886,16 +941,16 @@ export class SafaRouter {
         }
         if (this._targetEl) this._targetEl.innerHTML = html
         this._updateTitle()
+        emit(this._events, EVENTS.AFTER_RENDER, { pathname: this._pathname })
         return
       } catch { /* fall through */ }
     }
-    let mgrPage = null
-    try { mgrPage = await this._errorManager.resolvePage(status, this.config.errors?.pageDir, signal) } catch {}
     if (this._targetEl) {
-      try { this._targetEl.innerHTML = mgrPage || this._fallbackError(err, status, showStack) }
+      try { this._targetEl.innerHTML = this._fallbackError(err, status, showStack) }
       catch { this._targetEl.textContent = `Error: ${err.message}` }
     }
     this._updateTitle()
+    emit(this._events, EVENTS.AFTER_RENDER, { pathname: this._pathname })
   }
 
   _fallback404(path, statusCode = 404, showStack = true) {

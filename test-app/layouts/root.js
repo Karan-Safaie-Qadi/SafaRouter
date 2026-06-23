@@ -48,7 +48,7 @@ export default function rootLayout({ children, router }) {
   }
 
   const maintenanceBanner = router.isMaintenance()
-    ? `<div style="background:var(--color-warning);color:#000;text-align:center;padding:0.5rem;font-size:0.875rem;font-weight:600;border-radius:var-radius;margin-bottom:1rem;">🔧 Maintenance Mode Active — 503 for all non-allowed routes</div>`
+    ? `<div style="background:var(--color-warning);color:#000;text-align:center;padding:0.5rem;font-size:0.875rem;font-weight:600;border-radius:var(--radius);margin-bottom:1rem;">🔧 Maintenance Mode Active — 503 for all non-allowed routes</div>`
     : ''
 
   return `<div class="page-enter">${maintenanceBanner}${children}</div>`
