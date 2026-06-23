@@ -50,6 +50,17 @@ export default function docsPage() {
   return next()
 })</pre>
       </div>
+      <div class="card">
+        <h2>Event System</h2>
+        <p>SafaRouter emits events throughout the navigation lifecycle. Subscribe with <code>router.on(event, fn)</code>.</p>
+        <pre>router.on('routechange', ({ pathname, params }) => {
+  console.log('Navigated to', pathname, params)
+})
+
+router.on('error', ({ path, error }) => {
+  console.error('Error at', path, error)
+})</pre>
+      </div>
     </div>
   `
 }
