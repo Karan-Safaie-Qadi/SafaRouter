@@ -606,6 +606,7 @@ export class SafaRouter {
           ? await this._renderWithLayouts(notFoundHtml, [this._globalLayout], 0)
           : notFoundHtml
       }
+      this._updateTitle()
       return
     }
 
@@ -623,10 +624,12 @@ export class SafaRouter {
           if (lfn) html = await this._renderWithLayouts(html, [lfn], 0)
         }
         if (this._targetEl) this._targetEl.innerHTML = html
+        this._updateTitle()
         return
       } catch { /* fall through */ }
     }
     if (this._targetEl) this._targetEl.innerHTML = this._fallback404(path)
+    this._updateTitle()
   }
 
   async _handleError(path, err, navId, signal) {
@@ -644,6 +647,7 @@ export class SafaRouter {
           if (lfn) html = await this._renderWithLayouts(html, [lfn], 0)
         }
         if (this._targetEl) this._targetEl.innerHTML = html
+        this._updateTitle()
         return
       } catch { /* fall through */ }
     }
@@ -651,6 +655,7 @@ export class SafaRouter {
     const errorHtml = this.config.pagesDir ? await this._fetchSpecial(path, 'error.html', signal) : null
     if (errorHtml) {
       if (this._targetEl) this._targetEl.innerHTML = errorHtml
+      this._updateTitle()
       return
     }
 
@@ -663,6 +668,7 @@ export class SafaRouter {
           if (lfn) html = await this._renderWithLayouts(html, [lfn], 0)
         }
         if (this._targetEl) this._targetEl.innerHTML = html
+        this._updateTitle()
         return
       } catch { /* fall through */ }
     }
@@ -670,6 +676,7 @@ export class SafaRouter {
       try { this._targetEl.innerHTML = this._fallbackError(err) }
       catch { this._targetEl.textContent = `Error: ${err.message}` }
     }
+    this._updateTitle()
   }
 
   _fallback404(path) {
