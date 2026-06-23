@@ -15,7 +15,12 @@ export class MiddlewareChain {
     let i = 0
     const next = async () => {
       if (i >= this._stack.length) return ctx
-      return this._stack[i++](ctx, next)
+      try {
+        return this._stack[i++](ctx, next)
+      } catch (err) {
+        console.error('[SafaRouter] Middleware error:', err)
+        throw err
+      }
     }
     return next()
   }
