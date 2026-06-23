@@ -9,10 +9,16 @@
 - Client-side navigation (History API)
 - Middleware pipeline
 - Custom 404 and error pages
-- Event system
-- Link component with active state
+- Event system with lifecycle hooks
+- Link component with active state and prefetch
 - Hash-based routing mode
 - Base path support
-- Route caching
+- Route caching with clearCache method
+- Scroll restoration on popstate
+- Route metadata and automatic document.title updates
+- Per-route loading states
+- External URL detection and redirect
 - Zero dependencies, pure JavaScript
-- Demo application with dark theme
+- Comprehensive demo application with dark theme
+- Bilingual documentation (English & Persian)
+- MIT license
