@@ -315,6 +315,24 @@ pre {
   color: var(--color-text-muted);
 }
 
+/* ── Sandbox ────────────────────────────── */
+
+.sandbox-btn {
+  padding: 0.5rem 1rem;
+  background: var(--color-surface);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  transition: all var(--transition);
+}
+
+.sandbox-btn:hover {
+  border-color: var(--color-accent);
+  background: var(--color-surface-hover);
+}
+
 /* ── 404 / Error ────────────────────────── */
 
 .safa-error {
