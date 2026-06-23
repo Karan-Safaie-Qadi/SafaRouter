@@ -1,6 +1,31 @@
 # Changelog
 
-## v1.2.9 (2026-06-23)
+## v1.3.0 (2026-06-23)
+- Major: Professional error system — ErrorManager supports ALL HTTP error status codes (400–511)
+- Feat: Configurable error display — enable/disable per status code or per group (4xx/5xx)
+- Feat: Custom error pages — upload arbitrary error HTML files, router auto-detects and renders them
+- Feat: Error grouping — client-error (4xx) and server-error (5xx) groups with fallback pages
+- Feat: Default error pages for every HTTP status code (inline HTML)
+- Feat: Error logging — built-in logger with pluggable custom handlers
+- Feat: Stack trace control — show/hide error stack traces based on `errors.stackTraces` config
+- Feat: Error redirect rules — map one status code to another (e.g., 410 → 404)
+- Feat: AccessController — block routes (403) and ignore routes (404 silently)
+- Feat: Glob-style pattern matching for access rules (exact, `*` single-level, `**` recursive, trailing slash)
+- Feat: Maintenance mode — toggleable 503 with allowed path bypasses
+- Feat: `isMaintenance()`, `setMaintenance()`, `blockRoute()`, `unblockRoute()`, `ignoreRoute()`, `unignoreRoute()` APIs
+- Feat: `retry()` public API with configurable retries
+- Feat: `onAccessDenied()` / `onMaintenance()` convenience event listeners
+- Feat: `EVENTS.ACCESS_DENIED` and `EVENTS.MAINTENANCE` events
+- Feat: `deepMerge()` utility for deep config merging
+- Feat: `HttpError`, `AccessDeniedError`, `MaintenanceModeError` error classes
+- Feat: `HTTP_STATUS`, `HTTP_STATUS_TEXT`, `ERROR_GROUPS`, `ERROR_GROUP_MAP` constants
+- Fix: `_handleNotFound` and `_handleError` now pass `statusCode` to context and ErrorManager
+- Fix: `EVENTS.ERROR` now includes `statusCode` field
+- Types: `ErrorManager` class, `AccessController` class, `ErrorConfig`, `AccessConfig`, `MaintenanceModeConfig`, `ErrorLoggingConfig`
+- Types: `HttpError`, `AccessDeniedError`, `MaintenanceModeError`
+- Types: `HTTP_STATUS`, `HTTP_STATUS_TEXT`, `ERROR_GROUPS`, `ERROR_GROUP_MAP`
+- Types: `statusCode` on error events and page context
+- Tests: 181 tests across 13 files (54 new tests for v1.3.0)
 - Feat: route data loader (`loader` in route definition)
 - Feat: declarative route guards (`guard` in route definition)
 - Feat: per-route transition API (`meta.transition`)
