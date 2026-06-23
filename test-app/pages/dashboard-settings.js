@@ -26,6 +26,18 @@ export default function dashboardSettingsPage() {
       </div>
 
       <div class="card">
+        <h3>Appearance</h3>
+        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+          <input type="checkbox" disabled>
+          Dark mode (always on in demo)
+        </label>
+        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; margin-top: 0.5rem;">
+          <input type="checkbox" disabled>
+          Compact view
+        </label>
+      </div>
+
+      <div class="card">
         <h3>Danger Zone</h3>
         <button disabled style="padding: 0.5rem 1rem; background: var(--color-error); color: #fff; border: none; border-radius: 4px; cursor: not-allowed; opacity: 0.6;">
           Delete Account
