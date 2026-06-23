@@ -4,6 +4,12 @@
     <strong>A standalone frontend router inspired by Next.js App Router</strong>
   </p>
   <p>
+    <img src="https://img.shields.io/badge/version-1.0.0-blue" alt="Version">
+    <img src="https://img.shields.io/badge/license-MIT-green" alt="License">
+    <img src="https://img.shields.io/badge/dependencies-0-brightgreen" alt="Zero Dependencies">
+    <img src="https://img.shields.io/badge/size-%3C5%20KB-gold" alt="Size">
+  </p>
+  <p>
     <a href="#english">English</a> &middot;
     <a href="#persian">فارسی</a>
   </p>
