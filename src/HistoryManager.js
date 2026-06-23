@@ -15,6 +15,10 @@ export class HistoryManager {
     this._listeners = []
   }
 
+  isSupported() {
+    return typeof window !== 'undefined' && !!window.history
+  }
+
   get path() {
     if (this._useHash) {
       const h = location.hash.slice(1)
