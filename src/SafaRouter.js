@@ -1,4 +1,3 @@
-import { RouteMatcher } from './RouteMatcher.js'
 import { RouteTree } from './RouteTree.js'
 import { HistoryManager } from './HistoryManager.js'
 import { MiddlewareChain } from './MiddlewareChain.js'
@@ -8,8 +7,8 @@ import { EVENTS, DEFAULT_CONFIG } from './constants.js'
 import { RouteLoadError, SafaError } from './errors.js'
 
 export class SafaRouter {
-  static version = '1.1.0'
-  static VERSION = '1.1.0'
+  static version = '1.1.2'
+  static VERSION = '1.1.2'
 
   constructor(options = {}) {
     this.config = { ...DEFAULT_CONFIG, ...options }
@@ -20,7 +19,6 @@ export class SafaRouter {
     this._events = {}
     for (const key of Object.values(EVENTS)) this._events[key] = []
 
-    this._matcher = new RouteMatcher()
     this._history = new HistoryManager({
       useHash: this.config.useHash,
       basePath: this.config.basePath,
@@ -36,6 +34,7 @@ export class SafaRouter {
     this._isLoading = false
     this._started = false
     this._targetEl = null
+    this._navId = 0
 
     this._globalNotFound = this.config.notFound || null
     this._globalError = this.config.error || null
@@ -62,7 +61,6 @@ export class SafaRouter {
     }
 
     this._routeTree = new RouteTree(this.config.routes || {})
-    this._seedMatcher()
     this._history.init()
     this._unsubHistory = this._history.onChange(this._boundNav)
     await this._resolve(this._history.path, 'replace')
@@ -145,23 +143,6 @@ export class SafaRouter {
 
   clearCache() { this._cache.clear() }
 
-  _seedMatcher() {
-    const walk = (routes, base) => {
-      if (!routes || typeof routes !== 'object') return
-      for (const [key, val] of Object.entries(routes)) {
-        const isGroup = key.startsWith('(') && key.endsWith(')')
-        const fp = isGroup ? base : base === '/' ? `/${key}` : `${base}/${key}`
-        if (typeof val === 'object' && val !== null) {
-          if (val.page) this._matcher.add(fp)
-          if (val.children) walk(val.children, fp)
-        } else if (typeof val === 'function') {
-          this._matcher.add(fp)
-        }
-      }
-    }
-    walk(this.config.routes || {}, '/')
-  }
-
   _resolvePagePath(path) {
     const dir = (this.config.pagesDir || '').replace(/\/+$/, '')
     if (!dir) return null
@@ -236,12 +217,14 @@ export class SafaRouter {
     return html.replace(/\{\s*children\s*\}/gi, children || '')
   }
 
-  async _navigate(path, method, query = {}, state = {}) {
-    if (path === this._pathname) return
-    await this._resolve(path, method, query, state)
+  async _navigate(path, method, query = {}, state = {}, depth = 0) {
+    if (depth > 10) { console.error('[SafaRouter] Redirect loop detected'); return }
+    if (path === this._pathname && depth === 0) return
+    await this._resolve(path, method, query, state, depth)
   }
 
-  async _resolve(path, method, query = {}, state = {}) {
+  async _resolve(path, method, query = {}, state = {}, depth = 0) {
+    const navId = ++this._navId
     this._isLoading = true
     this._customTitle = null
     emit(this._events, EVENTS.LOADING, { path, loading: true })
@@ -250,7 +233,8 @@ export class SafaRouter {
     try {
       const ctx = { path, method, query, cancelled: false, redirect: null }
       await this._middleware.run(ctx)
-      if (ctx.redirect) return this._navigate(ctx.redirect, 'replace')
+      if (this._navId !== navId) return
+      if (ctx.redirect) return this._navigate(ctx.redirect, 'replace', {}, {}, depth + 1)
       if (ctx.cancelled) { this._isLoading = false; return }
 
       const routeMatch = this._hasRoutes() ? this._routeTree.resolve(path) : null
@@ -315,6 +299,8 @@ export class SafaRouter {
         return
       }
 
+      if (this._navId !== navId) return
+
       this._saveScroll()
 
       if (method === 'push') this._history.push(path, state)
@@ -327,14 +313,14 @@ export class SafaRouter {
 
       this._render(pageContent, layoutFns)
 
+      this._restoreScroll()
+      this._updateTitle()
+      this._focus()
+
       emit(this._events, EVENTS.ROUTE_CHANGE, {
         pathname: path, params: this._params, query: this._query,
       })
       emit(this._events, EVENTS.AFTER_NAVIGATE, { pathname: path })
-
-      this._updateTitle()
-      this._restoreScroll()
-      this._focus()
     } catch (err) {
       this._isLoading = false
       await this._handleError(path, err)
@@ -442,15 +428,7 @@ export class SafaRouter {
         this._extractTitle(text)
         return text
       }
-      if (typeof mod === 'function') {
-        let result
-        try { result = mod() } catch { return mod }
-        if (result && typeof result.then === 'function') {
-          const resolved = await result
-          return resolved && resolved.default ? resolved.default : resolved
-        }
-        return result !== undefined ? result : mod
-      }
+      if (typeof mod === 'function') return mod
       return mod
     } catch (e) {
       throw new RouteLoadError(
@@ -538,7 +516,6 @@ export class SafaRouter {
   }
 
   get currentRoute() { return this._routeData }
-  get matchedRoute() { return this._matcher.match(this._pathname) }
 
   getRoute(path) { return this._routeTree.resolve(normalizePath(path)) }
 

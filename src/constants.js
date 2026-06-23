@@ -23,7 +23,7 @@ export const SEGMENT_TYPES = {
 export const PARAM_PATTERNS = {
   DYNAMIC: /^\[([^\]]+)\]$/,
   CATCH_ALL: /^\[\.\.\.([^\]]+)\]$/,
-  OPTIONAL_CATCH_ALL: /^\[\[\.\.\.[^\]]+\]\]$/,
+  OPTIONAL_CATCH_ALL: /^\[\[\.\.\.([^\]]+)\]\]$/,
   GROUP: /^\(([^)]+)\)$/,
 }
 

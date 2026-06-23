@@ -73,7 +73,7 @@ export class Link {
     const cur = this._router.pathname
     const active =
       cur === this._href ||
-      (this._href !== '/' && cur.startsWith(this._href))
+      (this._href !== '/' && (cur.startsWith(this._href + '/') || cur === this._href))
     this._el.classList.toggle(this._activeClass, active)
   }
 
