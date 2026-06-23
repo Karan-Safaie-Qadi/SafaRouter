@@ -140,6 +140,19 @@ pre {
   animation: fadeIn 200ms ease;
 }
 
+.page-enter-slow {
+  animation: fadeIn 400ms ease;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.slide-up {
+  animation: slideUp 300ms ease;
+}
+
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(8px); }
   to   { opacity: 1; transform: translateY(0); }
