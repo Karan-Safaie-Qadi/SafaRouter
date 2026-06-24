@@ -1021,7 +1021,20 @@ export class SafaRouter {
       if (typeof fn !== 'function') continue
       const html = fn(ctx)
       const target = document.querySelector(`[data-safa-component="${name}"]`)
-      if (target) target.innerHTML = html
+      if (target) {
+        target.innerHTML = html
+        const links = target.querySelectorAll('[data-safa-link]')
+        for (const el of links) {
+          if (el.getAttribute('target') === '_blank') continue
+          el.addEventListener('click', (e) => {
+            if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return
+            if (e.button !== 0) return
+            e.preventDefault()
+            const href = el.getAttribute('href')
+            if (href) this.push(href)
+          })
+        }
+      }
     }
   }
 

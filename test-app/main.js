@@ -1,31 +1,18 @@
 import { SafaRouter } from '../src/SafaRouter.js'
 import { EVENTS } from '../src/constants.js'
 import dashboardLayout from './layouts/dashboard.js'
-import homePage from './pages/home.js'
-import blogPage from './pages/blog.js'
-import blogPostPage from './pages/blog-post.js'
-import dashboardPage from './pages/dashboard.js'
-import dashboardSettingsPage from './pages/dashboard-settings.js'
-import profilePage from './pages/profile.js'
-import loadingDemoPage from './pages/loading-demo.js'
-import loadingState from './pages/loading-state.js'
-import errorsDemoPage from './pages/errors-demo.js'
-import accessControlPage from './pages/access-control.js'
-import loaderDemoPage from './pages/loader-demo.js'
-import guardDemoPage from './pages/guard-demo.js'
-import loginPage from './pages/login.js'
-import transitionDemoPage from './pages/transition-demo.js'
-import aboutPage from './pages/about.js'
-import docsPage from './pages/docs.js'
-import contactPage from './pages/contact.js'
-import sandboxPage from './pages/sandbox.js'
-import sitemapPage from './pages/sitemap.js'
+import headerComponent from './components/Header.js'
+import footerComponent from './components/Footer.js'
 
 const router = new SafaRouter({
   target: '#app',
   basePath: '/test-app',
   pageDir: 'html-pages',
   layout: 'html-pages/_layout.html',
+  components: {
+    header: headerComponent,
+    footer: footerComponent,
+  },
 
   // ── v1.3.0: ErrorManager ──
   errors: {
@@ -51,26 +38,24 @@ const router = new SafaRouter({
   },
 
   routes: {
-    '/': { page: homePage },
+    '/': {},
 
     '/blog': {
-      page: blogPage,
       children: {
-        '[slug]': { page: blogPostPage },
+        '[slug]': {},
       },
     },
 
     '/slow': {
-      loading: loadingState,
-      loader: loadingDemoPage.loader,
-      page: loadingDemoPage,
+      loading: () => '<div style="display:flex;align-items:center;justify-content:center;padding:3rem;gap:0.75rem;"><div class="spinner"></div><p>Loading slow page…</p></div>',
+      loader: async () => { await new Promise(r => setTimeout(r, 1500)) },
     },
 
     '(main)': {
       children: {
         'profile': {
           children: {
-            '[id]': { page: profilePage },
+            '[id]': {},
           },
         },
       },
@@ -78,53 +63,24 @@ const router = new SafaRouter({
 
     '/dashboard': {
       layout: dashboardLayout,
-      page: dashboardPage,
       children: {
-        settings: { page: dashboardSettingsPage },
+        settings: {},
       },
     },
 
-    // ── v1.3.0 Demo Routes ──
-
-    '/errors': { page: errorsDemoPage },
-    '/about': { page: aboutPage },
-    '/docs': { page: docsPage },
-    '/contact': { page: contactPage },
-    '/sandbox': { page: sandboxPage },
-    '/sitemap': { page: sitemapPage },
+    '/errors': {},
+    '/about': {},
+    '/docs': {},
+    '/contact': {},
+    '/sandbox': {},
+    '/sitemap': {},
 
     // Dynamic error routes (e.g. /errors/404, /errors/500)
-    '/errors/[code]': {
-      page({ params }) {
-        const code = params.code
-        const messages = {
-          400: 'Bad Request — the server could not understand the request.',
-          403: 'Forbidden — access denied by AccessController.',
-          404: 'Not Found — this simulated route does not exist.',
-          418: "I'm a Teapot — an RFC 2324 compliant HTTP status.",
-          500: 'Internal Server Error — something went wrong on the server.',
-          503: 'Service Unavailable — site is under maintenance.',
-        }
-        const emojis = {
-          400: '⚠️', 403: '🔒', 404: '🔍', 418: '🫖', 500: '💥', 503: '🔧',
-        }
-        const msg = messages[code] || 'An error occurred.'
-        const emoji = emojis[code] || '❌'
-        return `
-          <div class="safa-error page-enter">
-            <div style="font-size:3rem;margin-bottom:0.5rem;">${emoji}</div>
-            <h1 style="font-size:4rem;font-weight:800;margin-bottom:0.5rem;">${code}</h1>
-            <p style="color:var(--color-text-muted);margin-bottom:1.5rem;">${msg}</p>
-            <a href="/errors" class="sandbox-btn" data-safa-link>&larr; Error Demo</a>
-          </div>
-        `
-      },
-    },
+    '/errors/[code]': {},
 
-    '/access': { page: accessControlPage },
+    '/access': {},
 
     '/loader': {
-      page: loaderDemoPage,
       loader: async ({ params, query, router }) => {
         await new Promise(r => setTimeout(r, 500))
         return {
@@ -142,17 +98,15 @@ const router = new SafaRouter({
     },
 
     '/guard': {
-      page: guardDemoPage,
       guard: ({ params, query, router }) => {
         const authed = localStorage.getItem('safa_demo_auth') === 'true'
         return authed || '/login'
       },
     },
 
-    '/login': { page: loginPage },
+    '/login': {},
 
     '/transition': {
-      page: transitionDemoPage,
       meta: {
         transition: {
           duration: 500,
