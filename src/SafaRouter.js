@@ -692,11 +692,11 @@ export class SafaRouter {
 
     const data = this._routeData?.data
 
-    const html = layoutFns.length > 0
+    const html = this._resolveTemplate(layoutFns.length > 0
       ? await this._renderWithLayouts(pageContent, layoutFns, 0, data)
       : (typeof pageContent === 'function'
           ? pageContent({ params: this._params, query: this._query, router: this, data })
-          : (pageContent || ''))
+          : (pageContent || '')))
 
     const transCfg = this._getTransitionConfig()
     const duration = transCfg?.transitionDuration ?? this.config.transitionDuration
@@ -1000,6 +1000,19 @@ export class SafaRouter {
     this._updateTitle()
     this._renderComponents()
     emit(this._events, EVENTS.AFTER_RENDER, { pathname: this._pathname })
+  }
+
+  _resolveTemplate(html) {
+    if (!html || typeof html !== 'string') return html
+    return html
+      .replace(/\{\{\s*path\s*\}\}/gi, this._pathname)
+      .replace(/\{\{\s*params\.(\w+)\s*\}\}/g, (_, key) => this._params[key] || '')
+      .replace(/\{\{\s*query\.(\w+)\s*\}\}/g, (_, key) => this._query[key] || '')
+      .replace(/\{\{\s*data\.(\w+)\s*\}\}/g, (_, key) => {
+        const data = this._routeData?.data || {}
+        const val = data[key]
+        return val !== undefined ? String(val) : ''
+      })
   }
 
   _renderComponents() {
