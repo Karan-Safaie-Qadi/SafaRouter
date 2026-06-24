@@ -1,0 +1,10 @@
+<div class="page-enter">
+  <p><a href="/test-app/blog" data-safa-link>&larr; Back to blog</a></p>
+  <h1>{{ params.slug }}</h1>
+  <p style="color: var(--color-text-muted); font-size: 0.875rem; margin-bottom: 1.5rem;">
+    slug: <code>{{ params.slug }}</code>
+  </p>
+  <div class="card">
+    <p>Dynamic blog post for "<strong>{{ params.slug }}</strong>". In a real application this content would be fetched from a CMS or API using a route data loader.</p>
+  </div>
+</div>

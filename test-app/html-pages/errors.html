@@ -1,0 +1,58 @@
+<div class="page-enter">
+  <h1>Error Manager Demo</h1>
+  <p style="color: var(--color-text-muted); margin-bottom: 1.5rem;">
+    The <strong>ErrorManager</strong> handles all HTTP status codes (400–511)
+    with custom error pages, per-status control, and error logging.
+  </p>
+
+  <div class="card">
+    <h2>Live Error Pages</h2>
+    <p style="margin-bottom: 0.75rem; font-size: 0.875rem; color: var(--color-text-muted);">
+      These navigate to routes that trigger <strong>real HTTP errors</strong> handled by the ErrorManager.
+      Custom HTML pages are loaded from <code>html-pages/errors/{code}.html</code>.
+    </p>
+    <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+      <button class="sandbox-btn" data-blocked="/admin">403 — Blocked Route</button>
+      <button class="sandbox-btn" data-sandbox="/nonexistent">404 — Not Found</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Simulated Error Codes</h2>
+    <p style="margin-bottom: 0.75rem; font-size: 0.875rem; color: var(--color-text-muted);">
+      These navigate to a dynamic route that <strong>simulates</strong> each error code:
+    </p>
+    <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+      <button class="sandbox-btn" data-error="400">400 Bad Request</button>
+      <button class="sandbox-btn" data-error="403">403 Forbidden</button>
+      <button class="sandbox-btn" data-error="404">404 Not Found</button>
+      <button class="sandbox-btn" data-error="418">418 I'm a Teapot</button>
+      <button class="sandbox-btn" data-error="500">500 Server Error</button>
+      <button class="sandbox-btn" data-error="503">503 Maintenance</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Custom Error Page Files</h2>
+    <pre>html-pages/errors/
+  403.html   ← shown when AccessController blocks a route
+  404.html   ← shown when route is not found
+  418.html   ← available for custom use
+  500.html   ← available for custom use
+  503.html   ← shown in maintenance mode</pre>
+    <p style="margin-top: 0.5rem; font-size: 0.875rem; color: var(--color-text-muted);">
+      The ErrorManager first tries <code>{code}.html</code>, then group files
+      (<code>4xx.html</code>, <code>5xx.html</code>), and falls back to built-in pages.
+    </p>
+  </div>
+
+  <div class="card">
+    <h2>Error Log</h2>
+    <p style="margin-bottom: 0.75rem; font-size: 0.875rem; color: var(--color-text-muted);">
+      All errors are recorded by the ErrorManager with timestamp and status code.
+    </p>
+    <div id="error-log" style="background: var(--color-bg); border-radius: 4px; padding: 0.75rem; max-height: 200px; overflow-y: auto; font-family: monospace; font-size: 0.8rem;">
+      <em style="color: var(--color-text-muted);">No errors logged yet. Trigger one above.</em>
+    </div>
+  </div>
+</div>
