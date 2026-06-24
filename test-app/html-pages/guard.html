@@ -1,0 +1,19 @@
+<div class="page-enter">
+  <h1>Route Guard Demo</h1>
+  <p style="color: var(--color-text-muted); margin-bottom: 1.5rem;">
+    The <strong>route guard</strong> protects routes from unauthorized access.
+    If the user is not authenticated, they are redirected to the login page.
+  </p>
+
+  <div class="card">
+    <h2>Authentication Status</h2>
+    <p>Use the buttons below to test:</p>
+    <div style="display: flex; gap: 0.5rem; margin-top: 0.75rem;">
+      <button class="sandbox-btn" id="login-btn">Log in</button>
+      <button class="sandbox-btn" id="guard-logout">Log out</button>
+    </div>
+    <p style="margin-top: 0.75rem; font-size: 0.875rem; color: var(--color-text-muted);">
+      <a href="/test-app/guard" data-safa-link>Refresh this page</a> after logging in/out to see the guard in action.
+    </p>
+  </div>
+</div>

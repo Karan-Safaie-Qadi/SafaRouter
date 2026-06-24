@@ -1,0 +1,52 @@
+<div class="page-enter">
+  <h1>Per‑Route Transitions Demo</h1>
+  <p style="color: var(--color-text-muted); margin-bottom: 1.5rem;">
+    Each route can define custom <strong>transition effects</strong> via <code>meta.transition</code>.
+    Navigate away and back to see the fade animation.
+  </p>
+
+  <div class="card">
+    <h2>Current Transition</h2>
+    <p style="margin-bottom: 0.75rem;">
+      This route uses a <strong>fade</strong> animation with 500ms duration.
+    </p>
+    <div style="background: var(--color-bg); padding: 0.75rem; border-radius: 4px; font-family: monospace; font-size: 0.875rem;">
+      <div>duration: <span style="color: var(--color-accent);">500</span></div>
+      <div>enterClass: <span style="color: var(--color-success);">"fade-in"</span></div>
+      <div>enterActiveClass: <span style="color: var(--color-success);">"fade-in-active"</span></div>
+      <div>exitClass: <span style="color: var(--color-warning);">"fade-out"</span></div>
+      <div>exitActiveClass: <span style="color: var(--color-warning);">"fade-out-active"</span></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Test Navigation</h2>
+    <p style="margin-bottom: 0.75rem; font-size: 0.875rem; color: var(--color-text-muted);">
+      Navigate away and come back to see the transition effect:
+    </p>
+    <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+      <a href="/test-app/about" class="sandbox-btn" data-safa-link>Go to About</a>
+      <a href="/test-app/docs" class="sandbox-btn" data-safa-link>Go to Docs</a>
+      <a href="/test-app/" class="sandbox-btn" data-safa-link>Go Home</a>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Configuration</h2>
+    <pre>'/transition': {
+  meta: {
+    transition: {
+      duration: 500,
+      enterClass: 'fade-in',
+      enterActiveClass: 'fade-in-active',
+      exitClass: 'fade-out',
+      exitActiveClass: 'fade-out-active',
+    },
+  },
+}</pre>
+    <p style="margin-top: 0.75rem; font-size: 0.875rem; color: var(--color-text-muted);">
+      Supported options: <code>duration</code>, <code>enterClass</code>, <code>exitClass</code>,
+      <code>enterActiveClass</code>, <code>exitActiveClass</code>.
+    </p>
+  </div>
+</div>

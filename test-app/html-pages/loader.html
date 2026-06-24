@@ -1,0 +1,23 @@
+<div class="page-enter">
+  <h1>Route Data Loader Demo</h1>
+  <p style="color: var(--color-text-muted); margin-bottom: 1.5rem;">
+    The <strong>route data loader</strong> fetches data before the page renders.
+    Data is available via <code>{{ data.server }}</code> and <code>{{ data.timestamp }}</code>.
+  </p>
+
+  <div class="card">
+    <h3>Server: {{ data.server }}</h3>
+    <p>Timestamp: <code>{{ data.timestamp }}</code></p>
+  </div>
+
+  <div class="card">
+    <h3>Loaded Items</h3>
+    <ul>
+      <li>Router Config</li>
+      <li>Route Tree</li>
+      <li>Middleware Chain</li>
+      <li>Error Manager</li>
+      <li>Access Controller</li>
+    </ul>
+  </div>
+</div>
