@@ -616,6 +616,7 @@ export class SafaRouter {
       emit(this._events, EVENTS.BEFORE_RENDER, { pathname: path })
       await this._render(pageContent, layoutFns)
       emit(this._events, EVENTS.AFTER_RENDER, { pathname: path })
+      this._renderComponents()
 
       if (this._navId !== navId) { this._isLoading = false; return }
 
