@@ -868,6 +868,7 @@ export class SafaRouter {
         }
         if (this._targetEl) this._targetEl.innerHTML = html
         this._updateTitle()
+        this._renderComponents()
         emit(this._events, EVENTS.AFTER_RENDER, { pathname: this._pathname })
         return
       } catch { /* fall through */ }
@@ -877,6 +878,7 @@ export class SafaRouter {
       catch { this._targetEl.textContent = `Not Found: ${path}` }
     }
     this._updateTitle()
+    this._renderComponents()
     emit(this._events, EVENTS.AFTER_RENDER, { pathname: this._pathname })
   }
 
