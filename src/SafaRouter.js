@@ -938,6 +938,7 @@ export class SafaRouter {
           : mgrPage
       }
       this._updateTitle()
+      this._renderComponents()
       emit(this._events, EVENTS.AFTER_RENDER, { pathname: this._pathname })
       return
     }
@@ -947,6 +948,7 @@ export class SafaRouter {
     if (errorHtml) {
       if (this._targetEl) this._targetEl.innerHTML = errorHtml
       this._updateTitle()
+      this._renderComponents()
       emit(this._events, EVENTS.AFTER_RENDER, { pathname: this._pathname })
       return
     }
