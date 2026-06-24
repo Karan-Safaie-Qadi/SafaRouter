@@ -3,4 +3,15 @@
   <p>Install SafaRouter and create your first route in under a minute.</p>
   <pre><code>npm install safa-router</code></pre>
   <p>Create a <code>pages/</code> folder with <code>index.html</code> — that's your home page!</p>
+  <div class="card">
+    <h2>Basic HTML-only setup</h2>
+    <pre>const router = new SafaRouter({
+  target: '#app',
+  pageDir: 'html-pages',
+})
+
+router.start()</pre>
+    <p>All page content is served from <code>.html</code> files — no JS exports needed.</p>
+  </div>
+  <p><a href="/test-app/docs" data-safa-link>&larr; Back to Docs</a></p>
 </div>
