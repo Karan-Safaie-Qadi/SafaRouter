@@ -541,7 +541,23 @@ export class SafaRouter {
               : loadingFn
           }
         }
-        pageContent = await this._loadComponent(routeMatch.node.page)
+        const pageDef = routeMatch.node.page
+        if (pageDef) {
+          if (typeof pageDef === 'string') {
+            const dir = this.config.pagesDir ? this.config.pagesDir.replace(/\/+$/, '') + '/' : ''
+            const resolved = pageDef.startsWith('/') || pageDef.startsWith('http') ? pageDef : dir + pageDef
+            pageContent = await this._loadComponent(resolved)
+          } else {
+            pageContent = await this._loadComponent(pageDef)
+          }
+        } else if (this.config.pagesDir) {
+          pageContent = await this._fetchPage(path, signal)
+          if (pageContent === null) {
+            await this._handleNotFound(path, method, navId, state, signal)
+            this._isLoading = false
+            return
+          }
+        }
         for (const l of routeMatch.layouts) {
           if (!l) continue
           const lfn = await this._loadComponent(l)
