@@ -976,6 +976,16 @@ export class SafaRouter {
     emit(this._events, EVENTS.AFTER_RENDER, { pathname: this._pathname })
   }
 
+  _renderComponents() {
+    const ctx = { path: this._pathname, router: this, params: this._params, query: this._query }
+    for (const [name, fn] of Object.entries(this._components)) {
+      if (typeof fn !== 'function') continue
+      const html = fn(ctx)
+      const target = document.querySelector(`[data-safa-component="${name}"]`)
+      if (target) target.innerHTML = html
+    }
+  }
+
   _fallback404(path, statusCode = 404, showStack = true) {
     const homeLink = `<a href="/" style="color:var(--color-accent);text-decoration:underline;">Back to home</a>`
     return [
