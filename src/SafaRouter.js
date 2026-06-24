@@ -1019,7 +1019,7 @@ export class SafaRouter {
     const ctx = { path: this._pathname, router: this, params: this._params, query: this._query }
     for (const [name, fn] of Object.entries(this._components)) {
       if (typeof fn !== 'function') continue
-      const html = fn(ctx)
+      const html = this._resolveTemplate(fn(ctx))
       const target = document.querySelector(`[data-safa-component="${name}"]`)
       if (target) {
         target.innerHTML = html
