@@ -51,6 +51,7 @@ export class SafaRouter {
     this._globalError = this.config.error || null
     this._globalLayout = this.config.layout || null
     this._customTitle = null
+    this._components = this.config.components || {}
 
     this._transitions = new TransitionsManager({
       transitionDuration: this.config.transitionDuration,
