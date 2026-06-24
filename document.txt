@@ -1,0 +1,700 @@
+================================================================================
+  SafaRouter — Complete Documentation
+  Version 1.4.1
+  A standalone frontend router inspired by Next.js App Router
+================================================================================
+
+TABLE OF CONTENTS
+────────────────────────────────────────────────────────────────────────────────
+1.  INTRODUCTION
+2.  INSTALLATION
+3.  QUICK START (HTML ONLY)
+4.  ROUTE CONFIGURATION
+5.  SMART COMPONENTS (v1.4.0)
+6.  TEMPLATE RESOLUTION (v1.4.0)
+7.  ROUTE DATA LOADERS (v1.3.0)
+8.  ROUTE GUARDS (v1.3.0)
+9.  MIDDLEWARE
+10. LAYOUTS
+11. DYNAMIC ROUTES & ROUTE GROUPS
+12. ERROR MANAGER (v1.3.0)
+13. ACCESS CONTROLLER (v1.3.0)
+14. MAINTENANCE MODE (v1.3.0)
+15. PER-ROUTE TRANSITIONS (v1.3.0)
+16. EVENTS
+17. API REFERENCE
+18. COMPLETE EXAMPLE
+19. RUNNING THE DEMO
+20. LICENSE
+
+
+────────────────────────────────────────────────────────────────────────────────
+1. INTRODUCTION
+────────────────────────────────────────────────────────────────────────────────
+
+SafaRouter brings the App Router development pattern — nested layouts, dynamic
+routes, middleware, error management, access control, and smart components — to
+any frontend project without requiring Next.js or a specific framework.
+
+Use it with React, Vue, Svelte, or vanilla JavaScript. Pure JS, zero
+dependencies, under 5 KB gzipped.
+
+Key features:
+  - HTML-first routing: write plain .html files — each file is a route
+  - Route config: explicit JS route definitions with full control
+  - Dynamic segments: [slug], [...catchAll], [[...optional]]
+  - Route groups: (groupName) for logical organisation
+  - Nested layouts: layouts wrap pages and compose parent → child
+  - Client-side navigation: History API with push, replace, back, forward
+  - Middleware: intercept every navigation for auth, redirects, logging
+  - Event system: subscribe to navigation lifecycle events
+  - ErrorManager: handle all HTTP status codes (400-511)
+  - AccessController: blocked (403) and ignored (404) routes
+  - Maintenance Mode: toggleable 503 with allowed path bypasses
+  - Route Data Loaders: async functions providing data to pages
+  - Route Guards: per-route auth guards with redirect support
+  - Per-route Transitions: custom CSS transition effects
+  - Smart Components (v1.4.0): header/footer rendered on every page
+  - Template Resolution (v1.4.0): {{ params }}, {{ query }}, {{ data }}
+  - auto-resolve (v1.4.0): routes without page resolve from pageDir
+
+
+────────────────────────────────────────────────────────────────────────────────
+2. INSTALLATION
+────────────────────────────────────────────────────────────────────────────────
+
+  npm install safa-router
+
+Or copy the src/ folder directly into your project.
+
+
+────────────────────────────────────────────────────────────────────────────────
+3. QUICK START (HTML ONLY)
+────────────────────────────────────────────────────────────────────────────────
+
+Create a folder with .html files. Each file becomes a route automatically:
+
+  my-project/
+  ├── html-pages/
+  │   ├── index.html          -> /
+  │   ├── about.html          -> /about
+  │   ├── contact.html        -> /contact
+  │   └── blog/
+  │       ├── index.html      -> /blog
+  │       └── [slug].html     -> /blog/:slug
+  ├── index.html
+  └── main.js
+
+main.js:
+  import { SafaRouter } from 'safa-router'
+
+  new SafaRouter({
+    target: '#app',
+    pageDir: 'html-pages',
+  }).start()
+
+Links in HTML pages use data-safa-link for client-side navigation:
+
+  <a href="/about" data-safa-link>About</a>
+  <a href="/contact" data-safa-link>Contact</a>
+
+HTML files support template placeholders:
+
+  <!-- html-pages/profile/[id].html -->
+  <h1>User: {{ params.id }}</h1>
+  <p>Path: {{ path }}</p>
+
+  <!-- html-pages/contact.html -->
+  <p>Subject: {{ query.subject }}</p>
+
+  <!-- html-pages/loader.html -->
+  <p>Server: {{ data.server }}</p>
+
+
+────────────────────────────────────────────────────────────────────────────────
+4. ROUTE CONFIGURATION
+────────────────────────────────────────────────────────────────────────────────
+
+For advanced control, define routes explicitly:
+
+  import { SafaRouter } from 'safa-router'
+
+  const router = new SafaRouter({
+    target: '#app',
+    basePath: '/my-app',
+    pageDir: 'html-pages',
+    layout: 'html-pages/_layout.html',
+    routes: {
+      '/': {},
+      '/blog': { children: { '[slug]': {} } },
+      '/about': {},
+      '/contact': {},
+    },
+  })
+
+  router.start()
+
+When page is not specified, the router auto-resolves from pageDir.
+
+You can also reference specific files:
+
+  routes: {
+    '/': { page: 'index.html' },
+    '/custom': { page: 'my-custom-page.html' },
+  }
+
+
+────────────────────────────────────────────────────────────────────────────────
+5. SMART COMPONENTS (v1.4.0)
+────────────────────────────────────────────────────────────────────────────────
+
+Components are named UI elements rendered on every page (header, footer, nav).
+
+components/Header.js:
+  export default function headerComponent({ path }) {
+    return `
+      <header>
+        <nav>
+          <a href="/" data-safa-link
+             class="${path === '/' ? 'active' : ''}">Home</a>
+          <a href="/about" data-safa-link>About</a>
+        </nav>
+      </header>
+    `
+  }
+
+components/Footer.js:
+  export default function footerComponent() {
+    return '<footer>Powered by SafaRouter v1.4.0</footer>'
+  }
+
+Register in config:
+  import headerComponent from './components/Header.js'
+  import footerComponent from './components/Footer.js'
+
+  const router = new SafaRouter({
+    components: {
+      header: headerComponent,
+      footer: footerComponent,
+    },
+  })
+
+Add target elements in index.html:
+  <div data-safa-component="header"></div>
+  <main id="app"></main>
+  <div data-safa-component="footer"></div>
+
+How they work:
+  - Rendered after every page render (navigation, 404, errors)
+  - Links inside components are auto-bound for client-side nav
+  - Receive { path, router, params, query }
+  - Re-render on every navigation (good for active link highlighting)
+
+
+────────────────────────────────────────────────────────────────────────────────
+6. TEMPLATE RESOLUTION (v1.4.0)
+────────────────────────────────────────────────────────────────────────────────
+
+HTML files and components support automatic template placeholders:
+
+  {{ path }}       Current URL path           /blog/my-post
+  {{ params.x }}   Route parameters           {{ params.slug }} -> my-post
+  {{ query.x }}    URL query parameters       {{ query.page }} -> 2
+  {{ data.x }}     Route data loader result   {{ data.server }} -> safa-router
+
+Works in:
+  - HTML files loaded from pageDir
+  - Smart Component output
+  - Layout HTML files
+
+
+────────────────────────────────────────────────────────────────────────────────
+7. ROUTE DATA LOADERS (v1.3.0)
+────────────────────────────────────────────────────────────────────────────────
+
+Async functions that fetch data before page render:
+
+  routes: {
+    '/dashboard': {
+      loader: async ({ params, query, router }) => {
+        const response = await fetch('/api/dashboard')
+        return await response.json()
+      },
+    },
+  }
+
+Data is available via {{ data.x }} in HTML templates:
+  <h3>Visitors: {{ data.visitors }}</h3>
+
+Loading state (shown while loader runs):
+
+  routes: {
+    '/slow': {
+      loading: () => '<div class="spinner">Loading...</div>',
+      loader: async () => {
+        await new Promise(r => setTimeout(r, 2000))
+        return { data: 'loaded' }
+      },
+    },
+  }
+
+
+────────────────────────────────────────────────────────────────────────────────
+8. ROUTE GUARDS (v1.3.0)
+────────────────────────────────────────────────────────────────────────────────
+
+Per-route access control:
+
+  routes: {
+    '/dashboard': {
+      guard: ({ params, query, router }) => {
+        const token = localStorage.getItem('auth_token')
+        if (!token) return '/login'   // redirect to login
+        return true                    // allow access
+      },
+    },
+    '/login': {},
+  }
+
+  Return true  -> allow navigation
+  Return url   -> redirect to that url
+  Return false -> redirect to '/'
+
+
+────────────────────────────────────────────────────────────────────────────────
+9. MIDDLEWARE
+────────────────────────────────────────────────────────────────────────────────
+
+Intercept every navigation:
+
+  router.use(async (ctx, next) => {
+    console.log('Navigating to:', ctx.path)
+
+    if (ctx.path.startsWith('/admin') && !isAdmin()) {
+      ctx.redirect = '/login'
+      return
+    }
+
+    if (!featureEnabled) {
+      ctx.cancelled = true
+      return
+    }
+
+    return next()
+  })
+
+Context:
+  path       string   Target URL path
+  method     string   'push' or 'replace'
+  query      object   URL query parameters
+  redirect   string   Set to redirect
+  cancelled  boolean  Set to true to cancel
+
+
+────────────────────────────────────────────────────────────────────────────────
+10. LAYOUTS
+────────────────────────────────────────────────────────────────────────────────
+
+Global layout:
+  const router = new SafaRouter({
+    layout: ({ children, params, router }) => `
+      <header><nav>...</nav></header>
+      <main>${children}</main>
+    `,
+  })
+
+Or from HTML file (html-pages/_layout.html with {children} placeholder):
+  const router = new SafaRouter({
+    layout: 'html-pages/_layout.html',
+  })
+
+Per-route layouts compose parent -> child:
+  routes: {
+    '/dashboard': {
+      layout: ({ children }) => `
+        <aside>Sidebar</aside>
+        <div class="content">${children}</div>
+      `,
+      children: { settings: {} },
+    },
+  }
+
+
+────────────────────────────────────────────────────────────────────────────────
+11. DYNAMIC ROUTES & ROUTE GROUPS
+────────────────────────────────────────────────────────────────────────────────
+
+Patterns:
+  [slug]        /blog/my-post       params: { slug: 'my-post' }
+  [...path]     /docs/guide/intro   params: { path: ['guide', 'intro'] }
+  [[...path]]   /docs               params: { path: [] }
+
+Route groups (don't affect URL):
+  routes: {
+    '(main)': {
+      children: {
+        'profile': {
+          children: { '[id]': {} },
+        },
+      },
+    },
+  }
+  -> /profile/123 (not /main/profile/123)
+
+
+────────────────────────────────────────────────────────────────────────────────
+12. ERROR MANAGER (v1.3.0)
+────────────────────────────────────────────────────────────────────────────────
+
+Handles all HTTP status codes (400-511):
+
+  const router = new SafaRouter({
+    errors: {
+      pageDir: 'html-pages/errors',
+      stackTraces: true,
+    },
+  })
+
+Error page resolution order:
+  1. html-pages/errors/{statusCode}.html (e.g. 403.html, 404.html)
+  2. html-pages/errors/{group}.html (e.g. 4xx.html)
+  3. Built-in fallback
+
+Groups:
+  client-error    400-499
+  server-error    500-511
+  redirect        300-399
+  success         200-299
+  informational   100-199
+
+Control:
+  router.errorManager.setStatusEnabled(404, false)
+  router.errorManager.setGroupEnabled('server-error', false)
+
+Custom 404 and Error components:
+  const router = new SafaRouter({
+    notFound: ({ path, router, statusCode }) => `
+      <h1>${statusCode} - ${path} not found</h1>
+      <a href="/" data-safa-link>Back to home</a>
+    `,
+    error: ({ error, path, router, statusCode }) => `
+      <h1>${statusCode} - Error</h1>
+      <pre>${error.message}</pre>
+    `,
+  })
+
+
+────────────────────────────────────────────────────────────────────────────────
+13. ACCESS CONTROLLER (v1.3.0)
+────────────────────────────────────────────────────────────────────────────────
+
+Blocked (403) and ignored (silent 404) routes:
+
+  const router = new SafaRouter({
+    access: {
+      blocked: ['/admin', '/private/**'],
+      ignored: ['/hidden', '/deprecated/*'],
+    },
+  })
+
+Wildcards: * single level, ** recursive
+
+Runtime control:
+  router.blockRoute('/api/temp')
+  router.unblockRoute('/api/temp')
+  router.ignoreRoute('/old-page')
+  router.unignoreRoute('/old-page')
+  router.accessController.isAccessible('/admin')   // false
+
+Events:
+  router.onAccessDenied(({ path, reason }) => {
+    console.warn('Access denied:', path, reason)
+  })
+
+
+────────────────────────────────────────────────────────────────────────────────
+14. MAINTENANCE MODE (v1.3.0)
+────────────────────────────────────────────────────────────────────────────────
+
+  const router = new SafaRouter({
+    maintenanceMode: {
+      enabled: false,
+      allowedPaths: ['/login', '/assets/**'],
+    },
+  })
+
+  router.setMaintenance(true)    // enable (503)
+  router.setMaintenance(false)   // disable
+  router.isMaintenance()         // check status
+  router.reload()                // re-render
+
+  router.onMaintenance(({ path }) => {
+    console.info('Maintenance blocked:', path)
+  })
+
+
+────────────────────────────────────────────────────────────────────────────────
+15. PER-ROUTE TRANSITIONS (v1.3.0)
+────────────────────────────────────────────────────────────────────────────────
+
+  routes: {
+    '/transition': {
+      meta: {
+        transition: {
+          duration: 500,
+          enterClass: 'fade-in',
+          enterActiveClass: 'fade-in-active',
+          exitClass: 'fade-out',
+          exitActiveClass: 'fade-out-active',
+        },
+      },
+    },
+  }
+
+
+────────────────────────────────────────────────────────────────────────────────
+16. EVENTS
+────────────────────────────────────────────────────────────────────────────────
+
+  Event            Payload                            Description
+  ──────────────── ────────────────────────────────── ─────────────────────
+  beforenavigate   { path, method }                   Before navigation
+  beforerender     { pathname }                       Before page render
+  afterrender      { pathname }                       After render
+  routechange      { pathname, params, query }        Route changed
+  loading          { path, loading }                  Loading state
+  notfound         { path, statusCode }               Route not found
+  error            { path, error, statusCode }        Navigation error
+  accessdenied     { path, reason }                   Access blocked (v1.3)
+  maintenance      { path }                           Maintenance (v1.3)
+  ready            { pathname }                       Router initialized
+  destroy          {}                                 Router destroyed
+
+  router.on('routechange', ({ pathname }) => { ... })
+  router.afterEach(({ pathname }) => { ... })
+  router.onError(({ path, error }) => { ... })
+  router.onMaintenance(({ path }) => { ... })
+  router.onAccessDenied(({ path, reason }) => { ... })
+
+
+────────────────────────────────────────────────────────────────────────────────
+17. API REFERENCE
+────────────────────────────────────────────────────────────────────────────────
+
+new SafaRouter(options):
+
+  Option                    Type             Default       Description
+  ───────────────────────── ──────────────── ───────────── ────────────────────
+  target                    string|Element   '#app'        Render target
+  pageDir                   string           undefined     HTML files folder
+  layout                    Function|string  null          Global layout
+  routes                    object           {}            Route definitions
+  components                object           {}            Smart components
+  notFound                  Function|string  null          Custom 404
+  error                     Function|string  null          Custom error
+  basePath                  string           ''            Base path
+  useHash                   boolean          false         Hash routing
+  scrollToTop               boolean          true          Auto scroll
+  cacheRoutes               boolean          true          Cache pages
+  maxCacheSize              number           50            Max cache
+  navigationTimeout         number           0             Timeout (ms)
+  titleTemplate             string           null          Title template
+  transitionDuration        number           0             Default transition
+  prefetchStrategy          string           'none'        Prefetch strategy
+  errors.pageDir            string           undefined     Error pages folder
+  errors.stackTraces        boolean          true          Show stack traces
+  access.blocked            string[]         []            Blocked patterns
+  access.ignored            string[]         []            Ignored patterns
+  maintenanceMode.enabled   boolean          false         Maintenance mode
+  maintenanceMode.allowed   string[]         []            Bypass paths
+  errorLogging.enabled      boolean          false         Error logging
+
+Router methods:
+
+  start(target?)            Initialize and start
+  push(url, state?)         Navigate (new history entry)
+  replace(url, state?)      Navigate (replace current entry)
+  back()                    Go back
+  forward()                 Go forward
+  reload()                  Re-render current route
+  use(fn)                   Add middleware
+  on(event, fn)             Subscribe to event
+  off(event, fn)            Unsubscribe
+  afterEach(fn)             Subscribe to successful navigation
+  onError(fn)               Subscribe to errors
+  onMaintenance(fn)         Subscribe to maintenance events (v1.3)
+  onAccessDenied(fn)        Subscribe to access denied (v1.3)
+  createLink(config)        Create a Link instance
+  prefetch(path)            Preload a page
+  clearCache()              Clear component cache
+  getRoute(path)            Inspect a route definition
+  destroy()                 Clean up and stop
+
+v1.3.0 methods:
+
+  blockRoute(path)          Dynamically block a route (403)
+  unblockRoute(path)        Remove dynamic block
+  ignoreRoute(path)         Dynamically ignore a route (silent 404)
+  unignoreRoute(path)       Remove dynamic ignore
+  setMaintenance(bool)      Toggle maintenance mode
+  isMaintenance()           Check maintenance status
+  retry(path, options?)     Retry navigation
+
+Router properties:
+
+  pathname         string          Current URL path
+  params           object          Dynamic route params
+  query            object          URL query params
+  loading          boolean         Navigation in progress
+  matchedRoute     object|null     Current matched route info
+  currentRoute     object|null     Current route data
+  errorManager     ErrorManager    ErrorManager instance (v1.3)
+  accessController AccessController AccessController instance (v1.3)
+
+Route definition:
+
+  {
+    page:     Function|string,     // Component or HTML file path
+    layout:   Function|string,     // Layout wrapping children
+    children: { ... },             // Nested route definitions
+    loading:  Function|string,     // Loading component
+    loader:   Function,            // Async data loader (v1.3)
+    guard:    Function,            // Access guard (v1.3)
+    error:    Function|string,     // Per-route error component
+    notFound: Function|string,     // Per-route 404 component
+    meta: { title, transition },   // Route metadata
+  }
+
+Component signatures:
+
+  page:     ({ params, query, router, data }) => HTML string
+  layout:   ({ children, params, query, router, data }) => HTML string
+  loading:  ({ path, router }) => HTML string
+  error:    ({ error, path, router, statusCode }) => HTML string
+  notFound: ({ path, router, statusCode }) => HTML string
+  smart:    ({ path, router, params, query }) => HTML string (v1.4)
+  guard:    ({ params, query, router }) => true | false | redirectPath
+  loader:   ({ params, query, router }) => Promise<data>
+
+
+────────────────────────────────────────────────────────────────────────────────
+18. COMPLETE EXAMPLE
+────────────────────────────────────────────────────────────────────────────────
+
+  import { SafaRouter } from 'safa-router'
+  import headerComponent from './components/Header.js'
+  import footerComponent from './components/Footer.js'
+
+  const router = new SafaRouter({
+    target: '#app',
+    basePath: '/my-app',
+    pageDir: 'html-pages',
+    layout: 'html-pages/_layout.html',
+
+    components: { header: headerComponent, footer: footerComponent },
+
+    errors: { pageDir: 'html-pages/errors', stackTraces: true },
+
+    access: {
+      blocked: ['/admin', '/private/**'],
+      ignored: ['/hidden', '/deprecated/*'],
+    },
+
+    maintenanceMode: { enabled: false, allowedPaths: ['/login'] },
+
+    errorLogging: { enabled: true },
+
+    routes: {
+      '/': {},
+      '/blog': { children: { '[slug]': {} } },
+      '/dashboard': {
+        layout: ({ children }) =>
+          '<aside>Sidebar</aside><main>${children}</main>',
+        children: { settings: {} },
+      },
+      '/slow': {
+        loading: () => '<div class="spinner">Loading...</div>',
+        loader: async () => { await new Promise(r => setTimeout(r, 1500)) },
+      },
+      '/loader': {
+        loader: async () => {
+          const res = await fetch('/api/data')
+          return res.json()
+        },
+      },
+      '/guard': {
+        guard: ({ router }) => {
+          const authed = localStorage.getItem('auth') === 'true'
+          return authed || '/login'
+        },
+      },
+      '/login': {},
+      '/transition': {
+        meta: {
+          transition: {
+            duration: 500,
+            enterClass: 'fade-in',
+            enterActiveClass: 'fade-in-active',
+            exitClass: 'fade-out',
+            exitActiveClass: 'fade-out-active',
+          },
+        },
+      },
+    },
+  })
+
+  router.afterEach(({ pathname }) => console.log('Navigated to:', pathname))
+  router.onError(({ path, error }) => console.warn('Error:', error.message))
+  router.start()
+
+
+────────────────────────────────────────────────────────────────────────────────
+19. RUNNING THE DEMO
+────────────────────────────────────────────────────────────────────────────────
+
+  cd safa-router
+  node dev-server.js
+
+  Open: http://localhost:3000/test-app/
+
+The demo showcases:
+  - HTML pages with template resolution
+  - Nested layouts
+  - Dynamic routes ([slug])
+  - Route groups
+  - Route data loaders
+  - Route guards
+  - AccessController (blocked/ignored routes)
+  - ErrorManager with custom error pages
+  - Maintenance mode
+  - Per-route transitions
+  - Smart Header/Footer components (v1.4.0)
+  - Sandbox for interactive testing
+  - Sitemap
+
+
+────────────────────────────────────────────────────────────────────────────────
+20. LICENSE
+────────────────────────────────────────────────────────────────────────────────
+
+MIT License
+
+Copyright (c) 2026 SafaRouter
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
