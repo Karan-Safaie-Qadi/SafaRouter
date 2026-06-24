@@ -815,6 +815,7 @@ export class SafaRouter {
           : notFoundPage
       }
       this._updateTitle()
+      this._renderComponents()
       emit(this._events, EVENTS.AFTER_RENDER, { pathname: this._pathname })
       return
     }
@@ -839,6 +840,7 @@ export class SafaRouter {
           : notFoundHtml
       }
       this._updateTitle()
+      this._renderComponents()
       emit(this._events, EVENTS.AFTER_RENDER, { pathname: this._pathname })
       return
     }
