@@ -1,6 +1,6 @@
 {
   "name": "safa-router",
-  "version": "1.4.1",
+  "version": "1.4.2",
   "description": "A professional standalone frontend router inspired by Next.js App Router — works with any framework or vanilla JS",
   "type": "module",
   "main": "src/index.js",
@@ -17,7 +17,7 @@
     "safa-router.d.ts"
   ],
   "scripts": {
-    "start": "npx serve test-app -l 3000",
+    "start": "node dev-server.js",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
@@ -49,5 +49,8 @@
   "homepage": "https://github.com/Karan-Safaie-Qadi/SafaRouter#readme",
   "devDependencies": {
     "vitest": "^4.1.9"
+  },
+  "dependencies": {
+    "docx": "^9.7.1"
   }
 }
