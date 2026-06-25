@@ -7,8 +7,8 @@ import { TransitionsManager } from './TransitionsManager.js'
 import { ScrollManager } from './ScrollManager.js'
 import { RealtimeManager } from './RealtimeManager.js'
 import { normalizePath, parseQuery, emit, createURL, isExternalURL, deepMerge } from './utils.js'
-import { EVENTS, DEFAULT_CONFIG, HTTP_STATUS, ERROR_GROUPS } from './constants.js'
-import { RouteLoadError, SafaError, NavigationAbortError, HttpError, AccessDeniedError, MaintenanceModeError } from './errors.js'
+import { EVENTS, DEFAULT_CONFIG, HTTP_STATUS } from './constants.js'
+import { RouteLoadError, SafaError, NavigationAbortError, HttpError, MaintenanceModeError } from './errors.js'
 import { ErrorManager } from './ErrorManager.js'
 import { AccessController } from './AccessController.js'
 
@@ -124,7 +124,7 @@ export class SafaRouter {
     if (isExternalURL(url)) { window.location.href = url; return }
     let u = createURL(url)
     if (!u) {
-      try { u = new URL(url, location.origin) } catch { return }
+      try { u = new URL(url, location.origin) } catch { console.warn(`[SafaRouter] Invalid URL: ${url}`); return }
     }
     await this._navigate(normalizePath(u.pathname), 'push', parseQuery(u.search), state)
   }
@@ -133,7 +133,7 @@ export class SafaRouter {
     if (isExternalURL(url)) { window.location.replace(url); return }
     let u = createURL(url)
     if (!u) {
-      try { u = new URL(url, location.origin) } catch { return }
+      try { u = new URL(url, location.origin) } catch { console.warn(`[SafaRouter] Invalid URL: ${url}`); return }
     }
     await this._navigate(normalizePath(u.pathname), 'replace', parseQuery(u.search), state)
   }
@@ -419,7 +419,7 @@ export class SafaRouter {
 
   async _navigate(path, method, query = {}, state = {}, depth = 0) {
     if (depth > 10) {
-      const err = new Error('Redirect loop detected')
+      const err = new Error(`Redirect loop detected: ${path}`)
       this._errorManager.log(HTTP_STATUS.LOOP_DETECTED, path, err)
       console.error('[SafaRouter]', err.message)
       this._isLoading = false
@@ -567,18 +567,8 @@ export class SafaRouter {
           const lfn = await this._loadComponent(l)
           if (lfn) layoutFns.push(lfn)
         }
-        if (this._globalLayout) {
-          let lfn = this._globalLayout
-          if (typeof lfn === 'string') {
-            const res = await fetch(this._resolveUrl(lfn))
-            if (res.ok) {
-              const html = await res.text()
-              lfn = ({ children }) => this._renderHtmlLayout(html, children)
-            }
-          }
-          const loaded = await this._loadComponent(lfn)
-          if (loaded) layoutFns.unshift(loaded)
-        }
+        const loaded = await this._resolveGlobalLayout()
+        if (loaded) layoutFns.unshift(loaded)
         this._routeData = routeMatch
       } else if (this.config.pagesDir) {
         const loadingHtml = await this._fetchSpecial(path, 'loading.html', signal)
@@ -606,18 +596,8 @@ export class SafaRouter {
           return
         }
         if (this._navId !== navId) { this._isLoading = false; return }
-        if (this._globalLayout) {
-          let lfn = this._globalLayout
-          if (typeof lfn === 'string') {
-            const res = await fetch(this._resolveUrl(lfn))
-            if (res.ok) {
-              const html = await res.text()
-              lfn = ({ children }) => this._renderHtmlLayout(html, children)
-            }
-          }
-          const loaded = await this._loadComponent(lfn)
-          if (loaded) layoutFns.push(loaded)
-        }
+        const loaded = await this._resolveGlobalLayout()
+        if (loaded) layoutFns.push(loaded)
         this._routeData = { node: { page: null }, params: {}, layouts: [] }
       } else {
         await this._handleNotFound(path, method, navId, state, signal)
@@ -665,18 +645,6 @@ export class SafaRouter {
     }
   }
 
-  async _retry(path, method, query, state, depth, retries = 3) {
-    for (let i = 0; i < retries; i++) {
-      try {
-        await this._navigate(path, method, query, state, depth)
-        return
-      } catch (err) {
-        if (i === retries - 1) throw err
-        await new Promise(r => setTimeout(r, 1000 * (i + 1)))
-      }
-    }
-  }
-
   _getTransitionConfig() {
     const routeTransition = this._routeData?.node?.meta?.transition
     if (routeTransition) {
@@ -697,7 +665,7 @@ export class SafaRouter {
     const data = this._routeData?.data
 
     const html = this._resolveTemplate(layoutFns.length > 0
-      ? await this._renderWithLayouts(pageContent, layoutFns, 0, data)
+      ? await this._applyLayoutChain(pageContent, layoutFns, 0, data)
       : (typeof pageContent === 'function'
           ? pageContent({ params: this._params, query: this._query, router: this, data })
           : (pageContent || '')))
@@ -718,7 +686,7 @@ export class SafaRouter {
     }
   }
 
-  async _renderWithLayouts(pageContent, layoutFns, idx, data) {
+  async _applyLayoutChain(pageContent, layoutFns, idx, data) {
     if (idx >= layoutFns.length) {
       if (typeof pageContent === 'function') {
         return pageContent({ params: this._params, query: this._query, router: this, data })
@@ -726,8 +694,43 @@ export class SafaRouter {
       return pageContent || ''
     }
     const layoutFn = layoutFns[idx]
-    const content = await this._renderWithLayouts(pageContent, layoutFns, idx + 1, data)
+    const content = await this._applyLayoutChain(pageContent, layoutFns, idx + 1, data)
     return layoutFn({ children: content, params: this._params, query: this._query, router: this, data })
+  }
+
+  async _resolveGlobalLayout() {
+    if (!this._globalLayout) return null
+    let lfn = this._globalLayout
+    if (typeof lfn === 'string') {
+      const res = await fetch(this._resolveUrl(lfn))
+      if (res.ok) {
+        const html = await res.text()
+        lfn = ({ children }) => this._renderHtmlLayout(html, children)
+      }
+    }
+    const loaded = await this._loadComponent(lfn)
+    return loaded || null
+  }
+
+  async _renderWithLayouts(pageContent, statusCode, path, data = {}) {
+    let html
+    if (typeof pageContent === 'function') {
+      html = pageContent({ path: path || this._pathname, router: this, statusCode, ...data })
+    } else {
+      html = pageContent || ''
+    }
+    const layoutFn = await this._resolveGlobalLayout()
+    if (layoutFn) {
+      html = await this._applyLayoutChain(html, [layoutFn], 0, data)
+    }
+    html = this._resolveTemplate(html)
+    if (this._targetEl) {
+      this._targetEl.innerHTML = html
+      this._bindLinks()
+    }
+    this._updateTitle()
+    this._renderComponents()
+    emit(this._events, EVENTS.AFTER_RENDER, { pathname: this._pathname })
   }
 
   _updateTitle() {
@@ -821,23 +824,7 @@ export class SafaRouter {
       if (method === 'push') this._history.push(path, state)
       else if (method === 'replace') this._history.replace(path, state)
       this._pathname = path
-      if (this._targetEl) {
-        let layoutFn = this._globalLayout
-        if (layoutFn && typeof layoutFn === 'string') {
-          const res = await fetch(this._resolveUrl(layoutFn))
-          if (res.ok) {
-            const layoutHtml = await res.text()
-            layoutFn = ({ children }) => this._renderHtmlLayout(layoutHtml, children)
-          }
-        }
-        this._targetEl.innerHTML = layoutFn
-          ? await this._renderWithLayouts(notFoundPage, [layoutFn], 0)
-          : notFoundPage
-        this._bindLinks()
-      }
-      this._updateTitle()
-      this._renderComponents()
-      emit(this._events, EVENTS.AFTER_RENDER, { pathname: this._pathname })
+      await this._renderWithLayouts(notFoundPage, status, path)
       return
     }
 
@@ -847,23 +834,7 @@ export class SafaRouter {
       if (method === 'push') this._history.push(path, state)
       else if (method === 'replace') this._history.replace(path, state)
       this._pathname = path
-      if (this._targetEl) {
-        let layoutFn = this._globalLayout
-        if (layoutFn && typeof layoutFn === 'string') {
-          const res = await fetch(this._resolveUrl(layoutFn))
-          if (res.ok) {
-            const layoutHtml = await res.text()
-            layoutFn = ({ children }) => this._renderHtmlLayout(layoutHtml, children)
-          }
-        }
-        this._targetEl.innerHTML = layoutFn
-          ? await this._renderWithLayouts(notFoundHtml, [layoutFn], 0)
-          : notFoundHtml
-        this._bindLinks()
-      }
-      this._updateTitle()
-      this._renderComponents()
-      emit(this._events, EVENTS.AFTER_RENDER, { pathname: this._pathname })
+      await this._renderWithLayouts(notFoundHtml, status, path)
       return
     }
 
@@ -875,26 +846,7 @@ export class SafaRouter {
         if (method === 'push') this._history.push(path, state)
         else if (method === 'replace') this._history.replace(path, state)
         this._pathname = path
-        let html = typeof fn === 'function' ? fn({ path, router: this, statusCode: status }) : fn
-        if (this._globalLayout) {
-          let lfn = this._globalLayout
-          if (typeof lfn === 'string') {
-            const res = await fetch(this._resolveUrl(lfn))
-            if (res.ok) {
-              const layoutHtml = await res.text()
-              lfn = ({ children }) => this._renderHtmlLayout(layoutHtml, children)
-            }
-          }
-          const loaded = await this._loadComponent(lfn)
-          if (loaded) html = await this._renderWithLayouts(html, [loaded], 0)
-        }
-        if (this._targetEl) {
-          this._targetEl.innerHTML = html
-          this._bindLinks()
-        }
-        this._updateTitle()
-        this._renderComponents()
-        emit(this._events, EVENTS.AFTER_RENDER, { pathname: this._pathname })
+        await this._renderWithLayouts(fn, status, path)
         return
       } catch { /* fall through */ }
     }
@@ -924,26 +876,7 @@ export class SafaRouter {
     if (routeError) {
       try {
         const fn = await this._loadComponent(routeError)
-        let html = typeof fn === 'function' ? fn({ error: err, path, router: this, statusCode: status }) : fn
-        if (this._globalLayout) {
-          let lfn = this._globalLayout
-          if (typeof lfn === 'string') {
-            const res = await fetch(this._resolveUrl(lfn))
-            if (res.ok) {
-              const layoutHtml = await res.text()
-              lfn = ({ children }) => this._renderHtmlLayout(layoutHtml, children)
-            }
-          }
-          const loaded = await this._loadComponent(lfn)
-          if (loaded) html = await this._renderWithLayouts(html, [loaded], 0)
-        }
-        if (this._targetEl) {
-          this._targetEl.innerHTML = html
-          this._bindLinks()
-        }
-        this._updateTitle()
-        this._renderComponents()
-        emit(this._events, EVENTS.AFTER_RENDER, { pathname: this._pathname })
+        await this._renderWithLayouts(fn, status, path, { error: err })
         return
       } catch { /* fall through */ }
     }
@@ -955,36 +888,14 @@ export class SafaRouter {
       mgrPage = await this._errorManager.resolvePage(status, errPageDir, signal)
     } catch {}
     if (mgrPage) {
-      if (this._targetEl) {
-        let layoutFn = this._globalLayout
-        if (layoutFn && typeof layoutFn === 'string') {
-          const res = await fetch(this._resolveUrl(layoutFn))
-          if (res.ok) {
-            const layoutHtml = await res.text()
-            layoutFn = ({ children }) => this._renderHtmlLayout(layoutHtml, children)
-          }
-        }
-        this._targetEl.innerHTML = layoutFn
-          ? await this._renderWithLayouts(mgrPage, [layoutFn], 0)
-          : mgrPage
-        this._bindLinks()
-      }
-      this._updateTitle()
-      this._renderComponents()
-      emit(this._events, EVENTS.AFTER_RENDER, { pathname: this._pathname })
+      await this._renderWithLayouts(mgrPage, status, path)
       return
     }
 
     // Fallback: try generic error.html
     const errorHtml = this.config.pagesDir ? await this._fetchSpecial(path, 'error.html', signal) : null
     if (errorHtml) {
-      if (this._targetEl) {
-        this._targetEl.innerHTML = errorHtml
-        this._bindLinks()
-      }
-      this._updateTitle()
-      this._renderComponents()
-      emit(this._events, EVENTS.AFTER_RENDER, { pathname: this._pathname })
+      await this._renderWithLayouts(errorHtml, status, path)
       return
     }
 
@@ -992,26 +903,7 @@ export class SafaRouter {
     if (this._globalError) {
       try {
         const fn = await this._loadComponent(this._globalError)
-        let html = typeof fn === 'function' ? fn({ error: err, path, router: this, statusCode: status }) : fn
-        if (this._globalLayout) {
-          let lfn = this._globalLayout
-          if (typeof lfn === 'string') {
-            const res = await fetch(this._resolveUrl(lfn))
-            if (res.ok) {
-              const layoutHtml = await res.text()
-              lfn = ({ children }) => this._renderHtmlLayout(layoutHtml, children)
-            }
-          }
-          const loaded = await this._loadComponent(lfn)
-          if (loaded) html = await this._renderWithLayouts(html, [loaded], 0)
-        }
-        if (this._targetEl) {
-          this._targetEl.innerHTML = html
-          this._bindLinks()
-        }
-        this._updateTitle()
-        this._renderComponents()
-        emit(this._events, EVENTS.AFTER_RENDER, { pathname: this._pathname })
+        await this._renderWithLayouts(fn, status, path, { error: err })
         return
       } catch { /* fall through */ }
     }
@@ -1031,12 +923,11 @@ export class SafaRouter {
     if (!html || typeof html !== 'string') return html
     return html
       .replace(/\{\{\s*path\s*\}\}/gi, this._pathname)
-      .replace(/\{\{\s*params\.(\w+)\s*\}\}/g, (_, key) => this._params[key] || '')
-      .replace(/\{\{\s*query\.(\w+)\s*\}\}/g, (_, key) => this._query[key] || '')
-      .replace(/\{\{\s*data\.(\w+)\s*\}\}/g, (_, key) => {
-        const data = this._routeData?.data || {}
-        const val = data[key]
-        return val !== undefined ? String(val) : ''
+      .replace(/\{\{\s*params\.(\w+)\s*\}\}/g, (_, k) => this._params[k] || '')
+      .replace(/\{\{\s*query\.(\w+)\s*\}\}/g, (_, k) => this._query[k] || '')
+      .replace(/\{\{\s*data\.(\w+)\s*\}\}/g, (_, k) => {
+        const d = this._routeData?.data || {}
+        return d[k] !== undefined ? String(d[k]) : ''
       })
   }
 

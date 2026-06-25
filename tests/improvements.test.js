@@ -129,7 +129,7 @@ describe('Redirect loop ERROR event', () => {
     router.on(EVENTS.ERROR, handler)
     await router._navigate('/test', 'push', {}, {}, 11)
     expect(handler).toHaveBeenCalledTimes(1)
-    expect(handler.mock.calls[0][0].error.message).toBe('Redirect loop detected')
+    expect(handler.mock.calls[0][0].error.message).toBe('Redirect loop detected: /test')
     expect(handler.mock.calls[0][0].path).toBe('/test')
   })
 })
