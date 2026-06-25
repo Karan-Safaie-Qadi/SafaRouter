@@ -21,6 +21,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
+    "dev": "node dev-server.js",
     "lint": "echo \"Add lint tool\"",
     "prepublishOnly": "npm test"
   },
@@ -47,7 +48,7 @@
     "hot-reload",
     "typescript"
   ],
-  "author": "",
+  "author": "Karan Safaie Qadi (Karan-Safaie-Qadi)",
   "sideEffects": false,
   "engines": {
     "node": ">=18"
