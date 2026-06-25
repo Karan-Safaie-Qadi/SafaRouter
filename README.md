@@ -919,6 +919,98 @@ Stop the server:
 server.stop()
 ```
 
+### Integration Examples
+
+SafaRouter works with any framework — here are minimal integration patterns.
+
+#### React
+
+```jsx
+import { useEffect, useRef } from 'react'
+import { SafaRouter } from 'safa-router'
+
+export default function App() {
+  const appRef = useRef(null)
+  useEffect(() => {
+    const router = new SafaRouter({
+      target: appRef.current,
+      pageDir: 'html-pages',
+      routes: { '/': {}, '/about': {} },
+    })
+    router.start()
+    return () => router.destroy()
+  }, [])
+  return <div ref={appRef} />
+}
+```
+
+#### Vue
+
+```vue
+<template>
+  <div ref="appRef"></div>
+</template>
+
+<script setup>
+import { ref, onMounted, onUnmounted } from 'vue'
+import { SafaRouter } from 'safa-router'
+
+const appRef = ref(null)
+let router
+
+onMounted(() => {
+  router = new SafaRouter({
+    target: appRef.value,
+    pageDir: 'html-pages',
+    routes: { '/': {}, '/about': {} },
+  })
+  router.start()
+})
+
+onUnmounted(() => router?.destroy())
+</script>
+```
+
+#### Svelte
+
+```svelte
+<script>
+  import { onMount, onDestroy } from 'svelte'
+  import { SafaRouter } from 'safa-router'
+
+  let appEl
+  let router
+
+  onMount(() => {
+    router = new SafaRouter({
+      target: appEl,
+      pageDir: 'html-pages',
+      routes: { '/': {}, '/about': {} },
+    })
+    router.start()
+  })
+
+  onDestroy(() => router?.destroy())
+</script>
+
+<div bind:this={appEl} />
+```
+
+#### Vanilla JS
+
+```html
+<div id="app"></div>
+<script type="module">
+import { SafaRouter } from 'safa-router'
+
+new SafaRouter({
+  target: '#app',
+  pageDir: 'html-pages',
+  routes: { '/': {}, '/about': {} },
+}).start()
+</script>
+```
+
 ---
 
 ### API Reference
