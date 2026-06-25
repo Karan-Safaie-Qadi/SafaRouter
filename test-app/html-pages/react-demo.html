@@ -1,0 +1,110 @@
+<div class="page-enter">
+  <h1>React Integration</h1>
+  <p style="color: var(--color-text-muted); margin-bottom: 1.5rem;">
+    Using SafaRouter with React via CDN UMD bundles.
+  </p>
+
+  <div class="card">
+    <h2>Minimal React + SafaRouter Setup</h2>
+    <p style="margin-bottom: 0.75rem;">
+      SafaRouter is framework-agnostic. It manages routing while React handles the UI. 
+      The router owns a DOM target and your React app renders into it.
+    </p>
+    <pre><code>import { useEffect, useRef } from 'react'
+import { SafaRouter } from 'safa-router'
+
+export default function App() {
+  const appRef = useRef(null)
+  useEffect(() => {
+    const router = new SafaRouter({
+      target: appRef.current,
+      pageDir: 'html-pages',
+      routes: { '/': {}, '/about': {} },
+    })
+    router.start()
+    return () =&gt; router.destroy()
+  }, [])
+  return &lt;div ref={appRef} /&gt;
+}</code></pre>
+  </div>
+
+  <div class="card">
+    <h2>How It Works</h2>
+    <ol style="padding-left: 1.25rem; display: flex; flex-direction: column; gap: 0.5rem;">
+      <li>React creates a root component that renders a container <code>&lt;div&gt;</code></li>
+      <li><code>useEffect</code> initialises a SafaRouter instance targeting that container</li>
+      <li>The router loads HTML pages and injects them into the container — React stays unaware of routing</li>
+      <li>On unmount, <code>router.destroy()</code> cleans up event listeners</li>
+      <li>React components can use <code>data-safa-link</code> anchors for client-side navigation</li>
+    </ol>
+  </div>
+
+  <div class="card">
+    <h2>With React Router-style Components via SafaRouter</h2>
+    <p style="margin-bottom: 0.75rem;">
+      You can combine React components with SafaRouter's smart component system:
+    </p>
+    <pre><code>// ReactApp.jsx
+import { SafaRouter } from 'safa-router'
+
+function reactHeader({ path }) {
+  return (
+    '&lt;header&gt;' +
+    '  &lt;nav&gt;' +
+    '    &lt;a href="/" data-safa-link' +
+    `      class="${path === '/' ? 'active' : ''}"&gt;Home&lt;/a&gt;` +
+    '    &lt;a href="/about" data-safa-link' +
+    `      class="${path === '/about' ? 'active' : ''}"&gt;About&lt;/a&gt;` +
+    '  &lt;/nav&gt;' +
+    '&lt;/header&gt;'
+  )
+}
+
+const router = new SafaRouter({
+  target: '#app',
+  pageDir: 'html-pages',
+  components: { header: reactHeader },
+  routes: { '/': {}, '/about': {} },
+})
+router.start()</code></pre>
+  </div>
+
+  <div class="card">
+    <h2>Live Demo Area</h2>
+    <p style="color: var(--color-text-muted); margin-bottom: 0.75rem;">
+      The demo below illustrates a React component rendering via SafaRouter's component system.
+    </p>
+    <div id="react-live-demo" style="border: 1px solid var(--color-border); border-radius: var(--radius); padding: 1.5rem; background: var(--color-bg); text-align: center;">
+      <div style="font-size: 3rem; margin-bottom: 0.5rem;">⚛️</div>
+      <h3 style="color: var(--color-accent);">React + SafaRouter</h3>
+      <p style="color: var(--color-text-muted); font-size: 0.9rem;">
+        This container simulates where a React root would mount.
+        SafaRouter feeds HTML content into this element.
+      </p>
+      <div style="margin-top: 1rem; display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap;">
+        <a href="/test-app/docs" data-safa-link style="padding:0.4rem 1rem;background:var(--color-accent);color:var(--color-bg);border-radius:6px;font-weight:600;font-size:0.875rem;">Router Docs</a>
+        <a href="/test-app/sandbox" data-safa-link style="padding:0.4rem 1rem;border:1px solid var(--color-border);border-radius:6px;font-size:0.875rem;">Sandbox</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>CDN Script (React UMD)</h2>
+    <p style="margin-bottom: 0.75rem;">
+      For HTML-only projects, include React via CDN:
+    </p>
+    <pre><code>&lt;!-- index.html --&gt;
+&lt;script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"&gt;&lt;/script&gt;
+&lt;script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"&gt;&lt;/script&gt;
+&lt;script type="module"&gt;
+  import { SafaRouter } from 'safa-router'
+
+  const router = new SafaRouter({
+    target: '#app',
+    pageDir: 'html-pages',
+    routes: { '/': {}, '/about': {} },
+  })
+  router.start()
+&lt;/script&gt;</code></pre>
+  </div>
+</div>

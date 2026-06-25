@@ -1,0 +1,136 @@
+<div class="page-enter">
+  <h1>Vue 3 Integration</h1>
+  <p style="color: var(--color-text-muted); margin-bottom: 1.5rem;">
+    Using SafaRouter with Vue 3 via CDN or build tool.
+  </p>
+
+  <div class="card">
+    <h2>Minimal Vue 3 + SafaRouter Setup</h2>
+    <p style="margin-bottom: 0.75rem;">
+      SafaRouter replaces Vue Router entirely. Your Vue app provides a mount point,
+      SafaRouter handles all routing logic and page rendering.
+    </p>
+    <pre><code>&lt;template&gt;
+  &lt;div ref="appRef"&gt;&lt;/div&gt;
+&lt;/template&gt;
+
+&lt;script setup&gt;
+import { ref, onMounted, onUnmounted } from 'vue'
+import { SafaRouter } from 'safa-router'
+
+const appRef = ref(null)
+let router
+
+onMounted(() =&gt; {
+  router = new SafaRouter({
+    target: appRef.value,
+    pageDir: 'html-pages',
+    routes: { '/': {}, '/about': {} },
+  })
+  router.start()
+})
+
+onUnmounted(() =&gt; router?.destroy())
+&lt;/script&gt;</code></pre>
+  </div>
+
+  <div class="card">
+    <h2>How It Works with Vue</h2>
+    <ol style="padding-left: 1.25rem; display: flex; flex-direction: column; gap: 0.5rem;">
+      <li>A Vue component exposes a container element via <code>ref</code></li>
+      <li><code>onMounted</code> creates a SafaRouter instance targeting that element</li>
+      <li>HTML pages are loaded and rendered inside the Vue-controlled container</li>
+      <li><code>onUnmounted</code> calls <code>router.destroy()</code> to prevent memory leaks</li>
+      <li>Vue templates can use <code>data-safa-link</code> for SPA navigation</li>
+    </ol>
+  </div>
+
+  <div class="card">
+    <h2>Using Vue Components as SafaRouter Smart Components</h2>
+    <p style="margin-bottom: 0.75rem;">
+      Your Vue components can return HTML strings that SafaRouter treats as smart components:
+    </p>
+    <pre><code>// vueHeader.js
+export default function vueHeader({ path }) {
+  return [
+    '&lt;header style="border-bottom: 1px solid var(--color-border); padding: 0.75rem 1.5rem;"&gt;',
+    '  &lt;nav style="display: flex; gap: 1rem;"&gt;',
+    '    &lt;a href="/" data-safa-link',
+    `      style="color: ${path === '/' ? 'var(--color-accent)' : 'var(--color-text-muted)'}"&gt;`,
+    '      Home',
+    '    &lt;/a&gt;',
+    '    &lt;a href="/about" data-safa-link',
+    `      style="color: ${path === '/about' ? 'var(--color-accent)' : 'var(--color-text-muted)'}"&gt;`,
+    '      About',
+    '    &lt;/a&gt;',
+    '  &lt;/nav&gt;',
+    '&lt;/header&gt;',
+  ].join('\n')
+}
+
+// main.js
+import { SafaRouter } from 'safa-router'
+import vueHeader from './vueHeader.js'
+
+const router = new SafaRouter({
+  target: '#app',
+  pageDir: 'html-pages',
+  components: { header: vueHeader },
+  routes: { '/': {}, '/about': {} },
+})
+router.start()</code></pre>
+  </div>
+
+  <div class="card">
+    <h2>Live Demo Area</h2>
+    <p style="color: var(--color-text-muted); margin-bottom: 0.75rem;">
+      This area represents where a Vue 3 app would mount, with SafaRouter driving the routing layer.
+    </p>
+    <div id="vue-live-demo" style="border: 1px solid var(--color-border); border-radius: var(--radius); padding: 1.5rem; background: var(--color-bg); text-align: center;">
+      <div style="font-size: 3rem; margin-bottom: 0.5rem;">💚</div>
+      <h3 style="color: var(--color-accent);">Vue 3 + SafaRouter</h3>
+      <p style="color: var(--color-text-muted); font-size: 0.9rem;">
+        Your Vue app mounts here. SafaRouter injects routed HTML content
+        into this container seamlessly.
+      </p>
+      <div style="margin-top: 1rem; display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap;">
+        <a href="/test-app/docs" data-safa-link style="padding:0.4rem 1rem;background:var(--color-accent);color:var(--color-bg);border-radius:6px;font-weight:600;font-size:0.875rem;">Router Docs</a>
+        <a href="/test-app/sandbox" data-safa-link style="padding:0.4rem 1rem;border:1px solid var(--color-border);border-radius:6px;font-size:0.875rem;">Sandbox</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>CDN Script (Vue 3)</h2>
+    <p style="margin-bottom: 0.75rem;">
+      For HTML-only projects, include Vue 3 via CDN:
+    </p>
+    <pre><code>&lt;!-- index.html --&gt;
+&lt;script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"&gt;&lt;/script&gt;
+&lt;script type="module"&gt;
+  import { SafaRouter } from 'safa-router'
+
+  const { createApp, ref, onMounted, onUnmounted } = Vue
+
+  createApp({
+    setup() {
+      const appRef = ref(null)
+      let router
+
+      onMounted(() =&gt; {
+        router = new SafaRouter({
+          target: appRef.value,
+          pageDir: 'html-pages',
+          routes: { '/': {}, '/about': {} },
+        })
+        router.start()
+      })
+
+      onUnmounted(() =&gt; router?.destroy())
+
+      return { appRef }
+    },
+  }).mount('#app')
+&lt;/script&gt;</code></pre>
+  </div>
+</div>

@@ -1,0 +1,56 @@
+<div class="page-enter">
+  <h1>FAQ</h1>
+  <p style="color: var(--color-text-muted); margin-bottom: 1.5rem;">
+    Frequently asked questions about SafaRouter.
+  </p>
+
+  <div class="card">
+    <h2>Does SafaRouter work with React / Vue / Svelte?</h2>
+    <p>Yes. SafaRouter is framework-agnostic. See the <a href="/test-app/react-demo" data-safa-link>React demo</a> or <a href="/test-app/vue-demo" data-safa-link>Vue demo</a> pages for integration examples.</p>
+  </div>
+
+  <div class="card">
+    <h2>Do I need a bundler?</h2>
+    <p>No. SafaRouter runs directly in the browser via ESM imports. A bundler is optional.</p>
+  </div>
+
+  <div class="card">
+    <h2>Can I use it with TypeScript?</h2>
+    <p>Yes. Type definitions are included (<code>safa-router.d.ts</code>).</p>
+  </div>
+
+  <div class="card">
+    <h2>How does the real-time hot reload work?</h2>
+    <p>The dev server watches HTML files and sends SSE events to the browser. The router re-fetches only the current page content — no full browser refresh.</p>
+  </div>
+
+  <div class="card">
+    <h2>Is SafaRouter production-ready?</h2>
+    <p>SafaRouter is used in development and production. It has 180+ tests and zero runtime dependencies. As with any tool, evaluate it against your project's requirements.</p>
+  </div>
+
+  <div class="card">
+    <h2>How is this different from React Router or Vue Router?</h2>
+    <p>SafaRouter is framework-agnostic and supports nested layouts, dynamic routes, middleware, error management, access control, and real-time updates — all without requiring React, Vue, or a bundler.</p>
+  </div>
+
+  <div class="card">
+    <h2>Does it support hash routing?</h2>
+    <p>Yes. Set <code>useHash: true</code> in the config.</p>
+  </div>
+
+  <div class="card">
+    <h2>Does SafaRouter support SSR or SSG?</h2>
+    <p>SafaRouter is a client-side router. For SSR/SSG you would pair it with a static site generator or server-side framework that pre-renders HTML pages, then let SafaRouter handle client-side navigation.</p>
+  </div>
+
+  <div class="card">
+    <h2>How do I configure base path for subdirectory deployment?</h2>
+    <p>Use the <code>basePath</code> option in the router config and the <code>SafaDevServer</code> for local development. All routes will be prefixed automatically.</p>
+    <pre><code>const router = new SafaRouter({
+  basePath: '/my-app',
+  target: '#app',
+  pageDir: 'html-pages',
+})</code></pre>
+  </div>
+</div>
