@@ -1,8 +1,9 @@
+tests/
 test-app/
-.github/
-.gitignore
-CHANGELOG.md
-CONTRIBUTING.md
-CODE_OF_CONDUCT.md
-SECURITY.md
-*.log
+docs/
+dev-server.js
+document.txt
+SafaRouter-Guide.docx
+generate-doc.js
+*.md
+!README.md

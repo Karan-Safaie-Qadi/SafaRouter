@@ -35,7 +35,17 @@
     "single-page-app",
     "nested-layouts",
     "middleware",
-    "dynamic-routes"
+    "dynamic-routes",
+    "spa",
+    "single-page-application",
+    "ssr",
+    "access-control",
+    "middleware",
+    "nested-layouts",
+    "error-handling",
+    "real-time",
+    "hot-reload",
+    "typescript"
   ],
   "author": "",
   "sideEffects": false,
