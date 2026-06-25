@@ -67,7 +67,7 @@
   "author": "Karan Safaie Qadi (Karan-Safaie-Qadi)",
   "sideEffects": false,
   "engines": {
-    "node": ">=18"
+    "node": ">=20"
   },
   "license": "MIT",
   "repository": {
