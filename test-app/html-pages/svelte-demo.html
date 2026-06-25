@@ -1,0 +1,116 @@
+<div class="page-enter">
+  <h1>Svelte Integration</h1>
+  <p style="color: var(--color-text-muted); margin-bottom: 1.5rem;">
+    Using SafaRouter with Svelte 5 via CDN or build tool.
+  </p>
+
+  <div class="card">
+    <h2>Minimal Svelte + SafaRouter Setup</h2>
+    <p style="margin-bottom: 0.75rem;">
+      SafaRouter replaces SvelteKit's routing layer entirely. Your Svelte app provides a mount
+      target, SafaRouter handles all routing logic and HTML page rendering.
+    </p>
+    <pre><code>&lt;script&gt;
+  import { onMount, onDestroy } from 'svelte'
+  import { SafaRouter } from 'safa-router'
+
+  let appRef
+  let router
+
+  onMount(() =&gt; {
+    router = new SafaRouter({
+      target: appRef,
+      pageDir: 'html-pages',
+      routes: { '/': {}, '/about': {} },
+    })
+    router.start()
+  })
+
+  onDestroy(() =&gt; router?.destroy())
+&lt;/script&gt;
+
+&lt;div bind:this={appRef} /&gt;</code></pre>
+  </div>
+
+  <div class="card">
+    <h2>How It Works with Svelte</h2>
+    <ol style="padding-left: 1.25rem; display: flex; flex-direction: column; gap: 0.5rem;">
+      <li>A Svelte component exposes a container element via <code>bind:this</code></li>
+      <li><code>onMount</code> creates a SafaRouter instance targeting that element</li>
+      <li>HTML pages are loaded and rendered inside the Svelte-controlled container</li>
+      <li><code>onDestroy</code> calls <code>router.destroy()</code> to prevent memory leaks</li>
+      <li>Svelte templates can use <code>data-safa-link</code> anchors for SPA navigation</li>
+    </ol>
+  </div>
+
+  <div class="card">
+    <h2>Using Svelte Components as SafaRouter Smart Components</h2>
+    <p style="margin-bottom: 0.75rem;">
+      Your Svelte functions can return HTML strings that SafaRouter treats as smart components:
+    </p>
+    <pre><code>// svelteHeader.js
+export default function svelteHeader({ path }) {
+  return [
+    '&lt;header style="border-bottom: 1px solid var(--color-border); padding: 0.75rem 1.5rem;"&gt;',
+    '  &lt;nav style="display: flex; gap: 1rem;"&gt;',
+    '    &lt;a href="/" data-safa-link',
+    `      style="color: ${path === '/' ? 'var(--color-accent)' : 'var(--color-text-muted)'}"&gt;`,
+    '      Home',
+    '    &lt;/a&gt;',
+    '    &lt;a href="/about" data-safa-link',
+    `      style="color: ${path === '/about' ? 'var(--color-accent)' : 'var(--color-text-muted)'}"&gt;`,
+    '      About',
+    '    &lt;/a&gt;',
+    '  &lt;/nav&gt;',
+    '&lt;/header&gt;',
+  ].join('\n')
+}
+
+// main.js
+import { SafaRouter } from 'safa-router'
+import svelteHeader from './svelteHeader.js'
+
+const router = new SafaRouter({
+  target: '#app',
+  pageDir: 'html-pages',
+  components: { header: svelteHeader },
+  routes: { '/': {}, '/about': {} },
+})
+router.start()</code></pre>
+  </div>
+
+  <div class="card">
+    <h2>Live Demo Area</h2>
+    <p style="color: var(--color-text-muted); margin-bottom: 0.75rem;">
+      This area represents where a Svelte app would mount, with SafaRouter driving the routing layer.
+    </p>
+    <div id="svelte-live-demo" style="border: 1px solid var(--color-border); border-radius: var(--radius); padding: 1.5rem; background: var(--color-bg); text-align: center;">
+      <div style="font-size: 3rem; margin-bottom: 0.5rem;">🧡</div>
+      <h3 style="color: var(--color-accent);">Svelte 5 + SafaRouter</h3>
+      <p style="color: var(--color-text-muted); font-size: 0.9rem;">
+        Your Svelte app mounts here. SafaRouter injects routed HTML content
+        into this container seamlessly.
+      </p>
+      <div style="margin-top: 1rem; display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap;">
+        <a href="/test-app/docs" data-safa-link style="padding:0.4rem 1rem;background:var(--color-accent);color:var(--color-bg);border-radius:6px;font-weight:600;font-size:0.875rem;">Router Docs</a>
+        <a href="/test-app/sandbox" data-safa-link style="padding:0.4rem 1rem;border:1px solid var(--color-border);border-radius:6px;font-size:0.875rem;">Sandbox</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>CDN Script (Svelte 5)</h2>
+    <p style="margin-bottom: 0.75rem;">
+      For HTML-only projects, include Svelte 5 via CDN:
+    </p>
+    <pre><code>&lt;!-- index.html --&gt;
+&lt;script src="https://unpkg.com/svelte@5/dist/svelte.js"&gt;&lt;/script&gt;
+&lt;script type="module"&gt;
+  import { SafaRouter } from 'safa-router'
+
+  const { mount, unmount } = Svelte
+
+  const app = mount(App, { target: document.getElementById('app') })
+&lt;/script&gt;</code></pre>
+  </div>
+</div>

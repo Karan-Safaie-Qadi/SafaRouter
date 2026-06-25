@@ -2,6 +2,20 @@
 
 All notable changes to SafaRouter will be documented in this file.
 
+## [1.5.0] - Unreleased
+
+### Added
+- Svelte demo page (`test-app/html-pages/svelte-demo.html`) — Svelte 5 integration example
+- `docs/MIGRATION_GUIDE.md` — upgrade paths from v1.3.x and v1.4.x
+
+### Changed
+- Per-route `meta.hideComponents` — hide specific smart components per route
+- Access allowlist mode (`access.mode: 'allowlist'` + `access.allowed`)
+- `RealtimeManager` — SSE/polling/WebSocket hot reload
+- `EVENTS.REALTIME_CHANGE` event
+- `SafaDevServer` class — importable dev server with SPA fallback, file watching, SSE realtime
+- Demo pages: `no-header`, `plain`, `allowlist-demo`
+
 ## [1.4.4] - 2026-06-25
 
 ### Fixed
