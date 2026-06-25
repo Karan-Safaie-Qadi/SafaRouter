@@ -101,7 +101,7 @@ export class ErrorManager {
       const custom = await this.loadCustomPage(statusCode, pageDir, signal)
       if (custom) return custom
     }
-    return this.getDefaultPage(statusCode)
+    return null
   }
 
   formatError(error, showStack) {

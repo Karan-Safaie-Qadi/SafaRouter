@@ -11,10 +11,11 @@ import { EVENTS, DEFAULT_CONFIG, HTTP_STATUS } from './constants.js'
 import { RouteLoadError, SafaError, NavigationAbortError, HttpError, MaintenanceModeError } from './errors.js'
 import { ErrorManager } from './ErrorManager.js'
 import { AccessController } from './AccessController.js'
+import { LoaderCache } from './LoaderCache.js'
 
 export class SafaRouter {
-  static version = '1.5.0'
-  static VERSION = '1.5.0'
+  static version = '2.0.0'
+  static VERSION = '2.0.0'
 
   constructor(options = {}) {
     this.config = deepMerge(DEFAULT_CONFIG, options)
@@ -37,6 +38,11 @@ export class SafaRouter {
     this._scrollManager = new ScrollManager()
     this._errorManager = new ErrorManager(this.config)
     this._accessController = new AccessController(this.config)
+    this._loaderCache = new LoaderCache({
+      staleTime: this.config.loaderStaleTime ?? 30000,
+      enabled: this.config.loaderCache !== false,
+      maxSize: this.config.loaderCacheMaxSize ?? 100,
+    })
 
     this._pathname = '/'
     this._params = {}
@@ -47,6 +53,9 @@ export class SafaRouter {
     this._targetEl = null
     this._navId = 0
     this._maintenanceMode = this.config.maintenanceMode?.enabled || false
+    this._interceptActive = false
+    this._previousRouteData = null
+    this._previousScrollY = 0
 
     this._globalNotFound = this.config.notFound || null
     this._globalError = this.config.error || null
@@ -93,11 +102,27 @@ export class SafaRouter {
       }
     }
 
+    this._initGlobalLinkHandler()
     await this._resolve(this._history.path, 'replace')
     this._realtime.start()
     emit(this._events, EVENTS.READY, { pathname: this._pathname })
     this._started = true
     return this
+  }
+
+  _initGlobalLinkHandler() {
+    if (this._globalLinkHandler) return
+    this._globalLinkHandler = (e) => {
+      const link = e.target.closest('[data-safa-link]')
+      if (!link || link.getAttribute('target') === '_blank') return
+      if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return
+      if (e.button !== 0) return
+      const href = link.getAttribute('href')
+      if (!href) return
+      e.preventDefault()
+      this.push(href)
+    }
+    document.addEventListener('click', this._globalLinkHandler)
   }
 
   isStarted() { return this._started }
@@ -113,11 +138,26 @@ export class SafaRouter {
     this._history.destroy()
     for (const k of Object.keys(this._events)) this._events[k] = []
     this._cache.clear()
+    this._loaderCache.clear()
     this._prefetched.clear()
     if (this._linkObserver) { this._linkObserver.disconnect(); this._linkObserver = null }
     this._scrollManager.clear()
+    if (this._globalLinkHandler) {
+      document.removeEventListener('click', this._globalLinkHandler)
+      this._globalLinkHandler = null
+    }
+    if (this._interceptOverlay) { this._interceptOverlay.remove(); this._interceptOverlay = null }
+    this._interceptActive = false
     this._targetEl = null
     emit(this._events, EVENTS.DESTROY, {})
+  }
+
+  _stripBase(path) {
+    const base = this.config.basePath?.replace(/\/+$/, '')
+    if (base && typeof path === 'string' && path.startsWith(base + '/')) {
+      path = path.slice(base.length)
+    }
+    return path === '' || path === base ? '/' : path
   }
 
   async push(url, state = {}) {
@@ -126,7 +166,7 @@ export class SafaRouter {
     if (!u) {
       try { u = new URL(url, location.origin) } catch { console.warn(`[SafaRouter] Invalid URL: ${url}`); return }
     }
-    await this._navigate(normalizePath(u.pathname), 'push', parseQuery(u.search), state)
+    await this._navigate(this._stripBase(normalizePath(u.pathname)), 'push', parseQuery(u.search), state)
   }
 
   async replace(url, state = {}) {
@@ -135,7 +175,7 @@ export class SafaRouter {
     if (!u) {
       try { u = new URL(url, location.origin) } catch { console.warn(`[SafaRouter] Invalid URL: ${url}`); return }
     }
-    await this._navigate(normalizePath(u.pathname), 'replace', parseQuery(u.search), state)
+    await this._navigate(this._stripBase(normalizePath(u.pathname)), 'replace', parseQuery(u.search), state)
   }
 
   async pushRoute(routeName, params = {}, query = {}) {
@@ -216,7 +256,7 @@ export class SafaRouter {
 
   createLink(config) { return new Link({ ...config, router: this }) }
 
-  plugin(plugin) { return this._plugins.use(plugin) }
+  plugin(plugin) { this._plugins.use(plugin); return this }
 
   ejectPlugin(name) { return this._plugins.eject(name) }
 
@@ -298,7 +338,7 @@ export class SafaRouter {
     document.head.appendChild(link)
   }
 
-  clearCache() { this._cache.clear() }
+  clearCache() { this._cache.clear(); this._loaderCache.clear() }
 
   _observeLinks() {
     if (typeof IntersectionObserver === 'undefined') return
@@ -524,16 +564,51 @@ export class SafaRouter {
           }
         }
 
-        // ── Route data loader ──
+        // ── Route data loader (SWR) ──
         const loader = routeMatch.node.loader
+        const loaderTtl = routeMatch.node.meta?.loaderTtl
         if (loader) {
-          try {
-            const data = await loader({ params: routeMatch.params, query, router: this })
-            if (this._navId !== navId) { this._isLoading = false; return }
-            routeMatch.data = data
-          } catch (e) {
-            if (e instanceof HttpError) throw e
+          const swr = this._loaderCache.get(routeMatch.node.fullPath || path, routeMatch.params, query)
+          if (swr && !swr.stale) {
+            routeMatch.data = swr.data
+          } else if (swr && swr.stale) {
+            routeMatch.data = swr.data
+            this._loaderCache.fetch(routeMatch.node.fullPath || path, routeMatch.params, query, () =>
+              loader({ params: routeMatch.params, query, router: this }), loaderTtl
+            ).then(fresh => {
+              if (this._navId === navId) {
+                routeMatch.data = fresh
+                this._renderComponents()
+              }
+            }).catch(() => {})
+          } else {
+            try {
+              routeMatch.data = await this._loaderCache.fetch(
+                routeMatch.node.fullPath || path, routeMatch.params, query,
+                () => loader({ params: routeMatch.params, query, router: this }), loaderTtl
+              )
+              if (this._navId !== navId) { this._isLoading = false; return }
+            } catch (e) {
+              if (e instanceof HttpError) throw e
+            }
           }
+        }
+
+        // ── Parallel slot loaders ──
+        const slots = routeMatch.slots
+        if (slots) {
+          routeMatch.slotData = {}
+          const slotEntries = Object.entries(slots)
+          await Promise.all(slotEntries.map(async ([name, slot]) => {
+            if (!slot.loader) return
+            try {
+              routeMatch.slotData[name] = await slot.loader({
+                params: routeMatch.params, query, router: this,
+              })
+            } catch (e) {
+              if (e instanceof HttpError) throw e
+            }
+          }))
         }
 
         if (routeMatch.node.loading) {
@@ -608,15 +683,25 @@ export class SafaRouter {
       if (this._navId !== navId) { this._isLoading = false; return }
 
       this._scrollManager.save(this._pathname)
+      this._previousPathname = this._pathname
 
       this._pathname = path
       this._params = routeMatch?.params || {}
       this._query = query
 
       emit(this._events, EVENTS.BEFORE_RENDER, { pathname: path })
-      await this._render(pageContent, layoutFns)
+      if (routeMatch.intercept && this._shouldIntercept(routeMatch.intercept)) {
+        this._interceptActive = true
+        this._previousRouteData = this._routeData
+        this._interceptContent = pageContent
+        this._interceptLayoutFns = layoutFns
+        await this._renderIntercept(pageContent, layoutFns)
+      } else {
+        await this._render(pageContent, layoutFns)
+      }
       emit(this._events, EVENTS.AFTER_RENDER, { pathname: path })
       this._renderComponents()
+      this._renderSlots()
 
       if (this._navId !== navId) { this._isLoading = false; return }
 
@@ -649,11 +734,11 @@ export class SafaRouter {
     const routeTransition = this._routeData?.node?.meta?.transition
     if (routeTransition) {
       return {
-        transitionDuration: routeTransition.duration ?? this.config.transitionDuration,
-        transitionEnterClass: routeTransition.enterClass ?? this.config.transitionEnterClass,
-        transitionExitClass: routeTransition.exitClass ?? this.config.transitionExitClass,
-        transitionEnterActiveClass: routeTransition.enterActiveClass ?? this.config.transitionEnterActiveClass,
-        transitionExitActiveClass: routeTransition.exitActiveClass ?? this.config.transitionExitActiveClass,
+        duration: routeTransition.duration ?? this.config.transitionDuration,
+        enterClass: routeTransition.enterClass ?? this.config.transitionEnterClass,
+        exitClass: routeTransition.exitClass ?? this.config.transitionExitClass,
+        enterActiveClass: routeTransition.enterActiveClass ?? this.config.transitionEnterActiveClass,
+        exitActiveClass: routeTransition.exitActiveClass ?? this.config.transitionExitActiveClass,
       }
     }
     return null
@@ -671,9 +756,10 @@ export class SafaRouter {
           : (pageContent || '')))
 
     const transCfg = this._getTransitionConfig()
-    const duration = transCfg?.transitionDuration ?? this.config.transitionDuration
+    const duration = transCfg?.duration ?? this.config.transitionDuration
 
     if (duration > 0) {
+      if (transCfg?.duration) this._transitions.setDuration(transCfg.duration)
       await this._transitions.run(this._targetEl, async () => {
         this._targetEl.innerHTML = html
         this._bindLinks()
@@ -748,7 +834,7 @@ export class SafaRouter {
   }
 
   _focus() {
-    if (!this._targetEl) return
+    if (!this._targetEl || typeof this._targetEl.querySelector !== 'function') return
     const h1 = this._targetEl.querySelector('h1')
     if (h1) {
       h1.setAttribute('tabindex', '-1')
@@ -764,9 +850,8 @@ export class SafaRouter {
       el.addEventListener('click', (e) => {
         if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return
         if (e.button !== 0) return
-        e.preventDefault()
         const href = el.getAttribute('href')
-        if (href) this.push(href)
+        if (href) { e.preventDefault(); this.push(href) }
       })
     }
   }
@@ -824,6 +909,7 @@ export class SafaRouter {
       if (method === 'push') this._history.push(path, state)
       else if (method === 'replace') this._history.replace(path, state)
       this._pathname = path
+      this._extractTitle(notFoundPage)
       await this._renderWithLayouts(notFoundPage, status, path)
       return
     }
@@ -834,6 +920,7 @@ export class SafaRouter {
       if (method === 'push') this._history.push(path, state)
       else if (method === 'replace') this._history.replace(path, state)
       this._pathname = path
+      this._extractTitle(notFoundHtml)
       await this._renderWithLayouts(notFoundHtml, status, path)
       return
     }
@@ -867,12 +954,11 @@ export class SafaRouter {
     const status = statusCode || (err?.statusCode) || HTTP_STATUS.INTERNAL_SERVER_ERROR
     const showStack = this.config.errors?.stackTraces !== false
 
+    const routeError = this._routeData?.node?.error
     this._routeData = null
     console.error(`❌ خطا در صفحه ی ${path}: ${err.message || err}\nصفا باشه`)
     this._errorManager.log(status, path, err)
     emit(this._events, EVENTS.ERROR, { path, error: err, statusCode: status })
-
-    const routeError = this._routeData?.node?.error
     if (routeError) {
       try {
         const fn = await this._loadComponent(routeError)
@@ -888,6 +974,7 @@ export class SafaRouter {
       mgrPage = await this._errorManager.resolvePage(status, errPageDir, signal)
     } catch {}
     if (mgrPage) {
+      this._extractTitle(mgrPage)
       await this._renderWithLayouts(mgrPage, status, path)
       return
     }
@@ -895,6 +982,7 @@ export class SafaRouter {
     // Fallback: try generic error.html
     const errorHtml = this.config.pagesDir ? await this._fetchSpecial(path, 'error.html', signal) : null
     if (errorHtml) {
+      this._extractTitle(errorHtml)
       await this._renderWithLayouts(errorHtml, status, path)
       return
     }
@@ -931,7 +1019,97 @@ export class SafaRouter {
       })
   }
 
+  _renderSlots() {
+    if (typeof document === 'undefined') return
+    const slots = this._routeData?.slots
+    if (!slots) return
+    const slotData = this._routeData?.slotData || {}
+    const ctx = { path: this._pathname, router: this, params: this._params, query: this._query }
+    for (const [name, slot] of Object.entries(slots)) {
+      if (!slot.page) continue
+      const fn = typeof slot.page === 'function' ? slot.page : null
+      if (!fn) continue
+      const data = slotData[name]
+      const html = this._resolveTemplate(fn({ ...ctx, data }))
+      const target = document.querySelector(`[data-safa-slot="${name}"]`)
+      if (target) {
+        target.innerHTML = html
+        const links = target.querySelectorAll('[data-safa-link]')
+        for (const el of links) {
+          if (el.getAttribute('target') === '_blank') continue
+          el.addEventListener('click', (e) => {
+            if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return
+            if (e.button !== 0) return
+            e.preventDefault()
+            const href = el.getAttribute('href')
+            if (href) this.push(href)
+          })
+        }
+      }
+    }
+  }
+
+  _shouldIntercept(intercept) {
+    if (!this._previousRouteData) return false
+    if (intercept === true) return true
+    if (typeof intercept === 'object' && intercept.from) {
+      const fromPath = this._previousRouteData.node?.fullPath || this._previousPathname || ''
+      if (typeof intercept.from === 'string') {
+        return fromPath === intercept.from || new RegExp(intercept.from).test(fromPath)
+      }
+      if (intercept.from instanceof RegExp) {
+        return intercept.from.test(fromPath)
+      }
+    }
+    return false
+  }
+
+  async _renderIntercept(pageContent, layoutFns) {
+    if (typeof document === 'undefined' || !this._targetEl) return
+    const data = this._routeData?.data
+    const html = this._resolveTemplate(layoutFns.length > 0
+      ? await this._applyLayoutChain(pageContent, layoutFns, 0, data)
+      : (typeof pageContent === 'function'
+          ? pageContent({ params: this._params, query: this._query, router: this, data })
+          : (pageContent || '')))
+    const overlay = document.createElement('div')
+    overlay.className = 'safa-intercept-overlay'
+    overlay.style.cssText = 'position:fixed;inset:0;z-index:9999;overflow-y:auto;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;'
+    const content = document.createElement('div')
+    content.className = 'safa-intercept-content'
+    content.style.cssText = 'background:#fff;border-radius:8px;max-width:90vw;max-height:90vh;overflow:auto;position:relative;'
+    content.innerHTML = html
+    const closeBtn = document.createElement('button')
+    closeBtn.innerHTML = '&times;'
+    closeBtn.className = 'safa-intercept-close'
+    closeBtn.style.cssText = 'position:absolute;top:8px;right:12px;border:none;background:none;font-size:24px;cursor:pointer;z-index:1;'
+    closeBtn.setAttribute('aria-label', 'Close')
+    closeBtn.addEventListener('click', () => this.dismissInterceptor())
+    content.prepend(closeBtn)
+    overlay.appendChild(content)
+    this._targetEl.appendChild(overlay)
+    this._bindLinks()
+    this._interceptOverlay = overlay
+  }
+
+  dismissInterceptor() {
+    if (!this._interceptActive) return
+    this._interceptActive = false
+    if (this._interceptOverlay) {
+      this._interceptOverlay.remove()
+      this._interceptOverlay = null
+    }
+    this._interceptContent = null
+    this._interceptLayoutFns = null
+    if (this._previousRouteData) {
+      this._routeData = this._previousRouteData
+      this._previousRouteData = null
+    }
+    this._history.back()
+  }
+
   _renderComponents() {
+    if (typeof document === 'undefined') return
     const ctx = { path: this._pathname, router: this, params: this._params, query: this._query }
     const routeMeta = this._routeData?.node?.meta || {}
     const hideComponents = routeMeta.hideComponents
@@ -960,7 +1138,7 @@ export class SafaRouter {
   }
 
   _fallback404(path, statusCode = 404, showStack = true) {
-    const homeLink = `<a href="/" style="color:var(--color-accent);text-decoration:underline;">Back to home</a>`
+    const homeLink = `<a href="/" data-safa-link style="color:var(--color-accent);text-decoration:underline;">Back to home</a>`
     return [
       '<div class="safa-error safa-404" style="text-align:center;padding:3rem 0;">',
       `<h1 style="font-size:4rem;font-weight:800;margin-bottom:0.5rem;">${statusCode}</h1>`,
@@ -971,7 +1149,7 @@ export class SafaRouter {
   }
 
   _fallbackError(err, statusCode = 500, showStack = true) {
-    const homeLink = `<a href="/" style="color:var(--color-accent);text-decoration:underline;">Back to home</a>`
+    const homeLink = `<a href="/" data-safa-link style="color:var(--color-accent);text-decoration:underline;">Back to home</a>`
     const message = this._errorManager.formatError(err, showStack)
     const code = statusCode || 500
     return [
@@ -1000,7 +1178,7 @@ export class SafaRouter {
   _onHistoryChange({ path, action, state }) {
     if (action === 'back') return
     if (action === 'popstate') {
-      this._resolve(path, 'replace')
+      this._resolve(this._stripBase(path), 'replace')
       if (state && state._scrollY !== undefined) {
         if (this.config.scrollToTop) {
           window.scrollTo(0, 0)

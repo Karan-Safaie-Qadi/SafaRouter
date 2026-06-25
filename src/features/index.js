@@ -1,10 +1,10 @@
-import { access } from './access.js'
-import { realtime } from './realtime.js'
-import { components } from './components.js'
-import { errors } from './errors.js'
-import { maintenance } from './maintenance.js'
-import { scroll } from './scroll.js'
-import { transitions } from './transitions.js'
+import * as access from './access.js'
+import * as realtime from './realtime.js'
+import * as components from './components.js'
+import * as errors from './errors.js'
+import * as maintenance from './maintenance.js'
+import * as scroll from './scroll.js'
+import * as transitions from './transitions.js'
 
 const FEATURE_MAP = {
   access: { module: access, key: 'access', detect: (c) => c.access },

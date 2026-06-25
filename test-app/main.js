@@ -20,24 +20,18 @@ const router = new SafaRouter({
     stackTraces: true,
   },
 
-  // ── v1.3.0: AccessController ──
+  // ── v1.3.0: AccessController + Allowlist ──
   access: {
     blocked: ['/admin', '/private/**'],
     ignored: ['/hidden', '/deprecated/*'],
+    allowed: ['/allowlist-demo'],
+    mode: 'blocklist',
   },
 
   // ── v1.3.0: Maintenance Mode (disabled by default) ──
   maintenanceMode: {
     enabled: false,
     allowedPaths: ['/login', '/assets/**', '/sandbox'],
-  },
-
-  // ── v1.4.2: Access Allowlist mode ──
-  access: {
-    blocked: ['/admin', '/private/**'],
-    ignored: ['/hidden', '/deprecated/*'],
-    allowed: ['/allowlist-demo'],
-    mode: 'blocklist',
   },
 
   // ── v1.4.3: Real-time updates ──

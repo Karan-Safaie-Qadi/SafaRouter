@@ -22,6 +22,7 @@ export class ScrollManager {
   }
 
   restore(pathname, scrollToTop = false) {
+    if (typeof window === 'undefined') return
     if (scrollToTop) {
       window.scrollTo(0, 0)
       return

@@ -610,3 +610,57 @@ declare module 'safa-router/features/transitions' {
 declare module 'safa-router/vite' {
   export function safaRouter(): { name: string; transform(code: string, id: string): { code: string; map: null } | undefined }
 }
+
+// ─── Type-Safe Routes (v2.0.0) ─────────────────────
+declare module 'safa-router/typed' {
+  export { SafaRouter } from 'safa-router'
+
+  // ─── Path param inference ─────────────────────
+  type SafeRouteParams<T extends string> =
+    T extends `${string}[${infer Param}]${infer Rest}`
+      ? Param extends `...${infer CatchAll}`
+        ? { [K in CatchAll]: string[] } & SafeRouteParams<Rest>
+        : { [K in Param]: string } & SafeRouteParams<Rest>
+      : {}
+
+  type SafeLoaderContext<T extends string> = {
+    params: SafeRouteParams<T>
+    query: Record<string, any>
+    router: SafaRouter
+    data?: Record<string, any>
+  }
+
+  type SafeGuardContext<T extends string> = SafeLoaderContext<T>
+
+  // ─── Typed route definition ───────────────────
+  interface TypedRouteEntry<T extends string> {
+    page?: any
+    layout?: any
+    loading?: any
+    error?: any
+    notFound?: any
+    children?: Record<string, any>
+    meta?: Record<string, any>
+    loader?: (ctx: SafeLoaderContext<T>) => Record<string, any> | Promise<Record<string, any>>
+    guard?: (ctx: SafeGuardContext<T>) => boolean | string | Promise<boolean | string>
+    transition?: RouteTransitionConfig
+  }
+
+  // ─── Helpers ──────────────────────────────────
+  export function defineRoute<T extends string>(config: TypedRouteEntry<T>): TypedRouteEntry<T>
+
+  export function defineRoutes<T extends Record<string, TypedRouteEntry<any>>>(
+    routes: T
+  ): T
+
+  export function createRouter<T extends Record<string, TypedRouteEntry<any>>>(
+    routes: T,
+    options?: SafaRouterOptions
+  ): SafaRouter & {
+    pushRoute<P extends keyof T & string>(
+      name: P,
+      params: SafeRouteParams<P>,
+      query?: Record<string, any>
+    ): Promise<void>
+  }
+}

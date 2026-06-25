@@ -1,5 +1,3 @@
-import { detectFeatures } from '../features/index.js'
-
 const FEATURE_IMPORT_MAP = {
   access: 'safa-router/features/access',
   realtime: 'safa-router/features/realtime',
@@ -20,6 +18,9 @@ const CONFIG_KEYS = {
   scrollRestoration: 'scroll',
   transitionDuration: 'transitions',
   transitionEnterClass: 'transitions',
+  transitionExitClass: 'transitions',
+  transitionEnterActiveClass: 'transitions',
+  transitionExitActiveClass: 'transitions',
 }
 
 /**
@@ -38,8 +39,6 @@ export function safaRouter() {
     name: 'safa-router',
 
     transform(code, id) {
-      if (!code.includes('SafaRouter') && !code.includes('safa-router')) return
-
       const features = detectFeaturesFromCode(code)
       if (features.length === 0) return
 
@@ -61,6 +60,8 @@ function detectFeaturesFromCode(code) {
     const body = configMatch[1]
 
     for (const [key, feature] of Object.entries(CONFIG_KEYS)) {
+      // Skip components — handled separately below
+      if (key === 'components') continue
       const regex = new RegExp(`\\b${key}\\s*:`, 'i')
       if (regex.test(body)) {
         features.add(feature)

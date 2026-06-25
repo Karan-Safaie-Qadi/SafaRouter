@@ -159,4 +159,84 @@ describe('SafaRouter v1.3.0 integration', () => {
       expect(fn).toHaveBeenCalled()
     })
   })
+
+  describe('SWR loader caching', () => {
+    const page = () => '<h1>Test</h1>'
+
+    async function createRouterWithLoader(opts = {}) {
+      const RouteTreeModule = await import('../src/RouteTree.js')
+      const routes = opts.routes || {}
+      const router = createRouter({ routes, ...opts })
+      router._routeTree = new RouteTreeModule.RouteTree(routes)
+      router._history = { push: vi.fn(), replace: vi.fn(), onChange: vi.fn(), init: vi.fn() }
+      router._started = true
+      router._targetEl = { innerHTML: '', querySelectorAll: () => [], querySelector: () => null }
+      return router
+    }
+
+    it('caches loader data and returns fresh on second call', async () => {
+      let callCount = 0
+      const router = await createRouterWithLoader({
+        loaderStaleTime: 60000,
+        routes: {
+          '/': { page, loader: () => { callCount++; return { msg: 'hello' } } },
+        },
+      })
+      await router._resolve('/', 'replace')
+      expect(router._routeData.data).toEqual({ msg: 'hello' })
+      expect(callCount).toBe(1)
+
+      await router._resolve('/', 'replace')
+      expect(callCount).toBe(1)
+    })
+
+    it('re-fetches stale data in background', async () => {
+      let callCount = 0
+      const router = await createRouterWithLoader({
+        loaderStaleTime: 10,
+        routes: {
+          '/': { page, loader: () => { callCount++; return { msg: 'hello' } } },
+        },
+      })
+      await router._resolve('/', 'replace')
+      expect(router._routeData?.data).toEqual({ msg: 'hello' })
+      expect(callCount).toBe(1)
+
+      await new Promise(r => setTimeout(r, 30))
+
+      await router._resolve('/', 'replace')
+      expect(router._routeData?.data).toEqual({ msg: 'hello' })
+      expect(callCount).toBe(2)
+    })
+
+    it('does not cache when loaderCache=false', async () => {
+      let callCount = 0
+      const router = await createRouterWithLoader({
+        loaderCache: false,
+        routes: {
+          '/': { page, loader: () => { callCount++; return { msg: 'hello' } } },
+        },
+      })
+      await router._resolve('/', 'replace')
+      expect(callCount).toBe(1)
+      await router._resolve('/', 'replace')
+      expect(callCount).toBe(2)
+    })
+
+    it('loaderError propagates', async () => {
+      const router = await createRouterWithLoader({
+        routes: {
+          '/': { page, loader: () => { throw new Error('fail') } },
+        },
+      })
+      router._errorManager = {
+        resolvePage: () => null,
+        log: () => {},
+        setLogHandler: () => {},
+      }
+      router._handleNotFound = () => {}
+      router._handleError = () => {}
+      await router._resolve('/', 'replace')
+    })
+  })
 })

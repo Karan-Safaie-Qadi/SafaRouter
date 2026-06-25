@@ -5,10 +5,11 @@ import { Link } from '../Link.js'
 import { normalizePath, parseQuery, emit, createURL, isExternalURL, deepMerge } from '../utils.js'
 import { EVENTS, DEFAULT_CONFIG } from '../constants.js'
 import { SafaError } from '../errors.js'
+import { LoaderCache } from '../LoaderCache.js'
 
 export class SafaRouter {
-  static version = '1.5.0'
-  static VERSION = '1.5.0'
+  static version = '2.0.0'
+  static VERSION = '2.0.0'
 
   constructor(options = {}) {
     this.config = deepMerge(DEFAULT_CONFIG, options)
@@ -28,6 +29,11 @@ export class SafaRouter {
     this._maxCacheSize = this.config.maxCacheSize ?? 50
     this._abortController = null
     this._prefetched = new Set()
+    this._loaderCache = new LoaderCache({
+      staleTime: this.config.loaderStaleTime ?? 30000,
+      enabled: this.config.loaderCache !== false,
+      maxSize: this.config.loaderCacheMaxSize ?? 100,
+    })
 
     this._pathname = '/'
     this._params = {}
@@ -90,16 +96,36 @@ export class SafaRouter {
       if (feature.init) feature.init(this, this._featureInstances[name] || this.config)
     }
 
+    this._initGlobalLinkHandler()
     await this._resolve(this._history.path, 'replace')
     emit(this._events, EVENTS.READY, { pathname: this._pathname })
     this._started = true
     return this
   }
 
+  _initGlobalLinkHandler() {
+    if (this._globalLinkHandler) return
+    this._globalLinkHandler = (e) => {
+      const link = e.target.closest('[data-safa-link]')
+      if (!link || link.getAttribute('target') === '_blank') return
+      if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return
+      if (e.button !== 0) return
+      const href = link.getAttribute('href')
+      if (!href) return
+      e.preventDefault()
+      this.push(href)
+    }
+    document.addEventListener('click', this._globalLinkHandler)
+  }
+
   isStarted() { return this._started }
 
   destroy() {
     this._started = false
+    if (this._globalLinkHandler) {
+      document.removeEventListener('click', this._globalLinkHandler)
+      this._globalLinkHandler = null
+    }
     for (const [name, feature] of Object.entries(this._features)) {
       if (feature.destroy) feature.destroy(this)
     }
@@ -110,6 +136,7 @@ export class SafaRouter {
     this._history.destroy()
     for (const k of Object.keys(this._events)) this._events[k] = []
     this._cache.clear()
+    this._loaderCache.clear()
     this._prefetched.clear()
     if (this._linkObserver) { this._linkObserver.disconnect(); this._linkObserver = null }
     this._targetEl = null
@@ -117,13 +144,21 @@ export class SafaRouter {
   }
 
   // ─── Navigation ────────────────────────────────
+  _stripBase(path) {
+    const base = this.config.basePath?.replace(/\/+$/, '')
+    if (base && typeof path === 'string' && path.startsWith(base + '/')) {
+      path = path.slice(base.length)
+    }
+    return path === '' || path === base ? '/' : path
+  }
+
   async push(url, state = {}) {
     if (isExternalURL(url)) { window.location.href = url; return }
     let u = createURL(url)
     if (!u) {
       try { u = new URL(url, location.origin) } catch { console.warn(`[SafaRouter] Invalid URL: ${url}`); return }
     }
-    await this._navigate(normalizePath(u.pathname), 'push', parseQuery(u.search), state)
+    await this._navigate(this._stripBase(normalizePath(u.pathname)), 'push', parseQuery(u.search), state)
   }
 
   async replace(url, state = {}) {
@@ -132,7 +167,7 @@ export class SafaRouter {
     if (!u) {
       try { u = new URL(url, location.origin) } catch { console.warn(`[SafaRouter] Invalid URL: ${url}`); return }
     }
-    await this._navigate(normalizePath(u.pathname), 'replace', parseQuery(u.search), state)
+    await this._navigate(this._stripBase(normalizePath(u.pathname)), 'replace', parseQuery(u.search), state)
   }
 
   async pushRoute(routeName, params = {}, query = {}) {
@@ -240,11 +275,11 @@ export class SafaRouter {
     document.head.appendChild(link)
   }
 
-  clearCache() { this._cache.clear() }
+  clearCache() { this._cache.clear(); this._loaderCache.clear() }
 
   // ─── Navigation internals ─────────────────────
   async _onHistoryChange(path) {
-    await this._navigate(path, 'replace', {})
+    await this._navigate(this._stripBase(path), 'replace', {})
   }
 
   async _navigate(path, method, query, state, depth = 0) {

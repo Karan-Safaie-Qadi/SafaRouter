@@ -256,9 +256,9 @@ describe('Per-route transition', () => {
       },
     }
     const cfg = router._getTransitionConfig()
-    expect(cfg.transitionDuration).toBe(500)
-    expect(cfg.transitionEnterClass).toBe('custom-enter')
-    expect(cfg.transitionExitClass).toBe('page-exit')
+    expect(cfg.duration).toBe(500)
+    expect(cfg.enterClass).toBe('custom-enter')
+    expect(cfg.exitClass).toBe('page-exit')
   })
 
   it('falls back to global config when no route transition', () => {
