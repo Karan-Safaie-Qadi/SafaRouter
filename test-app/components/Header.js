@@ -11,7 +11,7 @@ export default function headerComponent({ path }) {
     { href: '/test-app/react-demo', label: 'React Demo' },
     { href: '/test-app/vue-demo', label: 'Vue Demo' },
     { href: '/test-app/svelte-demo', label: 'Svelte Demo' },
-    { href: '/test-app/vanilla-js-demo', label: 'Vanilla JS Demo' },
+    { href: '/test-app/vanilla-demo', label: 'Vanilla JS Demo' },
     { href: '/test-app/faq', label: 'FAQ' },
     { href: '/test-app/benchmarks', label: 'Benchmarks' },
     { href: '/test-app/features', label: 'Features' },

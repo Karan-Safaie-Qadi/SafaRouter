@@ -99,7 +99,7 @@ const router = new SafaRouter({
     '/react-demo': {},
     '/vue-demo': {},
     '/svelte-demo': {},
-    '/vanilla-js-demo': {},
+    '/vanilla-demo': {},
     '/faq': {},
     '/benchmarks': {},
     '/features': {},
@@ -135,6 +135,7 @@ const router = new SafaRouter({
     },
 
     '/login': {},
+    '/not-found': {},
 
     '/transition': {
       meta: {

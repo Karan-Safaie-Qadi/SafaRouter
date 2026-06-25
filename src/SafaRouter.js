@@ -13,8 +13,8 @@ import { ErrorManager } from './ErrorManager.js'
 import { AccessController } from './AccessController.js'
 
 export class SafaRouter {
-  static version = '1.4.4'
-  static VERSION = '1.4.4'
+  static version = '1.5.0'
+  static VERSION = '1.5.0'
 
   constructor(options = {}) {
     this.config = deepMerge(DEFAULT_CONFIG, options)
