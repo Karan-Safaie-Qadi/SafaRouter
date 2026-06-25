@@ -96,6 +96,13 @@ const router = new SafaRouter({
       meta: { hideComponents: true },
     },
     '/allowlist-demo': {},
+    '/react-demo': {},
+    '/vue-demo': {},
+    '/svelte-demo': {},
+    '/vanilla-js-demo': {},
+    '/faq': {},
+    '/benchmarks': {},
+    '/features': {},
     '/sitemap': {},
 
     // Dynamic error routes (e.g. /errors/404, /errors/500)

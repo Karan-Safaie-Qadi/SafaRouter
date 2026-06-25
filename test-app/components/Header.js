@@ -8,6 +8,13 @@ export default function headerComponent({ path }) {
     { href: '/test-app/no-header', label: 'NoHeader' },
     { href: '/test-app/plain', label: 'Plain' },
     { href: '/test-app/sitemap', label: 'Sitemap' },
+    { href: '/test-app/react-demo', label: 'React Demo' },
+    { href: '/test-app/vue-demo', label: 'Vue Demo' },
+    { href: '/test-app/svelte-demo', label: 'Svelte Demo' },
+    { href: '/test-app/vanilla-js-demo', label: 'Vanilla JS Demo' },
+    { href: '/test-app/faq', label: 'FAQ' },
+    { href: '/test-app/benchmarks', label: 'Benchmarks' },
+    { href: '/test-app/features', label: 'Features' },
   ]
   return `<header style="border-bottom:1px solid var(--color-border);padding:0.75rem 1.5rem;margin-bottom:1.5rem;">
   <nav style="display:flex;gap:1rem;max-width:900px;margin:0 auto;align-items:center;">

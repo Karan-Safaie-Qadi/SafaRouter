@@ -1,7 +1,7 @@
 import { SafaDevServer } from './src/DevServer.js'
 
 const server = new SafaDevServer({
-  port: 3000,
+  port: 3050,
   root: './test-app',
   basePath: '/test-app',
   watch: true,

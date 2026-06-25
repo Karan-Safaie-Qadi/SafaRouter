@@ -1,0 +1,212 @@
+<div class="page-enter">
+  <h1>Features</h1>
+  <p style="color: var(--color-text-muted); margin-bottom: 1.5rem;">
+    A comprehensive overview of everything SafaRouter offers out of the box &mdash; zero dependencies, fully tested.
+  </p>
+
+  <div class="card">
+    <h2>🗂️ Routing</h2>
+    <div style="display:flex;flex-direction:column;gap:0.75rem;">
+      <div>
+        <strong>Nested Routes</strong>
+        <p style="margin:0.25rem 0 0;font-size:0.875rem;color:var(--color-text-muted);">Define routes as a deep object tree mirroring your URL structure. Each segment maps to a file or inline component.</p>
+      </div>
+      <div>
+        <strong>Dynamic Routes</strong>
+        <p style="margin:0.25rem 0 0;font-size:0.875rem;color:var(--color-text-muted);">Use <code>[param]</code>, <code>[...catchAll]</code>, and <code>[[...optional]]</code> segments to match variable URL patterns.</p>
+      </div>
+      <div>
+        <strong>Auto-Resolve</strong>
+        <p style="margin:0.25rem 0 0;font-size:0.875rem;color:var(--color-text-muted);">Pages are automatically resolved from <code>pageDir</code> by path. No manual imports for most routes.</p>
+      </div>
+      <div>
+        <strong>Route Groups</strong>
+        <p style="margin:0.25rem 0 0;font-size:0.875rem;color:var(--color-text-muted);">Organise routes with <code>(group)</code> syntax without affecting the URL path.</p>
+      </div>
+      <div>
+        <strong>Hash Mode</strong>
+        <p style="margin:0.25rem 0 0;font-size:0.875rem;color:var(--color-text-muted);">Support for hash-based routing (<code>useHash: true</code>) for environments without History API fallback.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>📐 Layouts</h2>
+    <div style="display:flex;flex-direction:column;gap:0.75rem;">
+      <div>
+        <strong>Nested Layouts</strong>
+        <p style="margin:0.25rem 0 0;font-size:0.875rem;color:var(--color-text-muted);">Per-route layouts that wrap child routes. Layouts can be nested arbitrarily deep, just like Next.js App Router.</p>
+      </div>
+      <div>
+        <strong>Global Layout</strong>
+        <p style="margin:0.25rem 0 0;font-size:0.875rem;color:var(--color-text-muted);">Define a top-level layout via the <code>layout</code> config option that wraps every page.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>🧩 Components</h2>
+    <div style="display:flex;flex-direction:column;gap:0.75rem;">
+      <div>
+        <strong>Smart Components</strong>
+        <p style="margin:0.25rem 0 0;font-size:0.875rem;color:var(--color-text-muted);">Functions that return HTML strings, re-rendered on every navigation. Receive route context (<code>path</code>, <code>params</code>, <code>query</code>). Perfect for dynamic headers, footers, sidebars.</p>
+      </div>
+      <div>
+        <strong>hideComponents</strong>
+        <p style="margin:0.25rem 0 0;font-size:0.875rem;color:var(--color-text-muted);">Per-route meta option to hide specific smart components (e.g. footer on certain pages). Set to <code>true</code> to hide all.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>🔒 Access Control</h2>
+    <div style="display:flex;flex-direction:column;gap:0.75rem;">
+      <div>
+        <strong>Block Routes</strong>
+        <p style="margin:0.25rem 0 0;font-size:0.875rem;color:var(--color-text-muted);">Define blocked route patterns that return <strong>403 Forbidden</strong>. Supports glob patterns (<code>*</code> single-level, <code>**</code> recursive).</p>
+      </div>
+      <div>
+        <strong>Allow Routes</strong>
+        <p style="margin:0.25rem 0 0;font-size:0.875rem;color:var(--color-text-muted);">Define allowed route patterns that explicitly grant access when in allowlist mode.</p>
+      </div>
+      <div>
+        <strong>Ignore Routes</strong>
+        <p style="margin:0.25rem 0 0;font-size:0.875rem;color:var(--color-text-muted);">Define ignored route patterns that return <strong>silent 404</strong>. Makes routes appear non-existent.</p>
+      </div>
+      <div>
+        <strong>Blocklist / Allowlist Modes</strong>
+        <p style="margin:0.25rem 0 0;font-size:0.875rem;color:var(--color-text-muted);">Toggle between blocklist (default &mdash; allow all except blocked/ignored) and allowlist (deny all except explicitly allowed). Switch at runtime via <code>router.accessController.setMode()</code>.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>⚠️ Error Handling</h2>
+    <div style="display:flex;flex-direction:column;gap:0.75rem;">
+      <div>
+        <strong>Error Pages</strong>
+        <p style="margin:0.25rem 0 0;font-size:0.875rem;color:var(--color-text-muted);">Custom HTML error pages for any HTTP status code (400–511). Loaded from <code>{code}.html</code>, with group fallback (<code>4xx.html</code>, <code>5xx.html</code>) and built-in fallback.</p>
+      </div>
+      <div>
+        <strong>notFound Pages</strong>
+        <p style="margin:0.25rem 0 0;font-size:0.875rem;color:var(--color-text-muted);">Built-in or custom 404 handling for unmatched routes.</p>
+      </div>
+      <div>
+        <strong>Custom Errors</strong>
+        <p style="margin:0.25rem 0 0;font-size:0.875rem;color:var(--color-text-muted);">Per-status enable/disable via <code>setStatusEnabled()</code> and per-group control (<code>client-error</code>, <code>server-error</code>).</p>
+      </div>
+      <div>
+        <strong>Error Logging</strong>
+        <p style="margin:0.25rem 0 0;font-size:0.875rem;color:var(--color-text-muted);">Pluggable error logger with timestamp, path, status code, and error details. Custom log handler via <code>setLogHandler()</code>.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>🛡️ Middleware &amp; Guards</h2>
+    <div style="display:flex;flex-direction:column;gap:0.75rem;">
+      <div>
+        <strong>Middleware</strong>
+        <p style="margin:0.25rem 0 0;font-size:0.875rem;color:var(--color-text-muted);">Global middleware pipeline via <code>router.use(fn)</code>. Intercepts every navigation for auth, redirects, logging, analytics, or context augmentation. Async support with <code>next()</code> chaining.</p>
+      </div>
+      <div>
+        <strong>Route Guards</strong>
+        <p style="margin:0.25rem 0 0;font-size:0.875rem;color:var(--color-text-muted);">Per-route guard functions that run before render. Return <code>true</code> to allow or a redirect URL to block. Ideal for authentication checks.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>📡 Real-time</h2>
+    <div style="display:flex;flex-direction:column;gap:0.75rem;">
+      <div>
+        <strong>SSE (Server-Sent Events)</strong>
+        <p style="margin:0.25rem 0 0;font-size:0.875rem;color:var(--color-text-muted);">Real-time page updates via SSE. The dev server pushes changes and the router re-fetches only the current page content.</p>
+      </div>
+      <div>
+        <strong>Polling</strong>
+        <p style="margin:0.25rem 0 0;font-size:0.875rem;color:var(--color-text-muted);">Fallback polling mode for environments where SSE is unavailable.</p>
+      </div>
+      <div>
+        <strong>WebSocket</strong>
+        <p style="margin:0.25rem 0 0;font-size:0.875rem;color:var(--color-text-muted);">WebSocket-based real-time updates for bidirectional communication with the dev server.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>🔧 Dev Server</h2>
+    <div style="display:flex;flex-direction:column;gap:0.75rem;">
+      <div>
+        <strong>Live Reload</strong>
+        <p style="margin:0.25rem 0 0;font-size:0.875rem;color:var(--color-text-muted);">The built-in <code>SafaDevServer</code> watches HTML files and hot-reloads the current page via SSE &mdash; no full browser refresh.</p>
+      </div>
+      <div>
+        <strong>SPA Fallback</strong>
+        <p style="margin:0.25rem 0 0;font-size:0.875rem;color:var(--color-text-muted);">The dev server serves <code>index.html</code> for all unmatched routes, enabling deep-linking in single-page applications.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>🎨 Transitions</h2>
+    <p style="margin:0.25rem 0 0;font-size:0.875rem;color:var(--color-text-muted);">
+      Per-route page transitions with configurable CSS classes, duration, enter/exit animations. Define via <code>meta.transition</code> in route config. Works with any CSS animation or transition framework.
+    </p>
+  </div>
+
+  <div class="card">
+    <h2>🖥️ SSR</h2>
+    <p style="margin:0.25rem 0 0;font-size:0.875rem;color:var(--color-text-muted);">
+      SafaRouter supports server-side rendering by providing the router state via <code>router.getState()</code> and rendering HTML on the server. The client then hydrates and takes over navigation. Works with any SSR framework.
+    </p>
+  </div>
+
+  <div class="card">
+    <h2>📘 TypeScript Support</h2>
+    <p style="margin:0.25rem 0 0;font-size:0.875rem;color:var(--color-text-muted);">
+      Full TypeScript definitions included (<code>safa-router.d.ts</code>). Covers all config options, route definitions, event payloads, error types, and method signatures for type-safe development.
+    </p>
+  </div>
+
+  <div class="card">
+    <h2>⚙️ Configuration &amp; Events</h2>
+    <div style="display:flex;flex-direction:column;gap:0.75rem;">
+      <div>
+        <strong>basePath</strong>
+        <p style="margin:0.25rem 0 0;font-size:0.875rem;color:var(--color-text-muted);">Deploy under any subdirectory with the <code>basePath</code> option. All routes are prefixed automatically.</p>
+      </div>
+      <div>
+        <strong>Event System</strong>
+        <p style="margin:0.25rem 0 0;font-size:0.875rem;color:var(--color-text-muted);">Rich event lifecycle: <code>routechange</code>, <code>error</code>, <code>accessdenied</code>, <code>maintenance</code>, <code>beforenavigation</code>, <code>afterrender</code>, and more.</p>
+      </div>
+      <div>
+        <strong>LRU Cache</strong>
+        <p style="margin:0.25rem 0 0;font-size:0.875rem;color:var(--color-text-muted);">Loaded pages are cached with configurable LRU (default 50 entries) for instant repeat navigation.</p>
+      </div>
+      <div>
+        <strong>Navigation Timeout</strong>
+        <p style="margin:0.25rem 0 0;font-size:0.875rem;color:var(--color-text-muted);">Configurable navigation timeout with automatic error reporting on timeout.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>🏗️ Maintenance Mode</h2>
+    <p style="margin:0.25rem 0 0;font-size:0.875rem;color:var(--color-text-muted);">
+      Toggleable maintenance mode that returns <strong>503 Service Unavailable</strong> for all routes except explicitly allowed bypass paths. Control at runtime via <code>router.setMaintenance()</code>.
+    </p>
+  </div>
+
+  <div class="card">
+    <h2>📂 Data Loaders</h2>
+    <p style="margin:0.25rem 0 0;font-size:0.875rem;color:var(--color-text-muted);">
+      Async per-route data loaders that run before page render. Receive <code>params</code>, <code>query</code>, and <code>router</code> context. Returned data is available to the page component.
+    </p>
+  </div>
+
+  <p style="margin-top:1.5rem;">
+    <a href="/test-app/benchmarks" data-safa-link style="padding:0.4rem 1rem;background:var(--color-accent);color:var(--color-bg);border-radius:6px;font-weight:600;font-size:0.875rem;">Benchmarks</a>
+    <a href="/test-app/docs" data-safa-link style="padding:0.4rem 1rem;border:1px solid var(--color-border);border-radius:6px;font-size:0.875rem;margin-left:0.5rem;">Documentation</a>
+  </p>
+</div>

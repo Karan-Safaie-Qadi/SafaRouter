@@ -8,6 +8,8 @@
     <img src="https://img.shields.io/badge/size-%3C5%20KB-gold" alt="Size">
     <img src="https://img.shields.io/github/actions/workflow/status/Karan-Safaie-Qadi/SafaRouter/.github/workflows/ci.yml?branch=master" alt="CI">
     <img src="https://img.shields.io/npm/dt/safa-router" alt="Downloads">
+    <img src="https://img.shields.io/npm/v/safa-router?color=blue" alt="npm version">
+    <img src="https://img.shields.io/npm/l/safa-router" alt="license">
   </p>
   <p>
     <a href="#english">English</a> &middot;
@@ -1013,6 +1015,22 @@ new SafaRouter({
 }).start()
 </script>
 ```
+
+---
+
+### Architecture
+
+SafaRouter is built around an **HTML-first routing** philosophy. Instead of defining pages as JavaScript components, you write plain `.html` files in a `pageDir` directory — each file becomes a route automatically. The router maps URL paths to these files, resolves template placeholders (`{{ params }}`, `{{ query }}`, `{{ data }}`), and renders them into a target container. This approach separates content from logic and works without any build step or bundler.
+
+At its core, the router uses a **tree-based route resolution** system. Routes are defined as a nested object tree where each node can have children, layouts, guards, loaders, and metadata. When a URL is navigated to, the router walks the tree — matching static segments, dynamic `[params]`, catch-all `[...rest]`, and optional segments — in O(n) time where *n* is the path segment count. Route groups `(group)` provide logical organization without affecting the URL.
+
+The **component system** supports page components, layout components (which compose parent → child), and smart components (like headers/footers that render on every page). All components are simple functions returning HTML strings, making them framework-agnostic. A plugin system allows extending the router with custom functionality — plugins hook into the same lifecycle events as middleware and can modify navigation behavior, add new features, or integrate with external libraries.
+
+SafaRouter is **SSR-compatible** — it runs in environments without a DOM (Node.js, server-side rendering pipelines) and produces HTML strings for the matched route. The same route tree, middleware chain, and data loading infrastructure work on both client and server, enabling isomorphic routing with minimal configuration.
+
+### Performance
+
+SafaRouter delivers all of this in **<5 KB gzipped** with **zero runtime dependencies**. Route matching is O(n) against path segments (not total routes), and an LRU cache avoids redundant fetches for loaded pages. No JSX, template compilation, or virtual DOM overhead — just plain HTML and vanilla JS.
 
 ---
 

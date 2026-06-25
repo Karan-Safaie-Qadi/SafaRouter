@@ -1,0 +1,206 @@
+<div class="page-enter">
+  <h1>Vanilla JS Integration</h1>
+  <p style="color: var(--color-text-muted); margin-bottom: 1.5rem;">
+    Using SafaRouter with plain JavaScript &mdash; no framework needed.
+  </p>
+
+  <div class="card">
+    <h2>Minimal Vanilla JS Setup</h2>
+    <p style="margin-bottom: 0.75rem;">
+      SafaRouter shines in vanilla JS projects. Create a router, point it at a container, and load HTML pages.
+    </p>
+    <pre><code>&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;
+  &lt;title&gt;My SPA&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+  &lt;nav&gt;
+    &lt;a href="/" data-safa-link&gt;Home&lt;/a&gt;
+    &lt;a href="/about" data-safa-link&gt;About&lt;/a&gt;
+    &lt;a href="/contact" data-safa-link&gt;Contact&lt;/a&gt;
+  &lt;/nav&gt;
+  &lt;main id="app"&gt;&lt;/main&gt;
+
+  &lt;script type="module"&gt;
+    import { SafaRouter } from 'safa-router'
+
+    const router = new SafaRouter({
+      target: '#app',
+      pageDir: 'pages',
+      routes: {
+        '/': {},
+        '/about': {},
+        '/contact': {},
+      },
+    })
+
+    router.start()
+  &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+  </div>
+
+  <div class="card">
+    <h2>How It Works</h2>
+    <ol style="padding-left: 1.25rem; display: flex; flex-direction: column; gap: 0.5rem;">
+      <li>Create an HTML element (e.g. <code>&lt;main id="app"&gt;</code>) as the router target</li>
+      <li>Define routes as a plain nested object — each key is a URL path</li>
+      <li>The router loads matching HTML files from <code>pageDir</code> and injects them into the target</li>
+      <li>Use <code>data-safa-link</code> on anchor tags for client-side SPA navigation</li>
+      <li>Call <code>router.start()</code> to begin intercepting clicks and handling popstate</li>
+    </ol>
+  </div>
+
+  <div class="card">
+    <h2>Smart Components in Vanilla JS</h2>
+    <p style="margin-bottom: 0.75rem;">
+      Smart components are plain functions that return HTML strings. They receive route context and re-render on every navigation.
+    </p>
+    <pre><code>// header.js
+export default function header({ path, params, query }) {
+  const links = [
+    { href: '/', label: 'Home' },
+    { href: '/about', label: 'About' },
+    { href: '/blog', label: 'Blog' },
+  ]
+  return [
+    '&lt;header style="border-bottom: 1px solid var(--color-border); padding: 0.75rem 1.5rem;"&gt;',
+    '  &lt;nav style="display: flex; gap: 1rem;"&gt;',
+    ...links.map(({ href, label }) =>
+      `    &lt;a href="${href}" data-safa-link` +
+      `      style="color: ${path === href ? 'var(--color-accent)' : 'var(--color-text-muted)'}"&gt;` +
+      `      ${label}` +
+      `    &lt;/a&gt;`
+    ),
+    '  &lt;/nav&gt;',
+    '&lt;/header&gt;',
+  ].join('\n')
+}
+
+// main.js
+import { SafaRouter } from 'safa-router'
+import header from './header.js'
+
+const router = new SafaRouter({
+  target: '#app',
+  pageDir: 'pages',
+  components: { header },
+  routes: {
+    '/': {},
+    '/about': {},
+    '/blog': {
+      children: { '[slug]': {} },
+    },
+  },
+})
+
+router.start()</code></pre>
+  </div>
+
+  <div class="card">
+    <h2>Complete SPA Example</h2>
+    <p style="margin-bottom: 0.75rem;">
+      A full working SPA with nested layouts, dynamic routes, and middleware &mdash; all in vanilla JS:
+    </p>
+    <pre><code>import { SafaRouter } from 'safa-router'
+import header from './components/header.js'
+import footer from './components/footer.js'
+
+const router = new SafaRouter({
+  target: '#app',
+  basePath: '/my-app',
+  pageDir: 'html-pages',
+  components: { header, footer },
+
+  // Nested layouts
+  layout: 'html-pages/_layout.html',
+
+  // Error handling
+  errors: {
+    pageDir: 'html-pages/errors',
+    stackTraces: true,
+  },
+
+  // Access control
+  access: {
+    blocked: ['/admin', '/private/**'],
+    ignored: ['/hidden'],
+  },
+
+  routes: {
+    '/': {},
+    '/about': {},
+    '/blog': {
+      children: { '[slug]': {} },
+    },
+    '/dashboard': {
+      children: { settings: {} },
+    },
+  },
+})
+
+// Middleware
+router.use(async (ctx, next) =&gt; {
+  console.log(`Navigating to: ${ctx.path}`)
+  return next()
+})
+
+// After-hook
+router.afterEach(({ pathname }) =&gt; {
+  document.title = `My App — ${pathname}`
+})
+
+// Error handler
+router.onError(({ path, error, statusCode }) =&gt; {
+  console.error(`[${statusCode}] ${path}:`, error.message)
+})
+
+router.start()</code></pre>
+  </div>
+
+  <div class="card">
+    <h2>Live Demo Area</h2>
+    <p style="color: var(--color-text-muted); margin-bottom: 0.75rem;">
+      The demo below runs entirely with vanilla JavaScript, powered by SafaRouter.
+    </p>
+    <div id="vanilla-live-demo" style="border: 1px solid var(--color-border); border-radius: var(--radius); padding: 1.5rem; background: var(--color-bg); text-align: center;">
+      <div style="font-size: 3rem; margin-bottom: 0.5rem;">🌐</div>
+      <h3 style="color: var(--color-accent);">Vanilla JS + SafaRouter</h3>
+      <p style="color: var(--color-text-muted); font-size: 0.9rem;">
+        No frameworks, no bundlers &mdash; just HTML and vanilla JavaScript.
+        SafaRouter handles all routing and page injection.
+      </p>
+      <div style="margin-top: 1rem; display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap;">
+        <a href="/test-app/docs" data-safa-link style="padding:0.4rem 1rem;background:var(--color-accent);color:var(--color-bg);border-radius:6px;font-weight:600;font-size:0.875rem;">Router Docs</a>
+        <a href="/test-app/sandbox" data-safa-link style="padding:0.4rem 1rem;border:1px solid var(--color-border);border-radius:6px;font-size:0.875rem;">Sandbox</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>CDN Script (No Bundler)</h2>
+    <p style="margin-bottom: 0.75rem;">
+      Include SafaRouter directly from a CDN via ESM import map or script tag:
+    </p>
+    <pre><code>&lt;!-- index.html --&gt;
+&lt;script type="importmap"&gt;
+{
+  "imports": {
+    "safa-router": "https://unpkg.com/safa-router/dist/safa-router.js"
+  }
+}
+&lt;/script&gt;
+&lt;script type="module"&gt;
+  import { SafaRouter } from 'safa-router'
+
+  const router = new SafaRouter({
+    target: '#app',
+    pageDir: 'pages',
+    routes: { '/': {}, '/about': {} },
+  })
+
+  router.start()
+&lt;/script&gt;</code></pre>
+  </div>
+</div>
