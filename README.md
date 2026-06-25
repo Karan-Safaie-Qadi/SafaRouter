@@ -6,10 +6,16 @@
     <img src="https://img.shields.io/badge/license-MIT-green" alt="License">
     <img src="https://img.shields.io/badge/dependencies-0-brightgreen" alt="Zero Dependencies">
     <img src="https://img.shields.io/badge/size-%3C5%20KB-gold" alt="Size">
+    <img src="https://img.shields.io/github/actions/workflow/status/Karan-Safaie-Qadi/SafaRouter/.github/workflows/ci.yml?branch=master" alt="CI">
+    <img src="https://img.shields.io/npm/dt/safa-router" alt="Downloads">
   </p>
   <p>
     <a href="#english">English</a> &middot;
     <a href="#persian">فارسی</a>
+    &middot;
+    <a href="CHANGELOG.md">Changelog</a>
+    &middot;
+    <a href="CONTRIBUTING.md">Contributing</a>
   </p>
   <br>
 </div>
