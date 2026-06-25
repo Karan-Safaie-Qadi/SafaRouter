@@ -2,19 +2,27 @@
 
 All notable changes to SafaRouter will be documented in this file.
 
-## [1.5.0] - Unreleased
+## [1.5.0] - 2026-06-25
 
 ### Added
-- Svelte demo page (`test-app/html-pages/svelte-demo.html`) — Svelte 5 integration example
+- **TypeScript definitions**: `RealtimeManager`, `SafaDevServer`, `DevServerConfig`, `hideComponents` in `RouteEntry.meta`, allowlist mode (`AccessConfig.allowed`, `AccessConfig.mode`), `EVENTS.REALTIME_CHANGE`, `AccessController.setMode`, `getMode`, `allow`, `unallow`
+- **Test suites**: allowlist mode (6 tests), hideComponents (3 tests), RealtimeManager (9 tests), SafaDevServer (5 tests) — 204 total, all passing
+- **Demo pages**: React integration (`react-demo.html`), Vue integration (`vue-demo.html`), Svelte integration (`svelte-demo.html`), Vanilla JS integration (`vanilla-demo.html`), FAQ (`faq.html`), Benchmarks & comparison (`benchmarks.html`), Features showcase (`features.html`)
 - `docs/MIGRATION_GUIDE.md` — upgrade paths from v1.3.x and v1.4.x
+- `docs/README.md` — documentation index
+- `.github/ISSUE_TEMPLATE/bug_report.md` + `feature_request.md`
+- `.github/PULL_REQUEST_TEMPLATE.md` + `.github/workflows/ci.yml` (Node 18/20/22)
+- `CHANGELOG.md`, `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, `SECURITY.md`, `.editorconfig`, `.npmignore`
 
 ### Changed
-- Per-route `meta.hideComponents` — hide specific smart components per route
-- Access allowlist mode (`access.mode: 'allowlist'` + `access.allowed`)
-- `RealtimeManager` — SSE/polling/WebSocket hot reload
-- `EVENTS.REALTIME_CHANGE` event
-- `SafaDevServer` class — importable dev server with SPA fallback, file watching, SSE realtime
-- Demo pages: `no-header`, `plain`, `allowlist-demo`
+- `package.json`: docx moved to devDependencies (zero runtime dependencies preserved), keywords expanded, author set, `dev` script alias added
+- `safa-router.d.ts`: full type coverage for v1.4.3–v1.4.4 features
+- `README.md`: TOC, badges (CI, npm, license), integration examples (React/Vue/Svelte/Vanilla), FAQ, comparison table, troubleshooting, architecture overview, performance section — English + Persian
+- Refactored `SafaRouter._renderWithLayouts()` — centralized rendering logic, removed ~100 lines of duplication
+- Improved error messages (redirect loops include path, URL parse warnings)
+
+### Removed
+- Dead code: unused `_retry` method, unused imports (`ERROR_GROUPS`, `AccessDeniedError`), legacy `test-app/html-pages/vanilla-js-demo.html` (duplicate)
 
 ## [1.4.4] - 2026-06-25
 
