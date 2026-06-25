@@ -3,12 +3,21 @@ import { normalizePath } from './utils.js'
 
 export class AccessController {
   constructor(config = {}) {
-    this._blocked = []
-    this._ignored = []
-    this._patterns = []
     const access = config.access || {}
+    this._mode = access.mode || 'blocklist'
     this._blocked = this._normalizePatterns(access.blocked || [])
     this._ignored = this._normalizePatterns(access.ignored || [])
+    this._allowed = this._normalizePatterns(access.allowed || [])
+  }
+
+  setMode(mode) {
+    if (mode === 'blocklist' || mode === 'allowlist') {
+      this._mode = mode
+    }
+  }
+
+  getMode() {
+    return this._mode
   }
 
   block(pattern) {
@@ -33,8 +42,24 @@ export class AccessController {
     this._ignored = this._ignored.filter(x => x.pattern !== pattern)
   }
 
+  allow(pattern) {
+    const p = this._normalizePattern(pattern)
+    if (!this._allowed.some(x => x.pattern === pattern)) {
+      this._allowed.push(p)
+    }
+  }
+
+  unallow(pattern) {
+    this._allowed = this._allowed.filter(x => x.pattern !== pattern)
+  }
+
   isBlocked(path) {
     const npath = normalizePath(path)
+    if (this._mode === 'allowlist') {
+      if (!this._matchPatterns(this._allowed, npath)) {
+        return new AccessDeniedError(npath)
+      }
+    }
     if (this._matchPatterns(this._blocked, npath)) {
       return new AccessDeniedError(npath)
     }
@@ -43,12 +68,15 @@ export class AccessController {
 
   isIgnored(path) {
     const npath = normalizePath(path)
-    return this._matchPatterns(this._ignored, npath)
+    if (this._matchPatterns(this._ignored, npath)) return true
+    if (this._mode === 'allowlist') {
+      return !this._matchPatterns(this._allowed, npath)
+    }
+    return false
   }
 
   isAccessible(path) {
-    const npath = normalizePath(path)
-    return !this._matchPatterns(this._ignored, npath) && !this._matchPatterns(this._blocked, npath)
+    return !this.isBlocked(path) && !this.isIgnored(path)
   }
 
   _normalizePatterns(patterns) {

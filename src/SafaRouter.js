@@ -5,6 +5,7 @@ import { Link } from './Link.js'
 import { PluginManager } from './PluginManager.js'
 import { TransitionsManager } from './TransitionsManager.js'
 import { ScrollManager } from './ScrollManager.js'
+import { RealtimeManager } from './RealtimeManager.js'
 import { normalizePath, parseQuery, emit, createURL, isExternalURL, deepMerge } from './utils.js'
 import { EVENTS, DEFAULT_CONFIG, HTTP_STATUS, ERROR_GROUPS } from './constants.js'
 import { RouteLoadError, SafaError, NavigationAbortError, HttpError, AccessDeniedError, MaintenanceModeError } from './errors.js'
@@ -12,8 +13,8 @@ import { ErrorManager } from './ErrorManager.js'
 import { AccessController } from './AccessController.js'
 
 export class SafaRouter {
-  static version = '1.4.2'
-  static VERSION = '1.4.2'
+  static version = '1.4.3'
+  static VERSION = '1.4.3'
 
   constructor(options = {}) {
     this.config = deepMerge(DEFAULT_CONFIG, options)
@@ -60,6 +61,7 @@ export class SafaRouter {
       transitionEnterActiveClass: this.config.transitionEnterActiveClass,
       transitionExitActiveClass: this.config.transitionExitActiveClass,
     })
+    this._realtime = new RealtimeManager(this, this.config.realtime)
     this._plugins = new PluginManager(this)
 
     this._boundNav = this._onHistoryChange.bind(this)
@@ -92,6 +94,7 @@ export class SafaRouter {
     }
 
     await this._resolve(this._history.path, 'replace')
+    this._realtime.start()
     emit(this._events, EVENTS.READY, { pathname: this._pathname })
     this._started = true
     return this
@@ -101,6 +104,7 @@ export class SafaRouter {
 
   destroy() {
     this._started = false
+    this._realtime.destroy()
     this._plugins.ejectAll()
     if (this._unsubHistory) {
       this._unsubHistory()
@@ -1017,8 +1021,13 @@ export class SafaRouter {
 
   _renderComponents() {
     const ctx = { path: this._pathname, router: this, params: this._params, query: this._query }
+    const routeMeta = this._routeData?.node?.meta || {}
+    const hideComponents = routeMeta.hideComponents
+    const hideAll = hideComponents === true
+    const hideList = Array.isArray(hideComponents) ? hideComponents : []
     for (const [name, fn] of Object.entries(this._components)) {
       if (typeof fn !== 'function') continue
+      if (hideAll || hideList.includes(name)) continue
       const html = this._resolveTemplate(fn(ctx))
       const target = document.querySelector(`[data-safa-component="${name}"]`)
       if (target) {

@@ -16,6 +16,7 @@ export const EVENTS = {
   PLUGIN_EJECT: 'plugineject',
   ACCESS_DENIED: 'accessdenied',
   MAINTENANCE: 'maintenance',
+  REALTIME_CHANGE: 'realtimechange',
 }
 
 export const SEGMENT_TYPES = {
@@ -203,6 +204,15 @@ export const DEFAULT_CONFIG = {
   access: {
     blocked: [],
     ignored: [],
+    allowed: [],
+    mode: 'blocklist',
+  },
+  realtime: {
+    enabled: false,
+    mode: 'sse',
+    url: '/__realtime',
+    interval: 2000,
+    onChange: null,
   },
   maintenanceMode: {
     enabled: false,

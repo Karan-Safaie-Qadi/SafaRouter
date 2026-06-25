@@ -32,6 +32,20 @@ const router = new SafaRouter({
     allowedPaths: ['/login', '/assets/**', '/sandbox'],
   },
 
+  // ── v1.4.2: Access Allowlist mode ──
+  access: {
+    blocked: ['/admin', '/private/**'],
+    ignored: ['/hidden', '/deprecated/*'],
+    allowed: ['/allowlist-demo'],
+    mode: 'blocklist',
+  },
+
+  // ── v1.4.3: Real-time updates ──
+  realtime: {
+    enabled: true,
+    mode: 'sse',
+  },
+
   // ── v1.3.0: Error Logging ──
   errorLogging: {
     enabled: true,
@@ -72,7 +86,16 @@ const router = new SafaRouter({
     '/about': {},
     '/docs': {},
     '/contact': {},
-    '/sandbox': {},
+    '/sandbox': {
+      meta: { hideComponents: ['footer'] },
+    },
+    '/no-header': {
+      meta: { hideComponents: ['header'] },
+    },
+    '/plain': {
+      meta: { hideComponents: true },
+    },
+    '/allowlist-demo': {},
     '/sitemap': {},
 
     // Dynamic error routes (e.g. /errors/404, /errors/500)
@@ -204,9 +227,32 @@ function initPageBindings(router) {
     router.push('/guard')
   })
 
+  // ── v1.4.3: Allowlist toggle ──
+  document.querySelector('.api-allowlist-on')?.addEventListener('click', () => {
+    router.accessController.setMode('allowlist')
+    const modeEl = document.getElementById('access-mode-status')
+    if (modeEl) modeEl.textContent = '🟢 Allowlist (only allowed pages)'
+    router.reload()
+  })
+  document.querySelector('.api-allowlist-off')?.addEventListener('click', () => {
+    router.accessController.setMode('blocklist')
+    const modeEl = document.getElementById('access-mode-status')
+    if (modeEl) modeEl.textContent = '🔵 Blocklist (default)'
+    router.reload()
+  })
+
   const statusEl = document.getElementById('maintenance-status')
   if (statusEl) {
     statusEl.textContent = router.isMaintenance() ? '🟡 MAINTENANCE MODE' : '🟢 Normal'
+  }
+  const modeEl = document.getElementById('access-mode-status')
+  if (modeEl) {
+    modeEl.textContent = router.accessController.getMode() === 'allowlist' ? '🟢 Allowlist' : '🔵 Blocklist'
+  }
+  const realtimeEl = document.getElementById('realtime-indicator')
+  if (realtimeEl) {
+    realtimeEl.textContent = '🟢 Real-time connected'
+    realtimeEl.style.color = 'var(--color-success)'
   }
 }
 

@@ -5,6 +5,8 @@ export default function headerComponent({ path }) {
     { href: '/test-app/docs', label: 'Docs' },
     { href: '/test-app/blog', label: 'Blog' },
     { href: '/test-app/sandbox', label: 'Sandbox' },
+    { href: '/test-app/no-header', label: 'NoHeader' },
+    { href: '/test-app/plain', label: 'Plain' },
     { href: '/test-app/sitemap', label: 'Sitemap' },
   ]
   return `<header style="border-bottom:1px solid var(--color-border);padding:0.75rem 1.5rem;margin-bottom:1.5rem;">

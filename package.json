@@ -1,6 +1,6 @@
 {
   "name": "safa-router",
-  "version": "1.4.2",
+  "version": "1.4.3",
   "description": "A professional standalone frontend router inspired by Next.js App Router — works with any framework or vanilla JS",
   "type": "module",
   "main": "src/index.js",

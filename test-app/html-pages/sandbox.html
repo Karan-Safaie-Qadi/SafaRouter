@@ -1,6 +1,6 @@
 <section class="sandbox-container">
   <h1>Sandbox</h1>
-  <p style="color: var(--color-text-muted);">A blank canvas to experiment.</p>
+  <p style="color: var(--color-text-muted);">This page has <code>hideComponents: ['footer']</code> — the footer is hidden.</p>
   <div id="sandbox-toolbar" style="display:flex;gap:0.5rem;flex-wrap:wrap;margin:1rem 0;">
     <button id="btnColor" style="padding:0.4rem 1rem;border:1px solid var(--color-border);border-radius:6px;background:transparent;color:inherit;cursor:pointer;">🎨 Toggle theme card</button>
     <button id="btnBox" style="padding:0.4rem 1rem;border:1px solid var(--color-border);border-radius:6px;background:transparent;color:inherit;cursor:pointer;">📦 Add box</button>
@@ -9,4 +9,19 @@
   </div>
   <div id="sandbox-stage" style="min-height:120px;border:1px dashed var(--color-border);border-radius:8px;padding:1rem;"></div>
   <div id="sandbox-output" style="margin-top:1rem;padding:0.75rem;background:var(--color-surface);border-radius:6px;font-family:monospace;font-size:0.875rem;white-space:pre-wrap;"></div>
+
+  <hr style="border-color:var(--color-border);margin:1.5rem 0;">
+
+  <h2>v1.4.3 Features</h2>
+
+  <h3>Access Mode</h3>
+  <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin:0.5rem 0;">
+    <button class="api-allowlist-on" style="padding:0.4rem 1rem;border:1px solid var(--color-border);border-radius:6px;background:transparent;color:inherit;cursor:pointer;">🔒 Enable Allowlist</button>
+    <button class="api-allowlist-off" style="padding:0.4rem 1rem;border:1px solid var(--color-border);border-radius:6px;background:transparent;color:inherit;cursor:pointer;">🔓 Disable Allowlist</button>
+  </div>
+  <p id="access-mode-status" style="font-size:0.9rem;">🔵 Blocklist</p>
+
+  <h3>Real-time</h3>
+  <button class="api-realtime-status" style="padding:0.4rem 1rem;border:1px solid var(--color-border);border-radius:6px;background:transparent;color:inherit;cursor:pointer;">📡 Check real-time status</button>
+  <p id="realtime-indicator" style="font-size:0.9rem;">⚪ Unknown</p>
 </section>
