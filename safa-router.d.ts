@@ -86,6 +86,16 @@ declare module 'safa-router' {
   export interface AccessConfig {
     blocked?: string[]
     ignored?: string[]
+    allowed?: string[]
+    mode?: 'blocklist' | 'allowlist'
+  }
+
+  export interface RealtimeConfig {
+    enabled?: boolean
+    mode?: 'sse' | 'polling' | 'websocket'
+    url?: string
+    interval?: number
+    onChange?: ((data: { changed: boolean; path: string | null; time: number }, router: SafaRouter) => void) | null
   }
 
   export interface MaintenanceModeConfig {
@@ -128,6 +138,8 @@ declare module 'safa-router' {
     access?: AccessConfig
     maintenanceMode?: MaintenanceModeConfig
     errorLogging?: ErrorLoggingConfig
+    realtime?: RealtimeConfig
+    components?: Record<string, (ctx: PageContext) => string>
   }
 
   // ─── ErrorManager ────────────────────────────────
@@ -151,13 +163,40 @@ declare module 'safa-router' {
   // ─── AccessController ────────────────────────────
   export class AccessController {
     constructor(config?: Record<string, any>)
+    setMode(mode: 'blocklist' | 'allowlist'): void
+    getMode(): 'blocklist' | 'allowlist'
     block(pattern: string): void
     unblock(pattern: string): void
     ignore(pattern: string): void
     unignore(pattern: string): void
+    allow(pattern: string): void
+    unallow(pattern: string): void
     isBlocked(path: string): AccessDeniedError | null
     isIgnored(path: string): boolean
     isAccessible(path: string): boolean
+  }
+
+  // ─── RealtimeManager ──────────────────────────────
+  export class RealtimeManager {
+    constructor(router: SafaRouter, config?: RealtimeConfig)
+    start(): void
+    destroy(): void
+  }
+
+  // ─── DevServer ──────────────────────────────────────
+  export interface DevServerConfig {
+    port?: number
+    root?: string
+    basePath?: string
+    watch?: boolean
+    watchDirs?: string[]
+    srcDirs?: string[]
+  }
+
+  export class SafaDevServer {
+    constructor(config?: DevServerConfig)
+    start(): this
+    stop(): this
   }
 
   // ─── Route Tree ───────────────────────────────────
@@ -172,7 +211,7 @@ declare module 'safa-router' {
     error?: PageComponent | string
     notFound?: PageComponent | string
     children?: RouteDefinition
-    meta?: { title?: string; name?: string; requiresAuth?: boolean; roles?: string[]; [key: string]: any }
+    meta?: { title?: string; name?: string; requiresAuth?: boolean; roles?: string[]; hideComponents?: string[] | boolean; [key: string]: any }
     loader?: RouteLoader
     guard?: RouteGuard
     transition?: RouteTransitionConfig
@@ -430,6 +469,7 @@ declare module 'safa-router' {
     PLUGIN_EJECT: 'plugineject'
     ACCESS_DENIED: 'accessdenied'
     MAINTENANCE: 'maintenance'
+    REALTIME_CHANGE: 'realtimechange'
   }
 
   export const DEFAULT_CONFIG: SafaRouterOptions
