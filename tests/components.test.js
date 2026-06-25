@@ -1,9 +1,9 @@
+// @vitest-environment jsdom
 import { describe, it, expect, vi } from 'vitest'
 import { SafaRouter } from '../src/SafaRouter.js'
 
 describe('hideComponents', () => {
   function createRouter(opts = {}) {
-    document.body.innerHTML = ''
     const router = new SafaRouter({
       target: '#app',
       routes: opts.routes || {},
