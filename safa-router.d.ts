@@ -565,3 +565,48 @@ declare module 'safa-router' {
     toJSON(): { name: string; message: string; code: string; statusCode: number; pathname: string }
   }
 }
+
+declare module 'safa-router/core' {
+  import { SafaRouter } from 'safa-router'
+  export { SafaRouter }
+}
+
+declare module 'safa-router/features/access' {
+  export const name: 'access'
+  export function init(router: any, config: any): void
+  export function destroy(router: any): void
+}
+
+declare module 'safa-router/features/realtime' {
+  export const name: 'realtime'
+  export function init(router: any, config: any): void
+  export function destroy(router: any): void
+}
+
+declare module 'safa-router/features/components' {
+  export const name: 'components'
+  export function init(router: any, config: any): void
+  export function destroy(router: any): void
+}
+
+declare module 'safa-router/features/errors' {
+  export const name: 'errors'
+  export function init(router: any, config: any): void
+  export function destroy(router: any): void
+}
+
+declare module 'safa-router/features/scroll' {
+  export const name: 'scroll'
+  export function init(router: any, config: any): void
+  export function destroy(router: any): void
+}
+
+declare module 'safa-router/features/transitions' {
+  export const name: 'transitions'
+  export function init(router: any, config: any): void
+  export function destroy(router: any): void
+}
+
+declare module 'safa-router/vite' {
+  export function safaRouter(): { name: string; transform(code: string, id: string): { code: string; map: null } | undefined }
+}

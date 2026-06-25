@@ -10,6 +10,18 @@
       "import": "./src/index.js",
       "types": "./safa-router.d.ts"
     },
+    "./core": {
+      "import": "./src/core/SafaRouter.js",
+      "types": "./safa-router.d.ts"
+    },
+    "./features/*": {
+      "import": "./src/features/*.js",
+      "types": "./safa-router.d.ts"
+    },
+    "./vite": {
+      "import": "./src/vite-plugin.js",
+      "types": "./safa-router.d.ts"
+    },
     "./*": "./src/*.js"
   },
   "files": [
