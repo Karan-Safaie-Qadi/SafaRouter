@@ -86,6 +86,48 @@ describe('AccessController', () => {
     })
   })
 
+  describe('allowlist mode', () => {
+    it('default mode is blocklist', () => {
+      const ac = createController()
+      expect(ac.getMode()).toBe('blocklist')
+    })
+
+    it('setMode changes mode', () => {
+      const ac = createController()
+      ac.setMode('allowlist')
+      expect(ac.getMode()).toBe('allowlist')
+      ac.setMode('blocklist')
+      expect(ac.getMode()).toBe('blocklist')
+    })
+
+    it('blocks everything not in allowed list in allowlist mode', () => {
+      const ac = createController({ access: { mode: 'allowlist', allowed: ['/login', '/public/**'] } })
+      expect(ac.isBlocked('/login')).toBeNull()
+      expect(ac.isBlocked('/public/page')).toBeNull()
+      expect(ac.isBlocked('/admin')).toBeInstanceOf(AccessDeniedError)
+      expect(ac.isBlocked('/about')).toBeInstanceOf(AccessDeniedError)
+    })
+
+    it('ignored paths are still ignored in allowlist mode', () => {
+      const ac = createController({ access: { mode: 'allowlist', allowed: ['/login'], ignored: ['/hidden'] } })
+      expect(ac.isIgnored('/hidden')).toBe(true)
+    })
+
+    it('blocked list still blocks in allowlist mode', () => {
+      const ac = createController({ access: { mode: 'allowlist', allowed: ['/login'], blocked: ['/login'] } })
+      expect(ac.isBlocked('/login')).toBeInstanceOf(AccessDeniedError)
+    })
+
+    it('allow/unallow dynamically adds/removes allowed patterns', () => {
+      const ac = createController({ access: { mode: 'allowlist' } })
+      expect(ac.isBlocked('/sandbox')).toBeInstanceOf(AccessDeniedError)
+      ac.allow('/sandbox')
+      expect(ac.isBlocked('/sandbox')).toBeNull()
+      ac.unallow('/sandbox')
+      expect(ac.isBlocked('/sandbox')).toBeInstanceOf(AccessDeniedError)
+    })
+  })
+
   describe('pattern matching', () => {
     it('exact match', () => {
       const ac = createController()
