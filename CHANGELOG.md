@@ -1,158 +1,109 @@
 # Changelog
 
-## v1.3.0 (2026-06-23)
-- Major: Professional error system — ErrorManager supports ALL HTTP error status codes (400–511)
-- Feat: Configurable error display — enable/disable per status code or per group (4xx/5xx)
-- Feat: Custom error pages — upload arbitrary error HTML files, router auto-detects and renders them
-- Feat: Error grouping — client-error (4xx) and server-error (5xx) groups with fallback pages
-- Feat: Default error pages for every HTTP status code (inline HTML)
-- Feat: Error logging — built-in logger with pluggable custom handlers
-- Feat: Stack trace control — show/hide error stack traces based on `errors.stackTraces` config
-- Feat: Error redirect rules — map one status code to another (e.g., 410 → 404)
-- Feat: AccessController — block routes (403) and ignore routes (404 silently)
-- Feat: Glob-style pattern matching for access rules (exact, `*` single-level, `**` recursive, trailing slash)
-- Feat: Maintenance mode — toggleable 503 with allowed path bypasses
-- Feat: `isMaintenance()`, `setMaintenance()`, `blockRoute()`, `unblockRoute()`, `ignoreRoute()`, `unignoreRoute()` APIs
-- Feat: `retry()` public API with configurable retries
-- Feat: `onAccessDenied()` / `onMaintenance()` convenience event listeners
-- Feat: `EVENTS.ACCESS_DENIED` and `EVENTS.MAINTENANCE` events
-- Feat: `deepMerge()` utility for deep config merging
-- Feat: `HttpError`, `AccessDeniedError`, `MaintenanceModeError` error classes
-- Feat: `HTTP_STATUS`, `HTTP_STATUS_TEXT`, `ERROR_GROUPS`, `ERROR_GROUP_MAP` constants
-- Fix: `_handleNotFound` and `_handleError` now pass `statusCode` to context and ErrorManager
-- Fix: `EVENTS.ERROR` now includes `statusCode` field
-- Types: `ErrorManager` class, `AccessController` class, `ErrorConfig`, `AccessConfig`, `MaintenanceModeConfig`, `ErrorLoggingConfig`
-- Types: `HttpError`, `AccessDeniedError`, `MaintenanceModeError`
-- Types: `HTTP_STATUS`, `HTTP_STATUS_TEXT`, `ERROR_GROUPS`, `ERROR_GROUP_MAP`
-- Types: `statusCode` on error events and page context
-- Tests: 181 tests across 13 files (54 new tests for v1.3.0)
-- Feat: route data loader (`loader` in route definition)
-- Feat: declarative route guards (`guard` in route definition)
-- Feat: per-route transition API (`meta.transition`)
-- Feat: IntersectionObserver prefetch strategy (`prefetchStrategy: 'visible'`)
-- Feat: `_updateTitle()` now called in 404/Error handlers
-- Fix: `NavigationAbortError` thrown on cancelled navigation
-- Fix: guard `pushRoute`/`getRoute` before `start()`
-- Fix: `navigate()` deprecated with console.warn
-- Fix: ScrollManager `window` guard for Node.js
-- Fix: `_updateTitle()` guarded against missing `document`
-- Fix: `IntersectionObserver` cleaned up in `destroy()`
-- Types: `RouteLoader`, `RouteGuard`, `RouteTransitionConfig`, `RouteMatch.data`
-- Types: `prefetchStrategy`, `perRouteTransitions` config options
-- Types: `navigate()` marked `@deprecated`
-- Docs: CHANGELOG.md covering v1.0.1 through v1.2.9
-- Tests: 127 tests across 10 files (12 new tests for new features)
+All notable changes to SafaRouter will be documented in this file.
 
-## v1.2.7 (2026-06-23)
-- Fix: redirect loop now resets `_isLoading = false` and calls `_abortFetch()`
-- Fix: `prefetch()` no longer adds `<link rel="prefetch">` for non-existent pages
-- Fix: `_prefetched.clear()` added to `destroy()` cleanup
-- Fix: `_addPrefetchLink()` only prefetches the URL that actually succeeded
-- Fix: `useRouter` dead `disposed` variable replaced with `active` guard
+## [1.4.4] - 2026-06-25
 
-## v1.2.6 (2026-06-23)
-- Fix: ScrollManager unique element IDs (`_elId`) preventing key collisions
-- Feat: AbortController to cancel in-flight HTTP requests on new navigation
-- Feat: `navigationTimeout: 15000` config option to prevent stuck loading
-- Feat: `<link rel="prefetch">` added to `<head>` in `prefetch()`
-- Fix: static version string updated to 1.2.6
+### Fixed
+- `_bindLinks()` now called on 404 and error pages (`_handleNotFound`, `_handleError`) so `data-safa-link` works everywhere
+- Safe guard on `_bindLinks` / `_observeLinks` for non-DOM environments
 
-## v1.2.5 (2026-06-23)
-- Feat: LRU cache with `maxCacheSize: 50` config option
-- Feat: `buildQuery()` helper function and public `parseQuery` export
-- Fix: Link active state uses `isSamePath()` to avoid false positives
-- Fix: `useRouter` auto-cleanup on `destroy` event
-- Fix: `_handleNotFound` passes `state` to `history.push`/`replace`
-- Feat: Redirect loop emits `EVENTS.ERROR` event
+### Added
+- `SafaDevServer` class — importable dev server with SPA fallback, file watching, SSE realtime
+- `src/DevServer.js` — clean class-based dev server
 
-## v1.2.4 (2026-06-23)
-- Fix: catch-all optional params now set to `[]` when empty
-- Fix: duplicate `path + query` in URL parsing
-- Fix: `_findDynamic` excludes `[[...` optional catch-all patterns
-- Fix: `pagesDir` cache disabled (no file system cache)
-- Fix: `notFound` in `pagesDir` mode provides `navId`
-- Fix: `extractParamName` handles `[[...slug]]` syntax
-- Fix: remove duplicate `isRouteGroup`/`isRouteGroupSegment` exports
-- Fix: `_handleNotFound` clears stale `_routeData`
+### Changed
+- `dev-server.js` simplified to 6 lines using `SafaDevServer`
+- Full README update: hideComponents, allowlist, realtime, DevServer (EN + FA)
 
-## v1.2.3 (2026-06-23)
-- Fix: `loading` component provides correct `navId`
-- Fix: `notFound`/`error` components get correct `navId`
-- Feat: per-route error handler support
-- Fix: layout components receive `query` in context
-- Fix: plugin middleware cleanup on eject
-- Fix: Link component re-renders on `render()` re-call
-- Feat: forward navigation events support
-- Fix: `back()` passes correct path
-- Fix: popstate navigation respects `scrollToTop`
-- Fix: dynamic `import()` replaced with `fetch()` for HTML pages
-- Fix: `parseQuery` returns arrays for duplicate keys
-- Fix: `isExternalURL` handles `mailto:`, `tel:`, `fax:`
-- Fix: `stringify()` safe with `$` in values
-- Fix: hashchange listener in hash mode
-- Fix: `renderRoute` is `async` in SSR
-- Fix: `prefetchOnHover` returns cleanup function
-- Fix: `link-helper` deprecated exports removed
+## [1.4.3] - 2026-06-25
 
-## v1.2.2 (2026-06-23)
-- Fix: `target=_blank` links ignored
-- Fix: invalid URL no longer crashes
-- Fix: redirect preserves query parameters
-- Fix: `notFound`/`error` components rendered with proper layout
-- Fix: history update after render
-- Fix: `link-helper` deprecation warning
-- Fix: `_isLoading` reset on all early-return paths
-- Feat: `beforeRender`/`afterRender` hooks
-- Fix: Link no-router fallback
-- Fix: popstate conflict resolution
-- Fix: SSR query parameter support
-- Fix: `scrollRestoration` removed from DEFAULT_CONFIG
-- Fix: `scrollToTop` defaults to `true`
-- Fix: DOMParser-based title extraction (with regex fallback)
-- Fix: duplicate `back` event suppression
+### Added
+- Per-route `meta.hideComponents` — hide specific smart components per route
+- Access allowlist mode (`access.mode: 'allowlist'` + `access.allowed`)
+- `RealtimeManager` — SSE/polling/WebSocket hot reload
+- `EVENTS.REALTIME_CHANGE` event
+- Demo pages: `no-header`, `plain`, `allowlist-demo`
+- Real-time file watching in dev-server with SSE endpoint
 
-## v1.2.1 (2026-06-23)
-- Fix: PluginManager async install support
-- Fix: Transitions race condition — `_cancel()` clears timer
-- Fix: `router.back()` uses sync event emission
-- Fix: `joinPaths()` reverted to v1.1.0 behavior (no forced leading `/`)
-- Fix: `scrollTo` compat — replaced `behavior: instant` with direct call
-- Fix: `matchedRoute` deprecation warning
-- Fix: `_findDynamic` skips catch-all segments
+## [1.4.2] - 2026-06-25
 
-## v1.2.0 (2026-06-23)
-- Feat: SSR support (`matchRoute`, `renderRoute`, `routeExists`, `listRoutes`)
-- Feat: Plugin System (`PluginManager`)
-- Feat: Middleware Priority system
-- Feat: Transitions API (`TransitionsManager`)
-- Feat: ScrollManager for scroll position memory
-- Feat: Code Splitting (`import()` for route components)
-- Feat: TypeScript type definitions
-- Feat: Vitest test suite (97 tests, 9 test files)
-- Feat: `exports` map with `types` field
+### Fixed
+- SPA fallback on page refresh (dev-server.js)
+- Bare module specifier via importmap in index.html
 
-## v1.1.2 (2026-06-23)
-- Fix: `OPTIONAL_CATCH_ALL` regex improved
-- Fix: page function arguments
-- Fix: Link.active false positive
-- Fix: middleware redirect loop (depth 10 limit)
-- Fix: race condition (navId + stale check pattern)
-- Fix: scroll conflict resolution
-- Fix: `stringify()` `replaceAll` compat
-- Chore: removed dead `_seedMatcher`/`_matcher`
+### Changed
+- `"start"` script now uses `node dev-server.js` (was `npx serve`)
 
-## v1.1.1 (2026-06-23)
-- Fix: repository URLs migrated (`pishro-dev` → `Karan-Safaie-Qadi`)
+## [1.4.1] - 2026-06-24
 
-## v1.1.0 (2026-06-23)
-- Feat: nested `pageDir` support
-- Feat: dynamic HTML `[param]` placeholders
-- Feat: HTML layout with `{children}` placeholder
-- Feat: auto `<title>` extraction from HTML
-- Feat: scroll memory per pathname
-- Feat: special HTML pages (`loading.html`, `error.html`, `not-found.html`)
-- Feat: `beforeEach`/`afterEach` middleware
-- Feat: `_globalLayout` wrapping
+### Added
+- Comprehensive bilingual README (EN + FA)
+- `document.txt` with full plain-text docs
+- `SafaRouter-Guide.docx` — Persian RTL Word document
 
-## v1.0.1 (2026-06-23)
-- Initial npm release
+## [1.4.0] - 2026-06-24
+
+### Added
+- Smart Components system (`_components`, `_renderComponents`)
+- Component template resolution (`{{ params }}`, `{{ query }}`, `{{ data }}`)
+- Routes auto-resolve `page` from `pageDir` when omitted
+- 18 HTML pages in `html-pages/` covering all demo routes
+- Component link binding (`data-safa-link` in components)
+- Header/Footer components with active link highlighting
+
+### Removed
+- All JS page exports from `test-app/pages/` (21 files deleted)
+- `test-app/layouts/root.js` (unused)
+
+## [1.3.0] - 2026-06-20
+
+### Added
+- ErrorManager: HTTP status 400-511, custom error pages, grouping, logging
+- AccessController: blocked (403) / ignored (404) with glob patterns
+- Maintenance Mode: 503 toggle with allowed path bypasses
+- Route Data Loaders: async data fetching before page render
+- Route Guards: per-route guard functions with redirect
+- Per-route Transitions: custom CSS transition effects
+- Runtime API: `blockRoute`, `unblockRoute`, `ignoreRoute`, `unignoreRoute`
+- Events: `onError`, `onMaintenance`, `onAccessDenied`
+- `retry()` method for failed navigation retries
+- Error pages for 403, 404, 500, 503 (HTML and CSS)
+- `api.html` — programmatic API demo page
+
+## [1.2.0] - 2026-06-15
+
+### Added
+- Route caching with configurable `maxCacheSize`
+- Route prefetching with IntersectionObserver
+- `afterEach` navigation hook
+- `Link` helper class
+- Plugin system
+- Scroll position restore
+- Focus management on route change
+- `navigate()` deprecation warning
+
+## [1.1.0] - 2026-06-10
+
+### Added
+- Nested layouts with parent→child composition
+- Dynamic route segments: `[slug]`, `[...catchAll]`, `[[...optional]]`
+- Route groups `(groupName)`
+- Middleware chain with priority and named middleware
+- Title template support
+- HTML file based layouts with `{children}` placeholder
+- `_fetchSpecial` for loading/non-found/error HTML files
+
+## [1.0.0] - 2026-06-05
+
+### Added
+- Core routing engine with History API
+- HTML-first routing: `.html` files as routes
+- Route configuration object
+- Client-side navigation: push, replace, back, forward
+- Event system: beforenavigate, routechange, beforerender, afterrender, error, notfound, loading, ready, destroy
+- Base path support
+- Hash routing support
+- Error boundaries and loading states
+- Global notFound and error components
+- Route matching and resolution
