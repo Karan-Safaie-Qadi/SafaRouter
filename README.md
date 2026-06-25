@@ -32,6 +32,35 @@ Use it with React, Vue, Svelte, or vanilla JavaScript. Pure JS, zero dependencie
 
 ---
 
+### Table of Contents
+
+- [Features](#features)
+- [Installation](#installation)
+- [Quick Start (HTML only)](#quick-start-html-only)
+- [Route Configuration](#route-configuration)
+- [Smart Components (v1.4.0)](#smart-components-v140)
+- [Per-route hideComponents (v1.4.3)](#per-route-hidecomponents-v143)
+- [Route Data Loaders (v1.3.0)](#route-data-loaders-v130)
+- [Route Guards (v1.3.0)](#route-guards-v130)
+- [Middleware](#middleware)
+- [Layouts](#layouts)
+- [Dynamic Routes & Route Groups](#dynamic-routes--route-groups)
+- [Error Handling](#error-handling)
+- [Events](#events)
+- [Template Resolution (v1.4.0)](#template-resolution-v140)
+- [Per-route Transitions (v1.3.0)](#per-route-transitions-v130)
+- [Real-time Hot Reload (v1.4.3)](#real-time-hot-reload-v143)
+- [SafaDevServer (v1.4.4)](#safadevserver-v144)
+- [Integration Examples](#integration-examples)
+- [API Reference](#api-reference)
+- [Complete Demo Configuration](#complete-demo-configuration)
+- [Running the Demo](#running-the-demo)
+- [Migration Guide](#migration-guide)
+- [FAQ](#faq)
+- [License](#license)
+
+---
+
 ### Features
 
 | Feature | Description | Version |
