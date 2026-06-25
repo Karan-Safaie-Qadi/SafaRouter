@@ -8,8 +8,8 @@ import { SafaError } from '../errors.js'
 import { LoaderCache } from '../LoaderCache.js'
 
 export class SafaRouter {
-  static version = '2.0.0'
-  static VERSION = '2.0.0'
+  static version = '2.0.1'
+  static VERSION = '2.0.1'
 
   constructor(options = {}) {
     this.config = deepMerge(DEFAULT_CONFIG, options)

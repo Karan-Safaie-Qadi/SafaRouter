@@ -3,7 +3,7 @@ import { SafaRouter } from '../src/core/SafaRouter.js'
 
 describe('SafaRouter core (minimal)', () => {
   it('exports static version', () => {
-    expect(SafaRouter.version).toBe('2.0.0')
+    expect(SafaRouter.version).toBe('2.0.1')
   })
 
   it('creates router without any feature dependencies', () => {

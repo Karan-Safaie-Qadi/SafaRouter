@@ -14,8 +14,8 @@ import { AccessController } from './AccessController.js'
 import { LoaderCache } from './LoaderCache.js'
 
 export class SafaRouter {
-  static version = '2.0.0'
-  static VERSION = '2.0.0'
+  static version = '2.0.1'
+  static VERSION = '2.0.1'
 
   constructor(options = {}) {
     this.config = deepMerge(DEFAULT_CONFIG, options)
@@ -690,7 +690,7 @@ export class SafaRouter {
       this._query = query
 
       emit(this._events, EVENTS.BEFORE_RENDER, { pathname: path })
-      if (routeMatch.intercept && this._shouldIntercept(routeMatch.intercept)) {
+      if (routeMatch?.intercept && this._shouldIntercept(routeMatch.intercept)) {
         this._interceptActive = true
         this._previousRouteData = this._routeData
         this._interceptContent = pageContent
