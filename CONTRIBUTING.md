@@ -1,42 +1,47 @@
 # Contributing to SafaRouter
 
-We welcome contributions! Here's how to get started.
+Thank you for considering contributing! Every contribution helps.
 
-## Development
+## Development Setup
 
 ```bash
 git clone https://github.com/Karan-Safaie-Qadi/SafaRouter.git
-cd safa-router
-npm start
+cd SafaRouter
+npm install
+node dev-server.js
+# Open http://localhost:3000/test-app/
 ```
 
-## Guidelines
+## Running Tests
 
-- Use meaningful commit messages (prefix with `feat:`, `fix:`, `docs:`, `refactor:`, `chore:`)
-- Keep the code pure JavaScript with no dependencies
-- Maintain backward compatibility
-- Update the README if you change the public API
-- Add or update demo pages for new features
-
-## Project Structure
-
-```
-safa-router/
-├── src/           # Source code (pure JS, zero deps)
-├── test-app/      # Demo application
-│   ├── pages/     # Route page components
-│   ├── layouts/   # Layout components
-│   └── styles/    # CSS
-└── README.md      # Bilingual documentation
+```bash
+npm test            # run all tests
+npm run test:watch  # watch mode
+npm run test:coverage  # coverage report
 ```
 
-## Commit Convention
+## Code Style
 
-We follow a simple convention:
+- ES modules only (type: "module" in package.json)
+- No transpilation — code runs directly in the browser and Node
+- No external runtime dependencies
+- JSDoc comments for public API methods
 
-- `feat:` — new feature
-- `fix:` — bug fix
-- `docs:` — documentation
-- `refactor:` — code refactoring
-- `chore:` — tooling, config
-- `style:` — formatting
+## Commit Conventions
+
+Use conventional commit prefixes:
+
+- `feat:` new feature
+- `fix:` bug fix
+- `docs:` documentation
+- `test:` tests
+- `refactor:` code restructure
+- `chore:` tooling, config, CI
+- `types:` type definitions
+- `demo:` demo app changes
+
+## Pull Request Process
+
+1. Ensure tests pass (`npm test`)
+2. Update documentation if needed
+3. Add tests for new features
