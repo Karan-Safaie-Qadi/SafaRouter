@@ -1420,12 +1420,35 @@ A: Yes. Set `useHash: true` in the config.
 
 با React، Vue، Svelte یا جاواسکریپت خالص کار می‌کند. وابستگی صفر، زیر ۵ کیلوبایت.
 
+### فهرست مطالب
+
+- [نصب](#نصب)
+- [شروع سریع (فقط HTML)](#شروع-سریع-فقط-html)
+- [کامپوننت‌های هوشمند (v1.4.0)](#کامپوننت‌های-هوشمند-v140)
+- [مدیریت خطا](#مدیریت-خطا)
+- [مخفی‌سازی کامپوننت در مسیر خاص (v1.4.3)](#مخفی‌سازی-کامپوننت-در-مسیر-خاص-v143)
+- [به‌روزرسانی لحظه‌ای Real-time (v1.4.3)](#به‌روزرسانی-لحظه‌ای-real-time-v143)
+- [سرور توسعه SafaDevServer (v1.4.4)](#سرور-توسعه-safadevserver-v144)
+- [مثال‌های یکپارچه‌سازی](#مثال‌های-یکپارچه‌سازی)
+- [راهنمای کامل API](#راهنمای-کامل-api)
+- [جدول مقایسه](#جدول-مقایسه)
+- [عیب‌یابی](#عیب‌یابی)
+- [پرسش‌های متداول](#پرسش‌های-متداول)
+- [اجرای دمو](#اجرای-دمو)
+- [مجوز](#مجوز)
+
 ---
 
 ### نصب
 
 ```bash
 npm install safa-router
+```
+
+یا با استفاده از ابزار CLI:
+
+```bash
+npx create-safa-app
 ```
 
 ---
@@ -1596,6 +1619,100 @@ new SafaDevServer({
 
 ---
 
+### مثال‌های یکپارچه‌سازی
+
+صفا روتر با هر فریم‌ورکی کار می‌کند — در ادامه الگوهای حداقلی یکپارچه‌سازی آورده شده است.
+
+#### React
+
+```jsx
+import { useEffect, useRef } from 'react'
+import { SafaRouter } from 'safa-router'
+
+export default function App() {
+  const appRef = useRef(null)
+  useEffect(() => {
+    const router = new SafaRouter({
+      target: appRef.current,
+      pageDir: 'html-pages',
+      routes: { '/': {}, '/about': {} },
+    })
+    router.start()
+    return () => router.destroy()
+  }, [])
+  return <div ref={appRef} />
+}
+```
+
+#### Vue
+
+```vue
+<template>
+  <div ref="appRef"></div>
+</template>
+
+<script setup>
+import { ref, onMounted, onUnmounted } from 'vue'
+import { SafaRouter } from 'safa-router'
+
+const appRef = ref(null)
+let router
+
+onMounted(() => {
+  router = new SafaRouter({
+    target: appRef.value,
+    pageDir: 'html-pages',
+    routes: { '/': {}, '/about': {} },
+  })
+  router.start()
+})
+
+onUnmounted(() => router?.destroy())
+</script>
+```
+
+#### Svelte
+
+```svelte
+<script>
+  import { onMount, onDestroy } from 'svelte'
+  import { SafaRouter } from 'safa-router'
+
+  let appEl
+  let router
+
+  onMount(() => {
+    router = new SafaRouter({
+      target: appEl,
+      pageDir: 'html-pages',
+      routes: { '/': {}, '/about': {} },
+    })
+    router.start()
+  })
+
+  onDestroy(() => router?.destroy())
+</script>
+
+<div bind:this={appEl} />
+```
+
+#### Vanilla JS
+
+```html
+<div id="app"></div>
+<script type="module">
+import { SafaRouter } from 'safa-router'
+
+new SafaRouter({
+  target: '#app',
+  pageDir: 'html-pages',
+  routes: { '/': {}, '/about': {} },
+}).start()
+</script>
+```
+
+---
+
 ### راهنمای کامل API
 
 | گزینه | نوع | پیش‌فرض | توضیح |
@@ -1634,6 +1751,81 @@ node dev-server.js
 ```
 
 باز کنید: `http://localhost:3000/test-app/`
+
+---
+
+### جدول مقایسه
+
+| ویژگی | SafaRouter | React Router | Vue Router | TanStack Router | page.js |
+|-------|-----------|-------------|-----------|----------------|---------|
+| فریم‌ورک | هر فریم‌ورکی | فقط React | فقط Vue | هر فریم‌ورکی (React-first) | هر فریم‌ورکی |
+| لایه‌بندی تو در تو | ✅ | ✅ | ✅ | ✅ | ❌ |
+| مسیرهای پویا | ✅ | ✅ | ✅ | ✅ | ✅ |
+| میان‌افزار | ✅ | ❌ | ❌ | ✅ | ❌ |
+| کنترل دسترسی | ✅ | ❌ | ❌ | ❌ | ❌ |
+| حالت تعمیرات | ✅ | ❌ | ❌ | ❌ | ❌ |
+| مدیریت خطا | ✅ | ❌ | ❌ | ❌ | ❌ |
+| بارگذار داده | ✅ | ✅ | ✅ | ✅ | ❌ |
+| تایپ‌سیف | جزئی | جزئی | جزئی | ✅ کامل | ❌ |
+| به‌روزرسانی لحظه‌ای | ✅ | ❌ | ❌ | ❌ | ❌ |
+| کامپوننت‌های هوشمند | ✅ | ❌ | ❌ | ❌ | ❌ |
+| وابستگی صفر | ✅ | ❌ | ❌ | ❌ | ✅ |
+| حجم (تقریبی) | ~۵ کیلوبایت | ~۱۴ کیلوبایت | ~۸ کیلوبایت | ~۱۵ کیلوبایت | ~۲ کیلوبایت |
+
+### عیب‌یابی
+
+**لینک‌ها در صفحات ۴۰۴/خطا کار نمی‌کنند**
+مطمئن شوید که از نسخه‌ی v1.4.4 یا بالاتر استفاده می‌کنید. نسخه‌های قدیمی‌تر `_bindLinks()` را در handlerهای خطا فراخوانی نمی‌کردند.
+
+**رفرش صفحه ۴۰۴ برمی‌گرداند**
+از کلاس `SafaDevServer` استفاده کنید — این کلاس قابلیت SPA fallback را دارد. برای توسعه SPA هرگز از یک سرور فایل استاتیک ساده استفاده نکنید.
+
+**خطا در import: «Failed to resolve module specifier»**
+اگر از شناسه‌ی خام `'safa-router'` در مرورگر بدون باندلر استفاده می‌کنید، یک importmap اضافه کنید:
+```html
+<script type="importmap">
+{
+  "imports": {
+    "safa-router": "/node_modules/safa-router/src/index.js"
+  }
+}
+</script>
+```
+
+یا از طریق npm نصب کرده و از یک باندلر (Vite, webpack و غیره) استفاده کنید.
+
+**کامپوننت‌ها رندر نمی‌شوند**
+مطمئن شوید که `<div data-safa-component="componentName">` را در HTML خود دارید و کلید متناظر در شیء `components` تنظیمات وجود دارد.
+
+### پرسش‌های متداول
+
+**س: آیا صفا روتر با React/Vue/Svelte کار می‌کند؟**
+
+ج: بله. صفا روتر مستقل از فریم‌ورک است. به بخش [مثال‌های یکپارچه‌سازی](#مثال‌های-یکپارچه‌سازی) مراجعه کنید.
+
+**س: آیا به باندلر نیاز دارم؟**
+
+ج: خیر. صفا روتر مستقیماً در مرورگر از طریق ESM imports اجرا می‌شود. باندلر اختیاری است.
+
+**س: آیا می‌توانم با TypeScript استفاده کنم؟**
+
+ج: بله. تعاریف تایپ (`safa-router.d.ts`) همراه کتابخانه ارائه شده است.
+
+**س: به‌روزرسانی لحظه‌ای (real-time hot reload) چگونه کار می‌کند؟**
+
+ج: سرور توسعه فایل‌های HTML را نظارت می‌کند و رویدادهای SSE به مرورگر ارسال می‌کند. روتر فقط محتوای صفحه فعلی را دوباره دریافت می‌کند — بدون رفرش کامل مرورگر.
+
+**س: آیا صفا روتر برای محیط تولید آماده است؟**
+
+ج: صفا روتر در توسعه و تولید استفاده می‌شود. این کتابخانه بیش از ۱۸۰ تست و وابستگی صفر در زمان اجرا دارد. مانند هر ابزاری، آن را نسبت به نیازهای پروژه خود ارزیابی کنید.
+
+**س: تفاوت این کتابخانه با React Router یا Vue Router چیست؟**
+
+ج: صفا روتر مستقل از فریم‌ورک است و از لایه‌بندی تو در تو، مسیرهای پویا، میان‌افزار، مدیریت خطا، کنترل دسترسی و به‌روزرسانی لحظه‌ای — همه بدون نیاز به React، Vue یا باندلر — پشتیبانی می‌کند.
+
+**س: آیا از مسیریابی هش (hash routing) پشتیبانی می‌کند؟**
+
+ج: بله. گزینه `useHash: true` را در تنظیمات قرار دهید.
 
 ### مجوز
 
