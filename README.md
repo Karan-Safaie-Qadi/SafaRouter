@@ -57,6 +57,8 @@ Use it with React, Vue, Svelte, or vanilla JavaScript. Pure JS, zero dependencie
 - [Integration Examples](#integration-examples)
 - [Running the Demo](#running-the-demo)
 - [Migration Guide](#migration-guide)
+- [Comparison with Other Routers](#comparison-with-other-routers)
+- [Troubleshooting](#troubleshooting)
 - [FAQ](#faq)
 - [License](#license)
 
@@ -1328,6 +1330,49 @@ const router = new SafaRouter({
 #### From v1.2.x to v1.3.0
 
 See the v1.3.0 CHANGELOG for migration details.
+
+### Comparison with Other Routers
+
+| Feature | SafaRouter | React Router | Vue Router | TanStack Router | page.js |
+|---------|-----------|-------------|-----------|----------------|---------|
+| Framework | Any | React only | Vue only | Any (React-first) | Any |
+| Nested Layouts | ✅ | ✅ | ✅ | ✅ | ❌ |
+| Dynamic Routes | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Middleware | ✅ | ❌ | ❌ | ✅ | ❌ |
+| Access Control | ✅ | ❌ | ❌ | ❌ | ❌ |
+| Maintenance Mode | ✅ | ❌ | ❌ | ❌ | ❌ |
+| Error Manager | ✅ | ❌ | ❌ | ❌ | ❌ |
+| Data Loaders | ✅ | ✅ | ✅ | ✅ | ❌ |
+| Type-Safe | Partial | Partial | Partial | ✅ Full | ❌ |
+| Real-time Hot Reload | ✅ | ❌ | ❌ | ❌ | ❌ |
+| Smart Components | ✅ | ❌ | ❌ | ❌ | ❌ |
+| Zero Dependencies | ✅ | ❌ | ❌ | ❌ | ✅ |
+| Size (approx) | ~5 KB | ~14 KB | ~8 KB | ~15 KB | ~2 KB |
+
+### Troubleshooting
+
+**Links don't work on 404/error pages**
+Make sure you are using `v1.4.4` or later. Earlier versions did not call `_bindLinks()` inside error handlers.
+
+**Page refresh returns 404**
+Use the `SafaDevServer` class — it has built-in SPA fallback. Never use a plain static file server for SPA development.
+
+**Import fails: "Failed to resolve module specifier"**
+If using the bare specifier `'safa-router'` in a browser without a bundler, add an importmap:
+```html
+<script type="importmap">
+{
+  "imports": {
+    "safa-router": "/node_modules/safa-router/src/index.js"
+  }
+}
+</script>
+```
+
+Or install via npm and use a bundler (Vite, webpack, etc.).
+
+**Components not rendering**
+Ensure you have `<div data-safa-component="componentName">` in your HTML and the matching key in the `components` config object.
 
 ### FAQ
 
