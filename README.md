@@ -54,6 +54,7 @@ Use it with React, Vue, Svelte, or vanilla JavaScript. Pure JS, zero dependencie
 - [Integration Examples](#integration-examples)
 - [API Reference](#api-reference)
 - [Complete Demo Configuration](#complete-demo-configuration)
+- [Integration Examples](#integration-examples)
 - [Running the Demo](#running-the-demo)
 - [Migration Guide](#migration-guide)
 - [FAQ](#faq)
@@ -1327,6 +1328,36 @@ const router = new SafaRouter({
 #### From v1.2.x to v1.3.0
 
 See the v1.3.0 CHANGELOG for migration details.
+
+### FAQ
+
+**Q: Does SafaRouter work with React/Vue/Svelte?**
+
+A: Yes. SafaRouter is framework-agnostic. See the [Integration Examples](#integration-examples) section.
+
+**Q: Do I need a bundler?**
+
+A: No. SafaRouter runs directly in the browser via ESM imports. A bundler is optional.
+
+**Q: Can I use it with TypeScript?**
+
+A: Yes. Type definitions are included (`safa-router.d.ts`).
+
+**Q: How does the real-time hot reload work?**
+
+A: The dev server watches HTML files and sends SSE events to the browser. The router re-fetches only the current page content — no full browser refresh.
+
+**Q: Is SafaRouter production-ready?**
+
+A: SafaRouter is used in development and production. It has 180+ tests and zero runtime dependencies. As with any tool, evaluate it against your project's requirements.
+
+**Q: How is this different from React Router or Vue Router?**
+
+A: SafaRouter is framework-agnostic and supports nested layouts, dynamic routes, middleware, error management, access control, and real-time updates — all without requiring React, Vue, or a bundler.
+
+**Q: Does it support hash routing?**
+
+A: Yes. Set `useHash: true` in the config.
 
 ---
 
