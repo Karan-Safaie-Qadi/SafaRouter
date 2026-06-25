@@ -2,7 +2,7 @@
   <h1>SafaRouter</h1>
   <p><strong>A standalone frontend router inspired by Next.js App Router</strong></p>
   <p>
-    <img src="https://img.shields.io/badge/version-1.4.1-blue" alt="Version">
+    <img src="https://img.shields.io/badge/version-1.4.4-blue" alt="Version">
     <img src="https://img.shields.io/badge/license-MIT-green" alt="License">
     <img src="https://img.shields.io/badge/dependencies-0-brightgreen" alt="Zero Dependencies">
     <img src="https://img.shields.io/badge/size-%3C5%20KB-gold" alt="Size">
@@ -45,8 +45,13 @@ Use it with React, Vue, Svelte, or vanilla JavaScript. Pure JS, zero dependencie
 | **Route Guards** | Per-route guard functions with redirect support | v1.3.0 |
 | **Per-route Transitions** | Custom CSS transition effects per route | v1.3.0 |
 | **Smart Components** | Header/Footer components that render on every page with auto-link binding | v1.4.0 |
+| **Per-route hideComponents** | Hide specific components (header/footer) per route via `meta.hideComponents` | v1.4.3 |
 | **Template Resolution** | `{{ params.x }}`, `{{ query.x }}`, `{{ data.x }}` in HTML files | v1.4.0 |
 | **auto-resolve pages** | Routes without `page` auto-resolve from `pageDir` HTML files | v1.4.0 |
+| **Access allowlist mode** | Block everything except explicitly allowed paths (`access.mode: 'allowlist'`) | v1.4.3 |
+| **Real-time hot reload** | SSE-based live reload — edit HTML files, page updates without browser refresh | v1.4.3 |
+| **DevServer class** | Import `SafaDevServer` — zero-config dev server with SPA fallback + file watching | v1.4.4 |
+| **Links on error pages** | `_bindLinks()` now runs on 404/error pages so `data-safa-link` works everywhere | v1.4.4 |
 | **Zero dependencies** | Pure JavaScript, ESM, ~5 KB gzipped | — |
 | **Framework agnostic** | Works with React, Vue, Svelte, or vanilla JS | — |
 
@@ -292,6 +297,27 @@ export default function headerComponent({ path, params }) {
 2. Links inside components (`data-safa-link`) are automatically bound for client-side navigation
 3. Components receive fresh context on every navigation
 4. Multiple components are supported — just add more entries to `components`
+
+### Per-route hideComponents (v1.4.3)
+
+Hide specific smart components on individual routes using `meta.hideComponents`:
+
+```js
+routes: {
+  '/sandbox': {
+    meta: { hideComponents: ['footer'] },   // footer hidden, header visible
+  },
+  '/no-header': {
+    meta: { hideComponents: ['header'] },   // header hidden, footer visible
+  },
+  '/plain': {
+    meta: { hideComponents: true },          // both header and footer hidden
+  },
+}
+```
+
+- Accepts an array of component names to hide, or `true` to hide all components
+- Works with any component registered in the `components` config
 
 ---
 
@@ -593,6 +619,29 @@ const router = new SafaRouter({
 })
 ```
 
+##### Allowlist mode (v1.4.3)
+
+By default the controller runs in **blocklist** mode — everything is allowed except `blocked` paths. Switch to **allowlist** mode to block everything **except** the paths in `allowed`:
+
+```js
+const router = new SafaRouter({
+  access: {
+    mode: 'allowlist',                  // block everything by default
+    allowed: ['/login', '/public/**'],  // only these are accessible
+  },
+})
+```
+
+Runtime control:
+
+```js
+router.accessController.setMode('allowlist')       // switch to allowlist
+router.accessController.setMode('blocklist')        // switch back to blocklist
+router.accessController.allow('/sandbox')           // add to allowed
+router.accessController.unallow('/sandbox')         // remove from allowed
+router.accessController.getMode()                   // 'allowlist' | 'blocklist'
+```
+
 **Runtime control:**
 
 ```js
@@ -751,6 +800,90 @@ routes: {
 
 Transitions are applied when navigating to and from the route.
 
+### Real-time Hot Reload (v1.4.3)
+
+SafaRouter supports live updates — edit your HTML files and the page updates without a browser refresh.
+
+**Client-side config:**
+
+```js
+const router = new SafaRouter({
+  realtime: {
+    enabled: true,          // enable real-time updates
+    mode: 'sse',            // 'sse' (default), 'polling', or 'websocket'
+    url: '/__realtime',     // SSE/WebSocket endpoint
+    interval: 2000,         // polling interval (ms) — only used when mode='polling'
+    onChange: null,         // optional custom handler(data, router)
+  },
+})
+```
+
+**How it works:**
+1. The client connects to the realtime endpoint via `EventSource` (SSE), polling, or WebSocket
+2. The dev server watches your HTML/component files for changes
+3. When a file changes, the server sends an event to the client
+4. The client clears its route cache and re-fetches the current page content (no full browser refresh)
+
+**Custom handler example:**
+
+```js
+realtime: {
+  enabled: true,
+  onChange: (data, router) => {
+    console.log(`File changed: ${data.path}`)
+    if (data.path.endsWith('.css')) {
+      // reload CSS without re-rendering
+      document.querySelectorAll('link[rel=stylesheet]').forEach(el => {
+        el.href = el.href.replace(/\?.*/, '') + '?' + Date.now()
+      })
+    }
+  },
+}
+```
+
+The built-in dev server (`SafaDevServer`) enables this automatically — see [DevServer](#safadevserver-v144) below.
+
+---
+
+### SafaDevServer (v1.4.4)
+
+The `SafaDevServer` class provides a production-grade development server with SPA fallback, file watching, and SSE real-time updates — all in one import.
+
+```js
+import { SafaDevServer } from 'safa-router'
+
+const server = new SafaDevServer({
+  port: 3000,
+  root: './test-app',          // directory to serve
+  basePath: '/test-app',        // app base path (matches router.basePath)
+  watch: true,                  // enable file watching + SSE
+  srcDirs: ['./src'],           // serve source JS files (for bare import mapping)
+  watchDirs: ['./test-app/html-pages', './test-app/components'],
+})
+
+server.start()
+// Server: http://localhost:3000/test-app/
+```
+
+**Why SafaDevServer?**
+- **SPA fallback** — refreshing on any route (e.g. `/about`) correctly serves `index.html`
+- **File watching** — HTML/component changes trigger SSE events for real-time page updates
+- **No bundler needed** — import your source files directly; the server serves them with correct MIME types
+- **Zero-config routing** — all paths under `basePath` fall back to `index.html` for the SPA
+
+**Minimal example:**
+
+```js
+import { SafaDevServer } from 'safa-router'
+
+new SafaDevServer({ root: './dist' }).start()
+```
+
+Stop the server:
+```js
+server.stop()
+```
+
 ---
 
 ### API Reference
@@ -768,6 +901,7 @@ Transitions are applied when navigating to and from the route.
 | `error` | `Function\|string` | `null` | Custom error page component |
 | `basePath` | `string` | `''` | Base path when app is served from subdirectory |
 | `useHash` | `boolean` | `false` | Use `#hash` routing instead of History API |
+| `realtime` | `object` | `{ enabled: false }` | Real-time update config (SSE/polling/WebSocket) — v1.4.3 |
 | `scrollToTop` | `boolean` | `true` | Scroll to top on navigation |
 | `cacheRoutes` | `boolean` | `true` | Cache loaded components |
 | `maxCacheSize` | `number` | `50` | Maximum cached pages |
@@ -779,6 +913,8 @@ Transitions are applied when navigating to and from the route.
 | `errors.stackTraces` | `boolean` | `true` | Show stack traces in error pages (v1.3.0) |
 | `access.blocked` | `string[]` | `[]` | Blocked route patterns (403) (v1.3.0) |
 | `access.ignored` | `string[]` | `[]` | Ignored route patterns (silent 404) (v1.3.0) |
+| `access.allowed` | `string[]` | `[]` | Allowed patterns in allowlist mode (v1.4.3) |
+| `access.mode` | `string` | `'blocklist'` | `'blocklist'` or `'allowlist'` (v1.4.3) |
 | `maintenanceMode.enabled` | `boolean` | `false` | Enable maintenance mode (v1.3.0) |
 | `maintenanceMode.allowedPaths` | `string[]` | `[]` | Paths that bypass maintenance (v1.3.0) |
 | `errorLogging.enabled` | `boolean` | `false` | Enable error logging (v1.3.0) |
@@ -1213,6 +1349,48 @@ router.setMaintenance(true)   // فعال کردن حالت تعمیرات
 router.setMaintenance(false)  // غیرفعال کردن
 ```
 
+### مخفی‌سازی کامپوننت در مسیر خاص (v1.4.3)
+
+کامپوننت‌ها را در مسیرهای خاص مخفی کنید:
+
+```js
+routes: {
+  '/sandbox': {
+    meta: { hideComponents: ['footer'] },
+  },
+  '/plain': {
+    meta: { hideComponents: true },
+  },
+}
+```
+
+### به‌روزرسانی لحظه‌ای Real-time (v1.4.3)
+
+فایل‌های HTML را ویرایش کنید — صفحه بدون رفرش مرورگر به‌روز می‌شود:
+
+```js
+const router = new SafaRouter({
+  realtime: {
+    enabled: true,
+    mode: 'sse',
+  },
+})
+```
+
+### سرور توسعه SafaDevServer (v1.4.4)
+
+```js
+import { SafaDevServer } from 'safa-router'
+
+new SafaDevServer({
+  root: './test-app',
+  basePath: '/test-app',
+  watch: true,
+}).start()
+```
+
+رفرش صفحه در هر مسیری درست کار می‌کند.
+
 ---
 
 ### راهنمای کامل API
@@ -1226,9 +1404,12 @@ router.setMaintenance(false)  // غیرفعال کردن
 | `components` | `object` | `{}` | کامپوننت‌های هوشمند (v1.4.0) |
 | `basePath` | `string` | `''` | مسیر پایه |
 | `useHash` | `boolean` | `false` | مسیریابی هش |
+| `realtime` | `object` | `{ enabled: false }` | تنظیمات به‌روزرسانی لحظه‌ای (v1.4.3) |
 | `errors.pageDir` | `string` | `undefined` | پوشه صفحات خطا (v1.3.0) |
 | `access.blocked` | `string[]` | `[]` | مسیرهای مسدود شده (v1.3.0) |
 | `access.ignored` | `string[]` | `[]` | مسیرهای نادیده (v1.3.0) |
+| `access.allowed` | `string[]` | `[]` | مسیرهای مجاز در حالت allowlist (v1.4.3) |
+| `access.mode` | `string` | `'blocklist'` | `'blocklist'` یا `'allowlist'` (v1.4.3) |
 
 #### رویدادها
 

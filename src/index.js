@@ -1,4 +1,5 @@
 export { SafaRouter } from './SafaRouter.js'
+export { SafaDevServer } from './DevServer.js'
 export { RealtimeManager } from './RealtimeManager.js'
 export { RouteTree } from './RouteTree.js'
 export { RouteMatcher } from './RouteMatcher.js'

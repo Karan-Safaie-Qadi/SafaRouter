@@ -13,8 +13,8 @@ import { ErrorManager } from './ErrorManager.js'
 import { AccessController } from './AccessController.js'
 
 export class SafaRouter {
-  static version = '1.4.3'
-  static VERSION = '1.4.3'
+  static version = '1.4.4'
+  static VERSION = '1.4.4'
 
   constructor(options = {}) {
     this.config = deepMerge(DEFAULT_CONFIG, options)
@@ -312,7 +312,7 @@ export class SafaRouter {
         }
       }
     }, { rootMargin: '200px' })
-    if (!this._targetEl) return
+    if (!this._targetEl || typeof this._targetEl.querySelectorAll !== 'function') return
     const links = this._targetEl.querySelectorAll('a[href]')
     for (const link of links) {
       if (link.getAttribute('target') === '_blank') continue
@@ -754,7 +754,7 @@ export class SafaRouter {
   }
 
   _bindLinks() {
-    if (!this._targetEl) return
+    if (!this._targetEl || typeof this._targetEl.querySelectorAll !== 'function') return
     const links = this._targetEl.querySelectorAll('[data-safa-link]')
     for (const el of links) {
       if (el.getAttribute('target') === '_blank') continue
@@ -833,6 +833,7 @@ export class SafaRouter {
         this._targetEl.innerHTML = layoutFn
           ? await this._renderWithLayouts(notFoundPage, [layoutFn], 0)
           : notFoundPage
+        this._bindLinks()
       }
       this._updateTitle()
       this._renderComponents()
@@ -858,6 +859,7 @@ export class SafaRouter {
         this._targetEl.innerHTML = layoutFn
           ? await this._renderWithLayouts(notFoundHtml, [layoutFn], 0)
           : notFoundHtml
+        this._bindLinks()
       }
       this._updateTitle()
       this._renderComponents()
@@ -886,7 +888,10 @@ export class SafaRouter {
           const loaded = await this._loadComponent(lfn)
           if (loaded) html = await this._renderWithLayouts(html, [loaded], 0)
         }
-        if (this._targetEl) this._targetEl.innerHTML = html
+        if (this._targetEl) {
+          this._targetEl.innerHTML = html
+          this._bindLinks()
+        }
         this._updateTitle()
         this._renderComponents()
         emit(this._events, EVENTS.AFTER_RENDER, { pathname: this._pathname })
@@ -894,7 +899,10 @@ export class SafaRouter {
       } catch { /* fall through */ }
     }
     if (this._targetEl) {
-      try { this._targetEl.innerHTML = this._fallback404(path, status, showStack) }
+      try {
+        this._targetEl.innerHTML = this._fallback404(path, status, showStack)
+        this._bindLinks()
+      }
       catch { this._targetEl.textContent = `Not Found: ${path}` }
     }
     this._updateTitle()
@@ -929,7 +937,10 @@ export class SafaRouter {
           const loaded = await this._loadComponent(lfn)
           if (loaded) html = await this._renderWithLayouts(html, [loaded], 0)
         }
-        if (this._targetEl) this._targetEl.innerHTML = html
+        if (this._targetEl) {
+          this._targetEl.innerHTML = html
+          this._bindLinks()
+        }
         this._updateTitle()
         this._renderComponents()
         emit(this._events, EVENTS.AFTER_RENDER, { pathname: this._pathname })
@@ -956,6 +967,7 @@ export class SafaRouter {
         this._targetEl.innerHTML = layoutFn
           ? await this._renderWithLayouts(mgrPage, [layoutFn], 0)
           : mgrPage
+        this._bindLinks()
       }
       this._updateTitle()
       this._renderComponents()
@@ -966,7 +978,10 @@ export class SafaRouter {
     // Fallback: try generic error.html
     const errorHtml = this.config.pagesDir ? await this._fetchSpecial(path, 'error.html', signal) : null
     if (errorHtml) {
-      if (this._targetEl) this._targetEl.innerHTML = errorHtml
+      if (this._targetEl) {
+        this._targetEl.innerHTML = errorHtml
+        this._bindLinks()
+      }
       this._updateTitle()
       this._renderComponents()
       emit(this._events, EVENTS.AFTER_RENDER, { pathname: this._pathname })
@@ -990,7 +1005,10 @@ export class SafaRouter {
           const loaded = await this._loadComponent(lfn)
           if (loaded) html = await this._renderWithLayouts(html, [loaded], 0)
         }
-        if (this._targetEl) this._targetEl.innerHTML = html
+        if (this._targetEl) {
+          this._targetEl.innerHTML = html
+          this._bindLinks()
+        }
         this._updateTitle()
         this._renderComponents()
         emit(this._events, EVENTS.AFTER_RENDER, { pathname: this._pathname })
@@ -998,7 +1016,10 @@ export class SafaRouter {
       } catch { /* fall through */ }
     }
     if (this._targetEl) {
-      try { this._targetEl.innerHTML = this._fallbackError(err, status, showStack) }
+      try {
+        this._targetEl.innerHTML = this._fallbackError(err, status, showStack)
+        this._bindLinks()
+      }
       catch { this._targetEl.textContent = `Error: ${err.message}` }
     }
     this._updateTitle()
