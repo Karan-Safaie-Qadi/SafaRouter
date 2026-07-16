@@ -1,5 +1,5 @@
 export function bindLinks(router, scope = document) {
-  scope.addEventListener('click', (e) => {
+  const handler = (e) => {
     const link = e.target.closest('[data-safa-link]')
     if (!link) return
     if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return
@@ -8,7 +8,9 @@ export function bindLinks(router, scope = document) {
     if (!href) return
     e.preventDefault()
     router.push(href)
-  })
+  }
+  scope.addEventListener('click', handler)
+  return () => scope.removeEventListener('click', handler)
 }
 
 export function prefetchOnHover(router) {

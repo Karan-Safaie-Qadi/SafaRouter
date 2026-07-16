@@ -39,6 +39,11 @@ export function safaRouter() {
     name: 'safa-router',
 
     transform(code, id) {
+      // Only process files that might contain SafaRouter config or feature method calls
+      if (!/\bSafaRouter\b/.test(code) && !/\.(blockRoute|unblockRoute|isMaintenance|setMaintenance|onAccessDenied|onMaintenance)\s*\(/.test(code)) return
+      // Avoid re-processing if imports were already injected
+      if (code.includes("from 'safa-router/features/") || code.includes("import 'safa-router/features/")) return
+
       const features = detectFeaturesFromCode(code)
       if (features.length === 0) return
 

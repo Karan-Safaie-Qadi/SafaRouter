@@ -17,11 +17,15 @@ export class Link {
 
   render(container) {
     if (this._el) {
-      this._el.remove()
-      this._el = null
       if (this._unsub) {
         this._unsub()
         this._unsub = null
+      }
+      if (container) {
+        this._el.remove()
+        this._el = null
+      } else {
+        return this._el
       }
     }
     this._el = document.createElement('a')

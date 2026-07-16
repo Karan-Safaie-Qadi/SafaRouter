@@ -89,7 +89,7 @@ class RoutePattern {
     let idx = 0
     for (const name of this.paramNames) {
       const val = m[++idx]
-      if (val !== undefined) {
+      if (val != null) {
         params[name] = val.includes('/') ? val.split('/') : val
       }
     }

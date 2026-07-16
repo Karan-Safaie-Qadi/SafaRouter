@@ -12,9 +12,8 @@ export function init(router, config) {
   router.setMaintenance = (enabled, opts = {}) => {
     router._maintenanceMode = enabled
     if (enabled) {
-      if (opts.page) router.config.maintenanceMode = { ...router.config.maintenanceMode, page: opts.page }
-      if (opts.component) router.config.maintenanceMode = { ...router.config.maintenanceMode, component: opts.component }
-      if (opts.allowedPaths) router.config.maintenanceMode = { ...router.config.maintenanceMode, allowedPaths: opts.allowedPaths }
+      const m = router.config.maintenanceMode || {}
+      router.config.maintenanceMode = { ...m, ...opts }
     }
   }
 
@@ -28,7 +27,7 @@ export function init(router, config) {
     if (Component && typeof Component === 'function') {
       router._render(Component({ path, router }))
     } else if (page) {
-      const html = await router._fetchPage(page)
+      const html = await router._fetchPage(page, router._abortController?.signal)
       router._render(html || '')
     } else {
       router._render('<h1>503</h1><p>Site is under maintenance</p>')
