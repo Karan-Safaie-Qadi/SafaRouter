@@ -8,7 +8,7 @@ import { ScrollManager } from './ScrollManager.js'
 import { RealtimeManager } from './RealtimeManager.js'
 import { normalizePath, parseQuery, emit, createURL, isExternalURL, deepMerge } from './utils.js'
 import { EVENTS, DEFAULT_CONFIG, HTTP_STATUS } from './constants.js'
-import { RouteLoadError, SafaError, NavigationAbortError, HttpError, MaintenanceModeError } from './errors.js'
+import { RouteLoadError, SafaError, NavigationAbortError, HttpError, MaintenanceModeError, createAbortError } from './errors.js'
 import { ErrorManager } from './ErrorManager.js'
 import { AccessController } from './AccessController.js'
 import { LoaderCache } from './LoaderCache.js'
@@ -413,7 +413,7 @@ export class SafaRouter {
           return text
         }
       } catch {
-        if (signal?.aborted) throw new DOMException('Aborted', 'AbortError')
+        if (signal?.aborted) throw createAbortError()
       }
     }
     return null
@@ -434,7 +434,7 @@ export class SafaRouter {
         const res = await fetch(url, { signal })
         if (res.ok) return res.text()
       } catch {
-        if (signal?.aborted) throw new DOMException('Aborted', 'AbortError')
+        if (signal?.aborted) throw createAbortError()
       }
     }
     return null
