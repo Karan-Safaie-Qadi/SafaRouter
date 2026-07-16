@@ -101,3 +101,13 @@ export class MaintenanceModeError extends SafaError {
     }
   }
 }
+
+export function createAbortError(message = 'Aborted') {
+  try {
+    return new DOMException(message, 'AbortError')
+  } catch {
+    const err = new Error(message)
+    err.name = 'AbortError'
+    return err
+  }
+}

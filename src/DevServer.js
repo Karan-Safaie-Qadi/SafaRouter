@@ -103,7 +103,7 @@ export class SafaDevServer {
 
     // SPA basePath: serve under basePath with SPA fallback
     if (this.basePath && urlPath.startsWith(this.basePath + '/')) {
-      const rel = urlPath.slice(this.basePath.length)
+      const rel = '/' + urlPath.slice(this.basePath.length).replace(/^\/+/, '')
       if (this._serveFile(`${this.root}${rel}`, res)) return
       const ext = path.extname(rel)
       if (ext) {
@@ -146,8 +146,15 @@ export class SafaDevServer {
 
   _serveFile(filePath, res) {
     try {
-      const data = fs.readFileSync(filePath)
-      const ext = path.extname(filePath).slice(1)
+      const root = path.resolve(this.root)
+      const resolved = path.resolve(root, filePath)
+      if (!resolved.startsWith(root + path.sep) && resolved !== root) {
+        res.writeHead(403)
+        res.end('Forbidden')
+        return true
+      }
+      const data = fs.readFileSync(resolved)
+      const ext = path.extname(resolved).slice(1)
       res.writeHead(200, { 'Content-Type': MIME[ext] || 'application/octet-stream' })
       res.end(data)
       return true

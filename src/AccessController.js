@@ -83,6 +83,14 @@ export class AccessController {
     return (patterns || []).map(p => this._normalizePattern(p))
   }
 
+  _fallback403() {
+    return `<div class="safa-error safa-403" style="text-align:center;padding:3rem 0;">
+<h1 style="font-size:4rem;font-weight:800;margin-bottom:0.5rem;">403</h1>
+<p style="margin-bottom:1rem;">Access denied</p>
+<a href="/" data-safa-link style="color:var(--color-accent);text-decoration:underline;">Back to home</a>
+</div>`
+  }
+
   _normalizePattern(pattern) {
     const str = String(pattern)
     if (str.endsWith('/')) {
