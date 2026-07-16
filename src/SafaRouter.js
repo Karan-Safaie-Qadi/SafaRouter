@@ -226,6 +226,7 @@ export class SafaRouter {
   }
 
   use(fn) { this._middleware.use(fn); return this }
+  removeMiddleware(fn) { this._middleware.remove(fn); return this }
 
   beforeEach(fn) { return this.use(fn) }
   afterEach(fn) { return this.on(EVENTS.AFTER_NAVIGATE, fn) }
@@ -321,7 +322,7 @@ export class SafaRouter {
 
   async prefetch(path) {
     const normalized = normalizePath(path)
-    if (this._cacheGet(normalized)) return
+    if (this._cache.has(normalized)) return
     const page = await this._fetchPage(normalized)
     if (page && this.config.cacheRoutes) {
       this._cachePut(normalized, page)
