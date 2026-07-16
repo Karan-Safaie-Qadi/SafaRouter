@@ -1086,8 +1086,8 @@ export class SafaRouter {
     closeBtn.addEventListener('click', () => this.dismissInterceptor())
     content.prepend(closeBtn)
     overlay.appendChild(content)
+    if (this._interceptOverlay) this._interceptOverlay.remove()
     this._targetEl.appendChild(overlay)
-    this._bindLinks()
     this._interceptOverlay = overlay
   }
 
