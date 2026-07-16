@@ -6,7 +6,7 @@ import { PluginManager } from './PluginManager.js'
 import { TransitionsManager } from './TransitionsManager.js'
 import { ScrollManager } from './ScrollManager.js'
 import { RealtimeManager } from './RealtimeManager.js'
-import { normalizePath, parseQuery, emit, createURL, isExternalURL, deepMerge, escapeHtml } from './utils.js'
+import { normalizePath, parseQuery, emit, createURL, isExternalURL, deepMerge, escapeHtml, shallowEqual } from './utils.js'
 import { EVENTS, DEFAULT_CONFIG, HTTP_STATUS } from './constants.js'
 import { RouteLoadError, SafaError, NavigationAbortError, HttpError, MaintenanceModeError, createAbortError } from './errors.js'
 import { ErrorManager } from './ErrorManager.js'
@@ -469,7 +469,7 @@ export class SafaRouter {
       return
     }
     if (depth === 0) {
-      const sameQuery = JSON.stringify(query) === JSON.stringify(this._query)
+      const sameQuery = shallowEqual(query, this._query)
       if (path === this._pathname && sameQuery) return
     }
     await this._resolve(path, method, query, state, depth)

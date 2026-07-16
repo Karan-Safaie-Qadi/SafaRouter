@@ -4,6 +4,15 @@ export function normalizePath(path) {
   return p || '/'
 }
 
+export function shallowEqual(a, b) {
+  if (a === b) return true
+  if (!a || !b || typeof a !== 'object' || typeof b !== 'object') return a === b
+  const ka = Object.keys(a), kb = Object.keys(b)
+  if (ka.length !== kb.length) return false
+  for (const k of ka) if (a[k] !== b[k]) return false
+  return true
+}
+
 export function escapeHtml(str) {
   if (str == null) return ''
   return String(str)
