@@ -8,7 +8,7 @@ export function init(router, config) {
   Object.defineProperty(router, 'scrollManager', { get: () => sm })
 
   router._hooks.afterNavigate.push(() => {
-    sm.scrollTo(router._pathname)
+    sm.restore(router._pathname, router.config.scrollToTop)
   })
 }
 
