@@ -209,6 +209,7 @@ export class SafaRouter {
   }
 
   beforeEach(fn) { this._middleware.use(fn); return this }
+  removeMiddleware(fn) { this._middleware.remove(fn); return this }
   afterEach(fn) { return this.on(EVENTS.AFTER_NAVIGATE, fn) }
 
   onError(fn) { return this.on(EVENTS.ERROR, fn) }
