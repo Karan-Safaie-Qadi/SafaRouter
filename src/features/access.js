@@ -17,7 +17,7 @@ export function init(router, config) {
     const blocked = controller.isBlocked(path)
     if (blocked) {
       emit(router._events, EVENTS.ACCESS_DENIED, { path, reason: blocked.message, method })
-      router._render(controller._fallback403 ? controller._fallback403() : '')
+      router._render(controller._fallback403())
       return false
     }
     if (controller.isIgnored(path)) return false
