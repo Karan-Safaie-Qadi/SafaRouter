@@ -143,7 +143,9 @@ export function debounce(fn, delay) {
   }
 }
 
-export function createURL(path, base = location.origin) {
+export function createURL(path, base) {
+  if (!base && typeof location !== 'undefined') base = location.origin
+  if (!base) return null
   try {
     return new URL(path, base)
   } catch {
@@ -153,6 +155,7 @@ export function createURL(path, base = location.origin) {
 
 export function isExternalURL(url) {
   if (!url) return false
+  if (/^(javascript|data|vbscript):/i.test(url)) return true
   if (url.startsWith('//')) return true
   if (url.startsWith('mailto:') || url.startsWith('tel:') || url.startsWith('fax:')) return true
   if (url.startsWith('http://') || url.startsWith('https://')) {

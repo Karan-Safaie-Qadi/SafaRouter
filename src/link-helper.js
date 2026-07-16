@@ -21,6 +21,6 @@ export function prefetchOnHover(router) {
     clearTimeout(timer)
     timer = setTimeout(() => router.prefetch(href), 100)
   }
-  document.addEventListener('mouseenter', handler, true)
-  return () => document.removeEventListener('mouseenter', handler, true)
+  document.addEventListener('mouseover', handler, true)
+  return () => document.removeEventListener('mouseover', handler, true)
 }
