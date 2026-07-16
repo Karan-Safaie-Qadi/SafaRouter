@@ -136,6 +136,7 @@ export class SafaRouter {
       this._unsubHistory = null
     }
     this._history.destroy()
+    emit(this._events, EVENTS.DESTROY, {})
     for (const k of Object.keys(this._events)) this._events[k] = []
     this._cache.clear()
     this._loaderCache.clear()
@@ -149,7 +150,6 @@ export class SafaRouter {
     if (this._interceptOverlay) { this._interceptOverlay.remove(); this._interceptOverlay = null }
     this._interceptActive = false
     this._targetEl = null
-    emit(this._events, EVENTS.DESTROY, {})
   }
 
   _stripBase(path) {
