@@ -44,9 +44,6 @@ export class SafaRouter {
     this._targetEl = null
     this._navId = 0
 
-    this._globalNotFound = this.config.notFound || null
-    this._globalError = this.config.error || null
-    this._globalLayout = this.config.layout || null
     this._customTitle = null
 
     this._features = {}
@@ -175,8 +172,9 @@ export class SafaRouter {
     const flat = this._routeTree.flatten()
     const matched = flat.find(r => r.meta?.name === routeName || r.path === routeName)
     if (!matched) throw new SafaError(`Route "${routeName}" not found`, 'ROUTE_NOT_FOUND')
+    const path = matched.path.replace(/:(\w+)/g, (_, k) => params[k] || ':' + k)
     const qs = Object.keys(query).length ? '?' + new URLSearchParams(query).toString() : ''
-    return this.push(matched.path + qs)
+    return this.push(path + qs)
   }
 
   back() {
@@ -358,7 +356,7 @@ export class SafaRouter {
     else if (method === 'replace') this._history.replace(this._pathname, state)
   }
 
-  async _resolvePage(path, query, method, state, navId) {
+  async _resolvePage(path, _query, _method, _state, navId) {
     if (this.config.cacheRoutes) {
       const cached = this._cacheGet(path)
       if (cached) return { content: cached, statusCode: 200, _navId: navId }
@@ -429,7 +427,6 @@ export class SafaRouter {
     const dynSeg = segs.findIndex(s => s.startsWith('['))
     if (dynSeg >= 0) return candidates
     const parent = segs.slice(0, -1).join('/')
-    const last = segs[segs.length - 1]
     if (parent) {
       candidates.push(`${dir}/${parent}/[slug].html`)
       candidates.push(`${dir}/${parent}/[slug]/index.html`)
@@ -444,7 +441,6 @@ export class SafaRouter {
   }
 
   async _fetchPage(url) {
-    const dir = (this.config.pagesDir || '').replace(/\/+$/, '')
     const candidates = this._resolvePagePath(url)
     if (!candidates) return null
     for (const c of candidates) {
