@@ -489,6 +489,7 @@ export class SafaRouter {
     const signal = this._abortController.signal
     this._isLoading = true
     this._customTitle = null
+    this._navTimedOut = false
 
     const timeout = this.config.navigationTimeout
     let timeoutId
@@ -501,6 +502,7 @@ export class SafaRouter {
         this._errorManager.log(HTTP_STATUS.REQUEST_TIMEOUT, path, err)
         emit(this._events, EVENTS.ERROR, { error: err, path, statusCode: HTTP_STATUS.REQUEST_TIMEOUT })
         console.error('[SafaRouter]', err.message)
+        this._navTimedOut = true
       }, timeout)
     }
 
@@ -514,8 +516,8 @@ export class SafaRouter {
       if (ctx.redirect) return this._navigate(ctx.redirect, 'replace', ctx.query, {}, depth + 1)
       if (ctx.cancelled) {
         const abortErr = new NavigationAbortError()
-        this._errorManager.log(HTTP_STATUS.REQUEST_TIMEOUT, path, abortErr)
-        emit(this._events, EVENTS.ERROR, { path, error: abortErr, statusCode: HTTP_STATUS.REQUEST_TIMEOUT })
+        this._errorManager.log(HTTP_STATUS.CLIENT_CLOSED_REQUEST, path, abortErr)
+        emit(this._events, EVENTS.ERROR, { path, error: abortErr, statusCode: HTTP_STATUS.CLIENT_CLOSED_REQUEST })
         this._isLoading = false
         return
       }
@@ -710,6 +712,8 @@ export class SafaRouter {
 
       this._isLoading = false
 
+      if (this._navTimedOut) { this._isLoading = false; return }
+
       this._scrollManager.restore(this._pathname, this.config.scrollToTop)
       this._updateTitle()
       this._focus()
@@ -721,7 +725,7 @@ export class SafaRouter {
       })
       emit(this._events, EVENTS.AFTER_NAVIGATE, { pathname: path })
     } catch (err) {
-      if (err?.name === 'AbortError') { this._isLoading = false; return }
+      if (err?.name === 'AbortError') { this._isLoading = false; this._navTimedOut = false; return }
       this._isLoading = false
       await this._handleError(path, err, navId, signal)
     } finally {
@@ -1033,17 +1037,6 @@ export class SafaRouter {
       const target = document.querySelector(`[data-safa-slot="${name}"]`)
       if (target) {
         target.innerHTML = html
-        const links = target.querySelectorAll('[data-safa-link]')
-        for (const el of links) {
-          if (el.getAttribute('target') === '_blank') continue
-          el.addEventListener('click', (e) => {
-            if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return
-            if (e.button !== 0) return
-            e.preventDefault()
-            const href = el.getAttribute('href')
-            if (href) this.push(href)
-          })
-        }
       }
     }
   }
@@ -1121,17 +1114,6 @@ export class SafaRouter {
       const target = document.querySelector(`[data-safa-component="${name}"]`)
       if (target) {
         target.innerHTML = html
-        const links = target.querySelectorAll('[data-safa-link]')
-        for (const el of links) {
-          if (el.getAttribute('target') === '_blank') continue
-          el.addEventListener('click', (e) => {
-            if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return
-            if (e.button !== 0) return
-            e.preventDefault()
-            const href = el.getAttribute('href')
-            if (href) this.push(href)
-          })
-        }
       }
     }
   }

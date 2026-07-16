@@ -1,7 +1,6 @@
 /** Navigation lifecycle event names */
 export const EVENTS = {
   BEFORE_NAVIGATE: 'beforenavigate',
-  NAVIGATE: 'navigate',
   ROUTE_CHANGE: 'routechange',
   AFTER_NAVIGATE: 'afternavigate',
   BEFORE_RENDER: 'beforerender',
@@ -11,12 +10,10 @@ export const EVENTS = {
   LOADING: 'loading',
   READY: 'ready',
   DESTROY: 'destroy',
-  LINK_CLICK: 'linkclick',
   PLUGIN_INSTALL: 'plugininstall',
   PLUGIN_EJECT: 'plugineject',
   ACCESS_DENIED: 'accessdenied',
   MAINTENANCE: 'maintenance',
-  REALTIME_CHANGE: 'realtimechange',
 }
 
 export const SEGMENT_TYPES = {
@@ -82,6 +79,7 @@ export const HTTP_STATUS = {
   LOOP_DETECTED: 508,
   NOT_EXTENDED: 510,
   NETWORK_AUTHENTICATION_REQUIRED: 511,
+  CLIENT_CLOSED_REQUEST: 499,
 }
 
 /** Human-readable descriptions for HTTP status codes */
