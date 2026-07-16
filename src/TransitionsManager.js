@@ -63,6 +63,7 @@ export class TransitionsManager {
 
   async _enter(el) {
     if (!el || !this._currentClasses) return
+    if (typeof requestAnimationFrame === 'undefined') return
     const { promise, resolve } = this._createDeferred()
     el.classList.add(this._currentClasses.enter)
     requestAnimationFrame(() => {

@@ -183,6 +183,8 @@ export const DEFAULT_CONFIG = {
   cacheRoutes: true,
   maxCacheSize: 50,
   navigationTimeout: 15000,
+  disableAbort: false,
+  debug: false,
   titleTemplate: '%s — SafaRouter',
   transitionDuration: 0,
   transitionEnterClass: 'page-enter',

@@ -716,7 +716,9 @@ export class SafaRouter {
       this._updateTitle()
       this._focus()
 
-      console.log(`به صفحه ی ${path} خوش آمدید\nصفا باشه`)
+      if (this.config.debug) {
+        console.log(`به صفحه ی ${path} خوش آمدید\nصفا باشه`)
+      }
 
       emit(this._events, EVENTS.ROUTE_CHANGE, {
         pathname: path, params: this._params, query: this._query,
@@ -894,7 +896,7 @@ export class SafaRouter {
     const status = statusCode || HTTP_STATUS.NOT_FOUND
     emit(this._events, EVENTS.NOT_FOUND, { path, statusCode: status })
 
-    console.warn(`⚠️ صفحه ی ${path} یافت نشد\nصفا باشه`)
+    console.warn(`[SafaRouter] 404: ${path}`)
     this._errorManager.log(status, path, new Error(`Not found: ${path}`))
 
     this._routeData = null
@@ -957,7 +959,7 @@ export class SafaRouter {
 
     const routeError = this._routeData?.node?.error
     this._routeData = null
-    console.error(`❌ خطا در صفحه ی ${path}: ${err.message || err}\nصفا باشه`)
+    console.error(`[SafaRouter] ${status || 500} ${path}: ${err.message || err}`)
     this._errorManager.log(status, path, err)
     emit(this._events, EVENTS.ERROR, { path, error: err, statusCode: status })
     if (routeError) {
@@ -1056,7 +1058,7 @@ export class SafaRouter {
     if (typeof intercept === 'object' && intercept.from) {
       const fromPath = this._previousRouteData.node?.fullPath || this._previousPathname || ''
       if (typeof intercept.from === 'string') {
-        return fromPath === intercept.from || new RegExp(intercept.from).test(fromPath)
+        return fromPath === intercept.from || new RegExp(`^${intercept.from}$`).test(fromPath)
       }
       if (intercept.from instanceof RegExp) {
         return intercept.from.test(fromPath)
@@ -1138,7 +1140,7 @@ export class SafaRouter {
     }
   }
 
-  _fallback404(path, statusCode = 404, showStack = true) {
+  _fallback404(path, statusCode = 404) {
     const homeLink = `<a href="/" data-safa-link style="color:var(--color-accent);text-decoration:underline;">Back to home</a>`
     const cleanPath = escapeHtml(path)
     return [
