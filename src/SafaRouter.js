@@ -161,6 +161,7 @@ export class SafaRouter {
   }
 
   async push(url, state = {}) {
+    if (!this._started) { console.warn('[SafaRouter] Not started. Call start() first.'); return }
     if (isExternalURL(url)) { window.location.href = url; return }
     let u = createURL(url)
     if (!u) {
@@ -170,6 +171,7 @@ export class SafaRouter {
   }
 
   async replace(url, state = {}) {
+    if (!this._started) { console.warn('[SafaRouter] Not started. Call start() first.'); return }
     if (isExternalURL(url)) { window.location.replace(url); return }
     let u = createURL(url)
     if (!u) {
