@@ -278,7 +278,7 @@ export class SafaRouter {
   clearCache() { this._cache.clear(); this._loaderCache.clear() }
 
   // ─── Navigation internals ─────────────────────
-  async _onHistoryChange(path) {
+  async _onHistoryChange({ path, action, state }) {
     await this._navigate(this._stripBase(path), 'replace', {})
   }
 
