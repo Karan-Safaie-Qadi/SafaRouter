@@ -837,7 +837,6 @@ export class SafaRouter {
     if (!this._targetEl || typeof this._targetEl.querySelector !== 'function') return
     const h1 = this._targetEl.querySelector('h1')
     if (h1) {
-      h1.setAttribute('tabindex', '-1')
       h1.focus({ preventScroll: true })
     }
   }
