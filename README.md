@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="docs-site/assets/logo.svg" alt="SafaRouter" width="120" height="120">
+  <img src="image.png" alt="SafaRouter" width="120" height="120">
   <h1>SafaRouter</h1>
   <p><strong>A standalone frontend router inspired by Next.js App Router</strong></p>
   <p>
