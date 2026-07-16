@@ -6,7 +6,7 @@ import { PluginManager } from './PluginManager.js'
 import { TransitionsManager } from './TransitionsManager.js'
 import { ScrollManager } from './ScrollManager.js'
 import { RealtimeManager } from './RealtimeManager.js'
-import { normalizePath, parseQuery, emit, createURL, isExternalURL, deepMerge } from './utils.js'
+import { normalizePath, parseQuery, emit, createURL, isExternalURL, deepMerge, escapeHtml } from './utils.js'
 import { EVENTS, DEFAULT_CONFIG, HTTP_STATUS } from './constants.js'
 import { RouteLoadError, SafaError, NavigationAbortError, HttpError, MaintenanceModeError, createAbortError } from './errors.js'
 import { ErrorManager } from './ErrorManager.js'
@@ -1138,10 +1138,11 @@ export class SafaRouter {
 
   _fallback404(path, statusCode = 404, showStack = true) {
     const homeLink = `<a href="/" data-safa-link style="color:var(--color-accent);text-decoration:underline;">Back to home</a>`
+    const cleanPath = escapeHtml(path)
     return [
       '<div class="safa-error safa-404" style="text-align:center;padding:3rem 0;">',
       `<h1 style="font-size:4rem;font-weight:800;margin-bottom:0.5rem;">${statusCode}</h1>`,
-      `<p style="margin-bottom:1rem;">Page not found: <code>${path}</code></p>`,
+      `<p style="margin-bottom:1rem;">Page not found: <code>${cleanPath}</code></p>`,
       homeLink,
       '</div>',
     ].join('')
@@ -1154,7 +1155,7 @@ export class SafaRouter {
     return [
       '<div class="safa-error" style="text-align:center;padding:3rem 0;">',
       `<h1 style="font-size:2rem;font-weight:800;margin-bottom:0.5rem;">${code} — Something went wrong</h1>`,
-      `<pre style="text-align:left;margin:1rem 0;">${message}</pre>`,
+      `<pre style="text-align:left;margin:1rem 0;">${escapeHtml(message)}</pre>`,
       homeLink,
       '</div>',
     ].join('')

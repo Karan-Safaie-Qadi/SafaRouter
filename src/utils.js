@@ -4,6 +4,16 @@ export function normalizePath(path) {
   return p || '/'
 }
 
+export function escapeHtml(str) {
+  if (str == null) return ''
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;')
+}
+
 export function parseQuery(search) {
   if (!search || search === '?') return {}
   const params = new URLSearchParams(search)

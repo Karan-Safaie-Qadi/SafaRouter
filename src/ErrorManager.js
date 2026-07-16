@@ -173,7 +173,7 @@ a:hover{text-decoration:underline}
 <div class="emoji">${emoji}</div>
 <div class="code">${code}</div>
 <div class="message">${text}</div>
-<a href="/" onclick="event.preventDefault();window.history.pushState({},'','/');window.location.reload()">← Back to Home</a>
+<a href="/" data-safa-link>← Back to Home</a>
 </div></body></html>`
   }
 
@@ -195,7 +195,7 @@ a:hover{text-decoration:underline}
 <div class="emoji">⚠️</div>
 <div class="code">${label}</div>
 <div class="message">${text}</div>
-<a href="/" onclick="event.preventDefault();window.history.pushState({},'','/');window.location.reload()">← Back to Home</a>
+<a href="/" data-safa-link>← Back to Home</a>
 </div></body></html>`
   }
 }
