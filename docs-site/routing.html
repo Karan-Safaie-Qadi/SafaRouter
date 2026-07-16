@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Routing — SafaRouter</title>
+  <link rel="stylesheet" href="assets/style.css">
+  <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <script>hljs.highlightAll();</script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="index.html" class="logo-link">
+        <img src="assets/logo.svg" alt="SafaRouter"> SafaRouter
+      </a>
+      <button class="mobile-menu-btn" onclick="toggleSidebar()" aria-label="Menu">☰</button>
+      <nav class="header-nav">
+        <a href="getting-started.html">Docs</a>
+        <a href="api-reference.html">API</a>
+        <a href="examples.html">Examples</a>
+        <a href="migration-guide.html">Migration</a>
+        <a href="https://github.com/Karan-Safaie-Qadi/SafaRouter" class="github-link" target="_blank">GitHub</a>
+      </nav>
+    </div>
+  </header>
+
+  <div class="layout-wrapper">
+    <aside class="sidebar" id="sidebar">
+      <nav>
+        <div class="sidebar-section">
+          <div class="sidebar-heading">Getting Started</div>
+          <a href="index.html" class="sidebar-link">Overview</a>
+          <a href="getting-started.html" class="sidebar-link">Installation & Quick Start</a>
+        </div>
+        <div class="sidebar-section">
+          <div class="sidebar-heading">Core Concepts</div>
+          <a href="routing.html" class="sidebar-link active">Routing</a>
+          <a href="dynamic-routes.html" class="sidebar-link">Dynamic Routes</a>
+          <a href="nested-routes.html" class="sidebar-link">Nested Routes & Layouts</a>
+          <a href="middleware.html" class="sidebar-link">Middleware</a>
+          <a href="route-guards.html" class="sidebar-link">Route Guards</a>
+          <a href="lazy-loading.html" class="sidebar-link">Lazy Loading</a>
+        </div>
+        <div class="sidebar-section">
+          <div class="sidebar-heading">Reference</div>
+          <a href="api-reference.html" class="sidebar-link">API Reference</a>
+          <a href="migration-guide.html" class="sidebar-link">Migration Guide</a>
+          <a href="examples.html" class="sidebar-link">Examples</a>
+        </div>
+      </nav>
+    </aside>
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+    <main class="main-content content">
+      <h1>Routing</h1>
+      <p>SafaRouter gives you two approaches to routing: HTML-first auto-routing and explicit route configuration.</p>
+
+      <h2>HTML-First Auto-Routing</h2>
+      <p>When you set <code>pageDir</code>, each <code>.html</code> file in that directory becomes a route automatically. The URL path maps directly to the file structure:</p>
+      <pre><code class="language-plaintext">html-pages/
+├── index.html          →  /
+├── about.html          →  /about
+├── blog/
+│   ├── index.html      →  /blog
+│   └── [slug].html     →  /blog/:slug</code></pre>
+
+      <pre><code class="language-js">import { SafaRouter } from 'safa-router'
+
+new SafaRouter({
+  target: '#app',
+  pageDir: 'html-pages',
+}).start()</code></pre>
+
+      <h2>Explicit Route Configuration</h2>
+      <p>For advanced control, define routes as a nested object:</p>
+      <pre><code class="language-js">const router = new SafaRouter({
+  target: '#app',
+  routes: {
+    '/': {
+      page: () => '&lt;h1&gt;Home&lt;/h1&gt;',
+    },
+    '/about': {
+      page: () => '&lt;h1&gt;About&lt;/h1&gt;',
+      meta: { title: 'About Us' },
+    },
+    '/blog': {
+      layout: ({ children }) => `
+        &lt;div class="blog-layout"&gt;${children}&lt;/div&gt;
+      `,
+      children: {
+        '[slug]': {
+          loader: async ({ params }) => {
+            const res = await fetch(`/api/posts/${params.slug}`)
+            return res.json()
+          },
+        },
+      },
+    },
+  },
+})</code></pre>
+
+      <p>Routes defined without a <code>page</code> field auto-resolve from <code>pageDir</code> if it is set.</p>
+
+      <h2>Navigation Methods</h2>
+      <pre><code class="language-js">// Push — add a new history entry
+router.push('/about')
+router.push('/blog/my-post', { scroll: true })
+
+// Replace — replace the current history entry
+router.replace('/home')
+
+// Back / Forward
+router.back()
+router.forward()
+
+// Reload current route
+router.reload()
+
+// Named route navigation
+router.pushRoute('blogPost', { slug: 'hello-world' }, { page: 2 })</code></pre>
+
+      <h2>History Mode vs Hash Mode</h2>
+
+      <h3>History Mode (default)</h3>
+      <p>Uses the <code>History API</code> for clean URLs like <code>/about</code>. Requires server-side SPA fallback (all routes serve <code>index.html</code>):</p>
+      <pre><code class="language-js">const router = new SafaRouter({
+  target: '#app',
+  // useHash: false (default)
+})</code></pre>
+
+      <h3>Hash Mode</h3>
+      <p>Uses URL hash for routing — no server configuration needed. URLs look like <code>/#/about</code>:</p>
+      <pre><code class="language-js">const router = new SafaRouter({
+  target: '#app',
+  useHash: true,
+})</code></pre>
+
+      <h2>Base Path</h2>
+      <p>When your app is served from a subdirectory, set <code>basePath</code>:</p>
+      <pre><code class="language-js">const router = new SafaRouter({
+  target: '#app',
+  basePath: '/my-app',
+})</code></pre>
+      <p>All routes will be relative to <code>/my-app/</code>.</p>
+
+      <h2>Linking</h2>
+      <p>Use the <code>data-safa-link</code> attribute on anchor tags for client-side navigation:</p>
+      <pre><code class="language-html">&lt;a href="/about" data-safa-link&gt;About&lt;/a&gt;</code></pre>
+      <p>Or create a <code>Link</code> instance programmatically:</p>
+      <pre><code class="language-js">const link = router.createLink({
+  href: '/about',
+  activeClass: 'active',
+})</code></pre>
+
+      <h2>Prefetching</h2>
+      <p>Prefetch routes for faster navigation:</p>
+      <pre><code class="language-js">// Manual prefetch
+router.prefetch('/about')
+
+// Auto-prefetch when link is visible
+const router = new SafaRouter({
+  prefetchStrategy: 'visible', // 'none' | 'visible' | 'all'
+})</code></pre>
+
+      <h2>Route Caching</h2>
+      <p>Loaded pages are cached in an LRU cache to avoid redundant fetches:</p>
+      <pre><code class="language-js">const router = new SafaRouter({
+  cacheRoutes: true,    // default
+  maxCacheSize: 50,     // max cached pages
+})
+
+router.clearCache()     // clear the cache</code></pre>
+
+      <h2>Title Template</h2>
+      <p>Automatically set document titles:</p>
+      <pre><code class="language-js">const router = new SafaRouter({
+  titleTemplate: '%s — My App',
+})
+
+// Route meta title takes precedence:
+// '/about': { meta: { title: 'About' } }
+// → document.title: "About — My App"</code></pre>
+    </main>
+  </div>
+
+  <footer class="site-footer">
+    <p>MIT Licensed &middot; <a href="https://github.com/Karan-Safaie-Qadi/SafaRouter">GitHub</a> &middot; Built with SafaRouter</p>
+  </footer>
+
+  <script>
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('open')
+      document.getElementById('sidebarOverlay').classList.toggle('open')
+    }
+  </script>
+</body>
+</html>

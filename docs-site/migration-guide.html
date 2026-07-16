@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Migration Guide — SafaRouter</title>
+  <link rel="stylesheet" href="assets/style.css">
+  <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <script>hljs.highlightAll();</script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="index.html" class="logo-link">
+        <img src="assets/logo.svg" alt="SafaRouter"> SafaRouter
+      </a>
+      <button class="mobile-menu-btn" onclick="toggleSidebar()" aria-label="Menu">☰</button>
+      <nav class="header-nav">
+        <a href="getting-started.html">Docs</a>
+        <a href="api-reference.html">API</a>
+        <a href="examples.html">Examples</a>
+        <a href="migration-guide.html">Migration</a>
+        <a href="https://github.com/Karan-Safaie-Qadi/SafaRouter" class="github-link" target="_blank">GitHub</a>
+      </nav>
+    </div>
+  </header>
+
+  <div class="layout-wrapper">
+    <aside class="sidebar" id="sidebar">
+      <nav>
+        <div class="sidebar-section">
+          <div class="sidebar-heading">Getting Started</div>
+          <a href="index.html" class="sidebar-link">Overview</a>
+          <a href="getting-started.html" class="sidebar-link">Installation & Quick Start</a>
+        </div>
+        <div class="sidebar-section">
+          <div class="sidebar-heading">Core Concepts</div>
+          <a href="routing.html" class="sidebar-link">Routing</a>
+          <a href="dynamic-routes.html" class="sidebar-link">Dynamic Routes</a>
+          <a href="nested-routes.html" class="sidebar-link">Nested Routes & Layouts</a>
+          <a href="middleware.html" class="sidebar-link">Middleware</a>
+          <a href="route-guards.html" class="sidebar-link">Route Guards</a>
+          <a href="lazy-loading.html" class="sidebar-link">Lazy Loading</a>
+        </div>
+        <div class="sidebar-section">
+          <div class="sidebar-heading">Reference</div>
+          <a href="api-reference.html" class="sidebar-link">API Reference</a>
+          <a href="migration-guide.html" class="sidebar-link active">Migration Guide</a>
+          <a href="examples.html" class="sidebar-link">Examples</a>
+        </div>
+      </nav>
+    </aside>
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+    <main class="main-content content">
+      <h1>Migration Guide</h1>
+      <p>Upgrade paths between major versions of SafaRouter.</p>
+
+      <h2>v1.5.x → v2.0.0</h2>
+
+      <h3>What Changed</h3>
+      <ul>
+        <li>Optional features are now tree-shakeable — unused features don't add to bundle</li>
+        <li>SWR caching for loaders is enabled by default (<code>loaderCache: true</code>)</li>
+        <li>New <code>safa-router/vite</code> plugin for automatic feature detection</li>
+        <li>New <code>safa-router/core</code> for minimal router without optional features</li>
+        <li>New <code>safa-router/typed</code> for TypeScript-safe route definitions</li>
+        <li>New <code>slots</code> for parallel content and <code>intercept</code> for overlay navigation</li>
+      </ul>
+
+      <h3>Migration Steps</h3>
+      <p><strong>No breaking changes</strong> — v2.0.0 is fully backward-compatible with v1.5.x.</p>
+
+      <ol>
+        <li>If you use Vite, add the plugin to your <code>vite.config.js</code>:
+          <pre><code class="language-js">import { safaRouter } from 'safa-router/vite'
+export default { plugins: [safaRouter()] }</code></pre>
+        </li>
+        <li>For TypeScript projects, optionally migrate to typed routes with <code>safa-router/typed</code></li>
+        <li>For minimal bundles, consider switching to <code>safa-router/core</code> if you don't need optional features</li>
+      </ol>
+
+      <h4>Before (v1.5.x)</h4>
+      <pre><code class="language-js">import { SafaRouter } from 'safa-router'</code></pre>
+
+      <h4>After (v2.0.0) — same API, no changes needed</h4>
+      <pre><code class="language-js">import { SafaRouter } from 'safa-router'
+
+// Or for minimal bundle:
+import { SafaRouter } from 'safa-router/core'</code></pre>
+
+      <hr>
+
+      <h2>v1.4.x → v1.5.0</h2>
+
+      <h3>What Changed</h3>
+      <ul>
+        <li><strong>Per-route <code>meta.hideComponents</code></strong> — hide smart components per route</li>
+        <li><strong>Access allowlist mode</strong> — <code>access.mode: 'allowlist'</code> blocks everything except explicitly allowed paths</li>
+        <li><strong>RealtimeManager</strong> — SSE/polling/WebSocket hot reload</li>
+        <li><strong>SafaDevServer</strong> — standalone dev server class with SPA fallback</li>
+      </ul>
+
+      <h3>Migration Steps</h3>
+      <p><strong>No breaking changes</strong> — v1.5.0 is fully backward-compatible with v1.4.x.</p>
+      <ul>
+        <li>To use <code>hideComponents</code>, add <code>meta.hideComponents</code> to your route configs</li>
+        <li>To use allowlist mode, set <code>access.mode: 'allowlist'</code> and define <code>access.allowed</code></li>
+        <li>To enable realtime, add the <code>realtime</code> config to your router</li>
+        <li>For dev server, replace <code>node dev-server.js</code> with your own script using <code>SafaDevServer</code></li>
+      </ul>
+
+      <hr>
+
+      <h2>v1.3.x → v1.4.0</h2>
+
+      <h3>What Changed</h3>
+      <ul>
+        <li><strong>Smart Components system</strong> (<code>components</code>) — define reusable header/footer components</li>
+        <li><strong>Template resolution</strong> — <code>{{ params.x }}</code>, <code>{{ query.x }}</code>, <code>{{ data.x }}</code> in HTML files</li>
+        <li><strong>Auto-resolved <code>page</code></strong> — routes without <code>page</code> resolve from <code>pageDir</code> automatically</li>
+        <li>HTML-first routing is now the primary pattern</li>
+      </ul>
+
+      <h3>Migration Steps</h3>
+      <ol>
+        <li><strong>Replace JS page exports</strong> with HTML files in your <code>pageDir</code>. Each route expects an <code>.html</code> file matching its path.</li>
+        <li><strong>Migrate layouts</strong> from JS to HTML using the <code>{children}</code> placeholder syntax.</li>
+        <li><strong>If you used custom rendered layouts</strong>, move that logic into the <code>components</code> config as smart components.</li>
+        <li><strong>No other breaking API changes</strong> — all core router APIs remain the same.</li>
+      </ol>
+
+      <hr>
+
+      <h2>v1.2.x → v1.3.0</h2>
+
+      <h3>What Changed</h3>
+      <ul>
+        <li>New <strong>ErrorManager</strong> — handle all HTTP status codes with custom error pages</li>
+        <li>New <strong>AccessController</strong> — block/ignore route patterns with wildcards</li>
+        <li>New <strong>Maintenance Mode</strong> — toggleable 503 with allowed path bypasses</li>
+        <li>New <strong>Route Data Loaders</strong> — async data fetching before page render</li>
+        <li>New <strong>Route Guards</strong> — per-route access control with redirect support</li>
+        <li>New <strong>Per-route Transitions</strong> — custom CSS transitions per route</li>
+      </ul>
+
+      <h3>Migration Steps</h3>
+      <p><strong>No breaking changes</strong> — all existing APIs remain unchanged. New features are opt-in.</p>
+      <ul>
+        <li>All new features are optional — your existing config continues to work</li>
+        <li><code>errorLogging</code>, <code>access</code>, <code>maintenanceMode</code> are new config sections</li>
+        <li><code>loader</code>, <code>guard</code>, and per-route <code>meta.transition</code> are new route-level options</li>
+      </ul>
+
+      <hr>
+
+      <h2>Changelog</h2>
+      <p>For a complete history of all changes, see the <a href="https://github.com/Karan-Safaie-Qadi/SafaRouter/blob/master/CHANGELOG.md" target="_blank">CHANGELOG on GitHub</a>.</p>
+    </main>
+  </div>
+
+  <footer class="site-footer">
+    <p>MIT Licensed &middot; <a href="https://github.com/Karan-Safaie-Qadi/SafaRouter">GitHub</a> &middot; Built with SafaRouter</p>
+  </footer>
+
+  <script>
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('open')
+      document.getElementById('sidebarOverlay').classList.toggle('open')
+    }
+  </script>
+</body>
+</html>

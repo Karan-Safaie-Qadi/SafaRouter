@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dynamic Routes — SafaRouter</title>
+  <link rel="stylesheet" href="assets/style.css">
+  <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <script>hljs.highlightAll();</script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="index.html" class="logo-link">
+        <img src="assets/logo.svg" alt="SafaRouter"> SafaRouter
+      </a>
+      <button class="mobile-menu-btn" onclick="toggleSidebar()" aria-label="Menu">☰</button>
+      <nav class="header-nav">
+        <a href="getting-started.html">Docs</a>
+        <a href="api-reference.html">API</a>
+        <a href="examples.html">Examples</a>
+        <a href="migration-guide.html">Migration</a>
+        <a href="https://github.com/Karan-Safaie-Qadi/SafaRouter" class="github-link" target="_blank">GitHub</a>
+      </nav>
+    </div>
+  </header>
+
+  <div class="layout-wrapper">
+    <aside class="sidebar" id="sidebar">
+      <nav>
+        <div class="sidebar-section">
+          <div class="sidebar-heading">Getting Started</div>
+          <a href="index.html" class="sidebar-link">Overview</a>
+          <a href="getting-started.html" class="sidebar-link">Installation & Quick Start</a>
+        </div>
+        <div class="sidebar-section">
+          <div class="sidebar-heading">Core Concepts</div>
+          <a href="routing.html" class="sidebar-link">Routing</a>
+          <a href="dynamic-routes.html" class="sidebar-link active">Dynamic Routes</a>
+          <a href="nested-routes.html" class="sidebar-link">Nested Routes & Layouts</a>
+          <a href="middleware.html" class="sidebar-link">Middleware</a>
+          <a href="route-guards.html" class="sidebar-link">Route Guards</a>
+          <a href="lazy-loading.html" class="sidebar-link">Lazy Loading</a>
+        </div>
+        <div class="sidebar-section">
+          <div class="sidebar-heading">Reference</div>
+          <a href="api-reference.html" class="sidebar-link">API Reference</a>
+          <a href="migration-guide.html" class="sidebar-link">Migration Guide</a>
+          <a href="examples.html" class="sidebar-link">Examples</a>
+        </div>
+      </nav>
+    </aside>
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+    <main class="main-content content">
+      <h1>Dynamic Routes</h1>
+      <p>SafaRouter supports three dynamic segment patterns for flexible URL matching.</p>
+
+      <h2>Segment Patterns</h2>
+
+      <table>
+        <tr>
+          <th>Pattern</th>
+          <th>Example URL</th>
+          <th><code>params</code></th>
+          <th>Description</th>
+        </tr>
+        <tr>
+          <td><code>[param]</code></td>
+          <td><code>/blog/my-post</code></td>
+          <td><code>{ slug: 'my-post' }</code></td>
+          <td>Matches one path segment</td>
+        </tr>
+        <tr>
+          <td><code>[...param]</code></td>
+          <td><code>/docs/guide/intro</code></td>
+          <td><code>{ path: ['guide', 'intro'] }</code></td>
+          <td>Matches one or more segments (catch-all)</td>
+        </tr>
+        <tr>
+          <td><code>[[...param]]</code></td>
+          <td><code>/docs</code></td>
+          <td><code>{ path: [] }</code></td>
+          <td>Matches zero or more segments (optional catch-all)</td>
+        </tr>
+      </table>
+
+      <h2>Basic Dynamic Segments <code>[param]</code></h2>
+      <pre><code class="language-js">routes: {
+  '/blog': {
+    children: {
+      '[slug]': {
+        page: ({ params }) => `
+          &lt;h1&gt;Post: ${params.slug}&lt;/h1&gt;
+        `,
+      },
+    },
+  },
+}</code></pre>
+      <p>With HTML-first routing, create a file named <code>[slug].html</code>:</p>
+      <pre><code class="language-html">&lt;!-- html-pages/blog/[slug].html --&gt;
+&lt;h1&gt;Post: {{ params.slug }}&lt;/h1&gt;</code></pre>
+
+      <h2>Catch-All Segments <code>[...param]</code></h2>
+      <p>Matches one or more path segments, returning an array:</p>
+      <pre><code class="language-js">routes: {
+  '/docs': {
+    children: {
+      '[...path]': {
+        page: ({ params }) => `
+          &lt;h1&gt;Docs: ${params.path.join(' / ')}&lt;/h1&gt;
+        `,
+      },
+    },
+  },
+}
+
+// /docs/guide/intro → params.path = ['guide', 'intro']
+// /docs/api → params.path = ['api']</code></pre>
+
+      <h2>Optional Catch-All <code>[[...param]]</code></h2>
+      <p>Matches zero or more segments — useful for index pages that also accept deeper paths:</p>
+      <pre><code class="language-js">routes: {
+  '/docs': {
+    children: {
+      '[[...path]]': {
+        page: ({ params }) => `
+          &lt;h1&gt;${params.path.length
+            ? `Docs: ${params.path.join(' / ')}`
+            : 'Docs Home'}&lt;/h1&gt;
+        `,
+      },
+    },
+  },
+}
+
+// /docs → params.path = []
+// /docs/guide → params.path = ['guide']</code></pre>
+
+      <h2>Accessing Params</h2>
+      <p>Route parameters are available in multiple places:</p>
+      <pre><code class="language-js">// In a page component
+({ params }) => `&lt;h1&gt;${params.slug}&lt;/h1&gt;`
+
+// In a loader
+loader: async ({ params }) => {
+  return await fetch(`/api/posts/${params.slug}`).then(r => r.json())
+}
+
+// In a guard
+guard: ({ params }) => {
+  return params.id ? true : '/'
+}
+
+// In template placeholders (HTML files)
+// {{ params.slug }} → "my-post"
+// {{ params.id }} → "42"</code></pre>
+
+      <h2>Type-Safe Parameters (TypeScript)</h2>
+      <pre><code class="language-ts">import { defineRoute, defineRoutes, SafeRouteParams } from 'safa-router/typed'
+
+const blogRoute = defineRoute('/blog/[slug]')
+// Type of blogRoute.params → { slug: string }
+
+const docRoute = defineRoute('/docs/[...path]')
+// Type of docRoute.params → { path: string[] }
+
+type BlogParams = SafeRouteParams<'/blog/[slug]'>
+// { slug: string }</code></pre>
+
+      <h2>Route Groups <code>(group)</code></h2>
+      <p>Route groups organize routes logically without affecting the URL:</p>
+      <pre><code class="language-js">routes: {
+  '(main)': {
+    layout: ({ children }) => `
+      &lt;header&gt;Main Layout&lt;/header&gt;
+      &lt;main&gt;${children}&lt;/main&gt;
+    `,
+    children: {
+      'profile': {
+        children: {
+          '[id]': {
+            page: ({ params }) => `
+              &lt;h1&gt;Profile: ${params.id}&lt;/h1&gt;
+            `,
+          },
+        },
+      },
+      'settings': {},
+    },
+  },
+}
+
+// URL: /profile/123 — NOT /main/profile/123</code></pre>
+
+      <p>Route groups are especially useful for:</p>
+      <ul>
+        <li>Sharing layouts between sections without nesting in the URL</li>
+        <li>Organizing authentication routes <code>(auth)/login</code>, <code>(auth)/register</code></li>
+        <li>Grouping routes by feature for large applications</li>
+      </ul>
+
+      <div class="info-box">
+        <div class="icon">💡</div>
+        <p><strong>Order matters.</strong> Static routes take priority over dynamic routes. <code>/blog/new</code> matches before <code>/blog/[slug]</code>.</p>
+      </div>
+    </main>
+  </div>
+
+  <footer class="site-footer">
+    <p>MIT Licensed &middot; <a href="https://github.com/Karan-Safaie-Qadi/SafaRouter">GitHub</a> &middot; Built with SafaRouter</p>
+  </footer>
+
+  <script>
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('open')
+      document.getElementById('sidebarOverlay').classList.toggle('open')
+    }
+  </script>
+</body>
+</html>

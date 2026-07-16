@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lazy Loading — SafaRouter</title>
+  <link rel="stylesheet" href="assets/style.css">
+  <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <script>hljs.highlightAll();</script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="index.html" class="logo-link">
+        <img src="assets/logo.svg" alt="SafaRouter"> SafaRouter
+      </a>
+      <button class="mobile-menu-btn" onclick="toggleSidebar()" aria-label="Menu">☰</button>
+      <nav class="header-nav">
+        <a href="getting-started.html">Docs</a>
+        <a href="api-reference.html">API</a>
+        <a href="examples.html">Examples</a>
+        <a href="migration-guide.html">Migration</a>
+        <a href="https://github.com/Karan-Safaie-Qadi/SafaRouter" class="github-link" target="_blank">GitHub</a>
+      </nav>
+    </div>
+  </header>
+
+  <div class="layout-wrapper">
+    <aside class="sidebar" id="sidebar">
+      <nav>
+        <div class="sidebar-section">
+          <div class="sidebar-heading">Getting Started</div>
+          <a href="index.html" class="sidebar-link">Overview</a>
+          <a href="getting-started.html" class="sidebar-link">Installation & Quick Start</a>
+        </div>
+        <div class="sidebar-section">
+          <div class="sidebar-heading">Core Concepts</div>
+          <a href="routing.html" class="sidebar-link">Routing</a>
+          <a href="dynamic-routes.html" class="sidebar-link">Dynamic Routes</a>
+          <a href="nested-routes.html" class="sidebar-link">Nested Routes & Layouts</a>
+          <a href="middleware.html" class="sidebar-link">Middleware</a>
+          <a href="route-guards.html" class="sidebar-link">Route Guards</a>
+          <a href="lazy-loading.html" class="sidebar-link active">Lazy Loading</a>
+        </div>
+        <div class="sidebar-section">
+          <div class="sidebar-heading">Reference</div>
+          <a href="api-reference.html" class="sidebar-link">API Reference</a>
+          <a href="migration-guide.html" class="sidebar-link">Migration Guide</a>
+          <a href="examples.html" class="sidebar-link">Examples</a>
+        </div>
+      </nav>
+    </aside>
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+    <main class="main-content content">
+      <h1>Lazy Loading</h1>
+      <p>SafaRouter supports lazy loading through dynamic imports and route data loaders, keeping your initial bundle small.</p>
+
+      <h2>Dynamic Component Imports</h2>
+      <p>Route pages, layouts, and components can be dynamic imports. They are fetched only when the route is navigated to:</p>
+      <pre><code class="language-js">routes: {
+  '/dashboard': {
+    page: () => import('./pages/Dashboard.js'),
+  },
+
+  '/analytics': {
+    layout: () => import('./layouts/AnalyticsLayout.js'),
+    page: () => import('./pages/Analytics.js'),
+  },
+}</code></pre>
+
+      <p>SafaRouter resolves dynamic imports automatically: if a <code>page</code> value is a string ending in <code>.js</code> or <code>.mjs</code>, it is loaded via dynamic <code>import()</code>.</p>
+
+      <pre><code class="language-js">routes: {
+  '/heavy-page': {
+    page: '/pages/heavy.js',  // loaded on demand
+  },
+}</code></pre>
+
+      <h2>Route Data Loaders</h2>
+      <p>Loaders fetch data asynchronously before rendering the page. They enable code splitting at the data level:</p>
+      <pre><code class="language-js">routes: {
+  '/dashboard': {
+    loader: async ({ params, query, router }) => {
+      const response = await fetch('/api/dashboard')
+      const data = await response.json()
+      return data  // passed to page as {{ data.x }}
+    },
+    page: ({ data }) => `
+      &lt;h1&gt;Dashboard&lt;/h1&gt;
+      &lt;p&gt;Users: ${data.users}&lt;/p&gt;
+      &lt;p&gt;Revenue: ${data.revenue}&lt;/p&gt;
+    `,
+  },
+}</code></pre>
+
+      <h2>Loading States</h2>
+      <p>Show a loading indicator while the loader or page is being fetched:</p>
+      <pre><code class="language-js">routes: {
+  '/slow': {
+    loading: () => '&lt;div class="spinner"&gt;&lt;p&gt;Loading…&lt;/p&gt;&lt;/div&gt;',
+    loader: async () => {
+      await new Promise(r => setTimeout(r, 2000))
+      return { data: 'loaded' }
+    },
+  },
+}</code></pre>
+
+      <h2>SWR Loader Cache (v2.0.0)</h2>
+      <p>SafaRouter's SWR (Stale-While-Revalidate) cache provides instant navigation for previously loaded routes:</p>
+      <pre><code class="language-js">const router = new SafaRouter({
+  loaderCache: true,             // enable SWR (default)
+  loaderStaleTime: 30000,        // 30s before cache is stale
+  loaderCacheMaxSize: 100,       // max cached entries
+})</code></pre>
+
+      <table>
+        <tr><th>Cache State</th><th>Behavior</th></tr>
+        <tr><td>Fresh (≤ staleTime)</td><td>Returns cached data instantly — no fetch</td></tr>
+        <tr><td>Stale (> staleTime)</td><td>Returns cached data + background re-fetch</td></tr>
+        <tr><td>No cache</td><td>Awaits fetch, then caches result</td></tr>
+      </table>
+
+      <p>Concurrent requests to the same route are deduplicated — only one fetch is made.</p>
+
+      <h2>Prefetching</h2>
+      <p>Prefetch routes ahead of time for instant navigation:</p>
+      <pre><code class="language-js">// Manual prefetch
+router.prefetch('/about')
+
+// Auto-prefetch visible links
+const router = new SafaRouter({
+  prefetchStrategy: 'visible',  // uses IntersectionObserver
+  pageDir: 'html-pages',
+})
+
+// Prefetch all links
+const router = new SafaRouter({
+  prefetchStrategy: 'all',
+})</code></pre>
+
+      <h2>Route Caching</h2>
+      <p>Loaded pages are cached in an LRU cache. Subsequent visits to the same route skip the fetch:</p>
+      <pre><code class="language-js">const router = new SafaRouter({
+  cacheRoutes: true,     // default: true
+  maxCacheSize: 50,      // max cached pages
+})
+
+// Clear cache when needed
+router.clearCache()</code></pre>
+
+      <h2>Navigation Timeout</h2>
+      <p>Set a timeout for navigation — useful for slow loaders:</p>
+      <pre><code class="language-js">const router = new SafaRouter({
+  navigationTimeout: 10000,  // 10s timeout
+})</code></pre>
+
+      <h2>Retry Failed Navigation</h2>
+      <p>Retry a navigation with exponential backoff:</p>
+      <pre><code class="language-js">router.retry('/slow-api', {
+  method: 'push',
+  retries: 3,
+})</code></pre>
+
+      <h2>Parallel Route Loaders (Slots)</h2>
+      <p>Load multiple data sources in parallel using slots:</p>
+      <pre><code class="language-js">routes: {
+  '/dashboard': {
+    page: () => '&lt;h1&gt;Dashboard&lt;/h1&gt;',
+    slots: {
+      sidebar: {
+        loader: async () => fetch('/api/sidebar').then(r => r.json()),
+      },
+      analytics: {
+        loader: async () => fetch('/api/analytics').then(r => r.json()),
+      },
+    },
+  },
+}</code></pre>
+      <pre><code class="language-html">&lt;aside data-safa-slot="sidebar"&gt;&lt;/aside&gt;
+&lt;div data-safa-slot="analytics"&gt;&lt;/div&gt;</code></pre>
+      <p>Slot loaders run in parallel with the main loader via <code>Promise.all</code>.</p>
+
+      <h2>Core Router for Minimal Bundle</h2>
+      <p>For the smallest possible bundle, use the core router which excludes all optional features:</p>
+      <pre><code class="language-js">import { SafaRouter } from 'safa-router/core'
+
+const router = new SafaRouter({
+  target: '#app',
+  routes: {
+    '/': { page: () => '&lt;h1&gt;Home&lt;/h1&gt;' },
+    '/about': { page: () => '&lt;h1&gt;About&lt;/h1&gt;' },
+  },
+})
+
+router.start()</code></pre>
+      <p>The core router is under 3 KB gzipped and includes route matching, layouts, middleware, history, and loaders — but not access control, maintenance mode, transitions, or smart components.</p>
+    </main>
+  </div>
+
+  <footer class="site-footer">
+    <p>MIT Licensed &middot; <a href="https://github.com/Karan-Safaie-Qadi/SafaRouter">GitHub</a> &middot; Built with SafaRouter</p>
+  </footer>
+
+  <script>
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('open')
+      document.getElementById('sidebarOverlay').classList.toggle('open')
+    }
+  </script>
+</body>
+</html>

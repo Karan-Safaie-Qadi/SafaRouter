@@ -1,0 +1,20 @@
+﻿{
+  "name": "safa-router-webpack-example",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Webpack 5 example using safa-router",
+  "type": "module",
+  "scripts": {
+    "dev": "webpack serve --mode development",
+    "build": "webpack --mode production"
+  },
+  "dependencies": {
+    "safa-router": "^2.0.0"
+  },
+  "devDependencies": {
+    "html-webpack-plugin": "^5.6.0",
+    "webpack": "^5.95.0",
+    "webpack-cli": "^5.1.4",
+    "webpack-dev-server": "^5.1.0"
+  }
+}

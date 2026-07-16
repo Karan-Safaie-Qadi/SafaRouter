@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Route Guards — SafaRouter</title>
+  <link rel="stylesheet" href="assets/style.css">
+  <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <script>hljs.highlightAll();</script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="index.html" class="logo-link">
+        <img src="assets/logo.svg" alt="SafaRouter"> SafaRouter
+      </a>
+      <button class="mobile-menu-btn" onclick="toggleSidebar()" aria-label="Menu">☰</button>
+      <nav class="header-nav">
+        <a href="getting-started.html">Docs</a>
+        <a href="api-reference.html">API</a>
+        <a href="examples.html">Examples</a>
+        <a href="migration-guide.html">Migration</a>
+        <a href="https://github.com/Karan-Safaie-Qadi/SafaRouter" class="github-link" target="_blank">GitHub</a>
+      </nav>
+    </div>
+  </header>
+
+  <div class="layout-wrapper">
+    <aside class="sidebar" id="sidebar">
+      <nav>
+        <div class="sidebar-section">
+          <div class="sidebar-heading">Getting Started</div>
+          <a href="index.html" class="sidebar-link">Overview</a>
+          <a href="getting-started.html" class="sidebar-link">Installation & Quick Start</a>
+        </div>
+        <div class="sidebar-section">
+          <div class="sidebar-heading">Core Concepts</div>
+          <a href="routing.html" class="sidebar-link">Routing</a>
+          <a href="dynamic-routes.html" class="sidebar-link">Dynamic Routes</a>
+          <a href="nested-routes.html" class="sidebar-link">Nested Routes & Layouts</a>
+          <a href="middleware.html" class="sidebar-link">Middleware</a>
+          <a href="route-guards.html" class="sidebar-link active">Route Guards</a>
+          <a href="lazy-loading.html" class="sidebar-link">Lazy Loading</a>
+        </div>
+        <div class="sidebar-section">
+          <div class="sidebar-heading">Reference</div>
+          <a href="api-reference.html" class="sidebar-link">API Reference</a>
+          <a href="migration-guide.html" class="sidebar-link">Migration Guide</a>
+          <a href="examples.html" class="sidebar-link">Examples</a>
+        </div>
+      </nav>
+    </aside>
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+    <main class="main-content content">
+      <h1>Route Guards</h1>
+      <p>Route guards are per-route protection functions that run before the page loads. They can allow, redirect, or block access to routes.</p>
+
+      <h2>Basic Guard</h2>
+      <pre><code class="language-js">routes: {
+  '/dashboard': {
+    guard: ({ params, query, router }) => {
+      const token = localStorage.getItem('auth_token')
+      if (!token) return '/login'  // redirect
+      return true                  // allow access
+    },
+  },
+}</code></pre>
+
+      <h2>Guard Return Values</h2>
+      <table>
+        <tr><th>Return</th><th>Behavior</th></tr>
+        <tr><td><code>true</code></td><td>Allow navigation — continue loading the route</td></tr>
+        <tr><td><code>false</code></td><td>Redirect to <code>/</code></td></tr>
+        <tr><td><code>string</code> (URL)</td><td>Redirect to the specified path</td></tr>
+      </table>
+
+      <pre><code class="language-js">guard: ({ params }) => {
+  // Allow
+  if (params.id) return true
+
+  // Redirect to home
+  return false
+
+  // Redirect to custom path
+  return '/login'
+}</code></pre>
+
+      <h2>Practical Examples</h2>
+
+      <h3>Authentication Guard</h3>
+      <pre><code class="language-js">routes: {
+  '/dashboard': {
+    guard: ({ router }) => {
+      const authed = localStorage.getItem('auth') === 'true'
+      return authed || '/login'
+    },
+  },
+
+  '/admin': {
+    guard: ({ router }) => {
+      const role = localStorage.getItem('user_role')
+      return role === 'admin' || '/403'
+    },
+  },
+}</code></pre>
+
+      <h3>Param Validation</h3>
+      <pre><code class="language-js">routes: {
+  '/post/[id]': {
+    guard: ({ params }) => {
+      const id = parseInt(params.id, 10)
+      if (isNaN(id) || id < 1) return '/posts'
+      return true
+    },
+  },
+}</code></pre>
+
+      <h3>Feature Flag Guard</h3>
+      <pre><code class="language-js">routes: {
+  '/beta': {
+    guard: () => {
+      return featureFlags.betaEnabled ? true : '/'
+    },
+  },
+}</code></pre>
+
+      <h2>Guards + Access Controller</h2>
+      <p>SafaRouter also provides a global <strong>AccessController</strong> for pattern-based route blocking:</p>
+      <pre><code class="language-js">const router = new SafaRouter({
+  access: {
+    blocked: ['/admin', '/private/**'],
+    ignored: ['/hidden', '/deprecated/*'],
+    allowed: ['/login'],            // allowlist
+    mode: 'blocklist',              // or 'allowlist'
+  },
+})</code></pre>
+
+      <p>Runtime control:</p>
+      <pre><code class="language-js">router.blockRoute('/api/temp')
+router.unblockRoute('/api/temp')
+router.ignoreRoute('/old-page')
+router.unignoreRoute('/old-page')
+
+router.accessController.isAccessible('/admin')   // false
+router.accessController.getMode()                // 'blocklist'
+
+// Switch to allowlist mode
+router.accessController.setMode('allowlist')
+router.accessController.allow('/sandbox')</code></pre>
+
+      <p>Access denied event:</p>
+      <pre><code class="language-js">router.onAccessDenied(({ path, reason }) => {
+  console.warn(`Access denied: ${path} — ${reason}`)
+})</code></pre>
+
+      <h2>Guards vs Middleware</h2>
+      <table class="comparison-table">
+        <tr><th></th><th>Route Guards</th><th>Middleware</th></tr>
+        <tr><td>Scope</td><td>Per-route</td><td>Global (all routes)</td></tr>
+        <tr><td>Context</td><td><code>{ params, query, router }</code></td><td><code>{ path, method, query, redirect, cancelled }</code></td></tr>
+        <tr><td>Return</td><td><code>true</code>, <code>false</code>, or redirect path</td><td>Mutate context + call <code>next()</code></td></tr>
+        <tr><td>Use case</td><td>Route-specific authorization</td><td>Global auth, logging, redirects</td></tr>
+        <tr><td>Order</td><td>Runs after middleware</td><td>Runs before guards</td></tr>
+      </table>
+
+      <div class="info-box">
+        <div class="icon">💡</div>
+        <p><strong>Use guards for route-specific logic</strong> and middleware for global concerns. Guards have access to <code>params</code>, making them ideal for parameter-based authorization.</p>
+      </div>
+    </main>
+  </div>
+
+  <footer class="site-footer">
+    <p>MIT Licensed &middot; <a href="https://github.com/Karan-Safaie-Qadi/SafaRouter">GitHub</a> &middot; Built with SafaRouter</p>
+  </footer>
+
+  <script>
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('open')
+      document.getElementById('sidebarOverlay').classList.toggle('open')
+    }
+  </script>
+</body>
+</html>

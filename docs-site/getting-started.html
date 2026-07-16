@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Getting Started — SafaRouter</title>
+  <link rel="stylesheet" href="assets/style.css">
+  <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <script>hljs.highlightAll();</script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="index.html" class="logo-link">
+        <img src="assets/logo.svg" alt="SafaRouter"> SafaRouter
+      </a>
+      <button class="mobile-menu-btn" onclick="toggleSidebar()" aria-label="Menu">☰</button>
+      <nav class="header-nav">
+        <a href="getting-started.html">Docs</a>
+        <a href="api-reference.html">API</a>
+        <a href="examples.html">Examples</a>
+        <a href="migration-guide.html">Migration</a>
+        <a href="https://github.com/Karan-Safaie-Qadi/SafaRouter" class="github-link" target="_blank">GitHub</a>
+      </nav>
+    </div>
+  </header>
+
+  <div class="layout-wrapper">
+    <aside class="sidebar" id="sidebar">
+      <nav>
+        <div class="sidebar-section">
+          <div class="sidebar-heading">Getting Started</div>
+          <a href="index.html" class="sidebar-link">Overview</a>
+          <a href="getting-started.html" class="sidebar-link active">Installation & Quick Start</a>
+        </div>
+        <div class="sidebar-section">
+          <div class="sidebar-heading">Core Concepts</div>
+          <a href="routing.html" class="sidebar-link">Routing</a>
+          <a href="dynamic-routes.html" class="sidebar-link">Dynamic Routes</a>
+          <a href="nested-routes.html" class="sidebar-link">Nested Routes & Layouts</a>
+          <a href="middleware.html" class="sidebar-link">Middleware</a>
+          <a href="route-guards.html" class="sidebar-link">Route Guards</a>
+          <a href="lazy-loading.html" class="sidebar-link">Lazy Loading</a>
+        </div>
+        <div class="sidebar-section">
+          <div class="sidebar-heading">Reference</div>
+          <a href="api-reference.html" class="sidebar-link">API Reference</a>
+          <a href="migration-guide.html" class="sidebar-link">Migration Guide</a>
+          <a href="examples.html" class="sidebar-link">Examples</a>
+        </div>
+      </nav>
+    </aside>
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+    <main class="main-content content">
+      <h1>Installation & Quick Start</h1>
+      <p>Get up and running with SafaRouter in under 30 seconds.</p>
+
+      <h2>Installation</h2>
+      <pre><code class="language-bash">npm install safa-router</code></pre>
+      <p>Or copy the <code>src/</code> folder directly into your project. No build step required — pure ESM.</p>
+
+      <h2>Quick Start (HTML only)</h2>
+      <p>Create a folder with <code>.html</code> files. Each file becomes a route automatically:</p>
+      <pre><code class="language-plaintext">my-project/
+├── html-pages/
+│   ├── index.html          ← /
+│   ├── about.html          ← /about
+│   ├── contact.html        ← /contact
+│   └── blog/
+│       ├── index.html      ← /blog
+│       └── [slug].html     ← /blog/:slug (dynamic)
+├── index.html
+└── main.js</code></pre>
+
+      <p>Initialize the router:</p>
+      <pre><code class="language-js">import { SafaRouter } from 'safa-router'
+
+new SafaRouter({
+  target: '#app',
+  pageDir: 'html-pages',
+}).start()</code></pre>
+
+      <h3>Links in HTML pages</h3>
+      <p>Use the <code>data-safa-link</code> attribute for client-side navigation:</p>
+      <pre><code class="language-html">&lt;a href="/about" data-safa-link&gt;About&lt;/a&gt;
+&lt;a href="/contact" data-safa-link&gt;Contact&lt;/a&gt;</code></pre>
+
+      <h3>Template Variables</h3>
+      <p>HTML files support template placeholders that resolve automatically:</p>
+      <pre><code class="language-html">&lt;!-- html-pages/profile/[id].html --&gt;
+&lt;h1&gt;User: {{ params.id }}&lt;/h1&gt;
+&lt;p&gt;Path: {{ path }}&lt;/p&gt;</code></pre>
+
+      <h2>Quick Start (with Route Config)</h2>
+      <p>For more control, define routes explicitly:</p>
+      <pre><code class="language-js">import { SafaRouter } from 'safa-router'
+
+const router = new SafaRouter({
+  target: '#app',
+  basePath: '/my-app',
+  pageDir: 'html-pages',
+
+  layout: 'html-pages/_layout.html',
+
+  routes: {
+    '/': {},
+    '/blog': {
+      children: { '[slug]': {} },
+    },
+    '/about': {},
+    '/contact': {},
+  },
+})
+
+router.start()</code></pre>
+
+      <h2>Running the Demo</h2>
+      <p>The project includes a full demo:</p>
+      <pre><code class="language-bash">cd safa-router
+node dev-server.js</code></pre>
+      <p>Then open <code>http://localhost:3000/test-app/</code></p>
+
+      <div class="info-box">
+        <div class="icon">💡</div>
+        <p><strong>Zero config needed for basic setups.</strong> Just point <code>pageDir</code> at your HTML folder and call <code>.start()</code>. Everything else is optional.</p>
+      </div>
+
+      <h2>Next Steps</h2>
+      <ul>
+        <li><a href="routing.html">Learn about routing configuration →</a></li>
+        <li><a href="dynamic-routes.html">Explore dynamic routes →</a></li>
+        <li><a href="nested-routes.html">Set up nested layouts →</a></li>
+        <li><a href="api-reference.html">Browse the full API →</a></li>
+      </ul>
+    </main>
+  </div>
+
+  <footer class="site-footer">
+    <p>MIT Licensed &middot; <a href="https://github.com/Karan-Safaie-Qadi/SafaRouter">GitHub</a> &middot; Built with SafaRouter</p>
+  </footer>
+
+  <script>
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('open')
+      document.getElementById('sidebarOverlay').classList.toggle('open')
+    }
+  </script>
+</body>
+</html>

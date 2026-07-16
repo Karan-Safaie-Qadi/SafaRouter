@@ -1,23 +1,24 @@
 <div align="center">
+  <img src="docs-site/assets/logo.svg" alt="SafaRouter" width="120" height="120">
   <h1>SafaRouter</h1>
   <p><strong>A standalone frontend router inspired by Next.js App Router</strong></p>
   <p>
-    <img src="https://img.shields.io/badge/version-2.0.0-blue" alt="Version">
-    <img src="https://img.shields.io/badge/license-MIT-green" alt="License">
-    <img src="https://img.shields.io/badge/dependencies-0-brightgreen" alt="Zero Dependencies">
-    <img src="https://img.shields.io/badge/size-%3C5%20KB-gold" alt="Size">
-    <img src="https://img.shields.io/github/actions/workflow/status/Karan-Safaie-Qadi/SafaRouter/.github/workflows/ci.yml?branch=master" alt="CI">
-    <img src="https://img.shields.io/npm/dt/safa-router" alt="Downloads">
-    <img src="https://img.shields.io/npm/v/safa-router?color=blue" alt="npm version">
-    <img src="https://img.shields.io/npm/l/safa-router" alt="license">
+    Framework-agnostic &bull; Zero dependencies &bull; ~5 KB gzipped &bull; 267+ tests
+  </p>
+  <p>
+    <a href="https://www.npmjs.com/package/safa-router"><img src="https://img.shields.io/npm/v/safa-router?color=6366f1&label=npm" alt="npm version"></a>
+    <a href="https://www.npmjs.com/package/safa-router"><img src="https://img.shields.io/npm/dt/safa-router?color=6366f1" alt="npm downloads"></a>
+    <a href="LICENSE"><img src="https://img.shields.io/npm/l/safa-router?color=6366f1" alt="license"></a>
+    <a href="https://github.com/Karan-Safaie-Qadi/SafaRouter/actions"><img src="https://img.shields.io/github/actions/workflow/status/Karan-Safaie-Qadi/SafaRouter/.github/workflows/ci.yml?branch=master&color=6366f1" alt="CI"></a>
+    <img src="https://img.shields.io/badge/dependencies-0-brightgreen?color=22c55e" alt="Zero Dependencies">
+    <img src="https://img.shields.io/badge/size-%3E5%20KB-gold?color=f59e0b" alt="Size">
   </p>
   <p>
     <a href="#english">English</a> &middot;
-    <a href="#persian">فارسی</a>
-    &middot;
+    <a href="#persian">فارسی</a> &middot;
+    <a href="#migration">Migration</a> &middot;
+    <a href="https://karan-safaie-qadi.github.io/SafaRouter/">Documentation</a> &middot;
     <a href="CHANGELOG.md">Changelog</a>
-    &middot;
-    <a href="CONTRIBUTING.md">Contributing</a>
   </p>
   <br>
 </div>
@@ -26,1317 +27,44 @@
 
 <a id="english"></a>
 
-## English
+## Why SafaRouter?
 
-**SafaRouter** brings the App Router development pattern — nested layouts, dynamic routes, middleware, error management, access control, and smart components — to any frontend project without requiring Next.js or a specific framework.
+SafaRouter brings **Next.js App Router patterns** to any frontend project — no React, no Next.js, no bundler required.
 
-Use it with React, Vue, Svelte, or vanilla JavaScript. Pure JS, zero dependencies, under 5 KB gzipped.
-
----
-
-### Table of Contents
-
-- [Features](#features)
-- [Installation](#installation)
-- [Quick Start (HTML only)](#quick-start-html-only)
-- [Route Configuration](#route-configuration)
-- [Smart Components (v1.4.0)](#smart-components-v140)
-- [Per-route hideComponents (v1.4.3)](#per-route-hidecomponents-v143)
-- [Route Data Loaders (v1.3.0)](#route-data-loaders-v130)
-  - [SWR Loader Cache (v2.0.0)](#swr-loader-cache-v200)
-- [Parallel Routes / Slots (v2.0.0)](#parallel-routes--slots-v200)
-- [Intercepting Routes (v2.0.0)](#intercepting-routes-v200)
-- [Vite Plugin (v2.0.0)](#vite-plugin-v200)
-- [Core Router (v2.0.0)](#core-router-v200)
-- [Type-Safe Routes (v2.0.0)](#type-safe-routes-v200)
-- [Modular Architecture (v2.0.0)](#modular-architecture-v200)
-- [Route Guards (v1.3.0)](#route-guards-v130)
-- [Middleware](#middleware)
-- [Layouts](#layouts)
-- [Dynamic Routes & Route Groups](#dynamic-routes--route-groups)
-- [Error Handling](#error-handling)
-- [Events](#events)
-- [Template Resolution (v1.4.0)](#template-resolution-v140)
-- [Per-route Transitions (v1.3.0)](#per-route-transitions-v130)
-- [Real-time Hot Reload (v1.4.3)](#real-time-hot-reload-v143)
-- [SafaDevServer (v1.4.4)](#safadevserver-v144)
-- [Integration Examples](#integration-examples)
-- [API Reference](#api-reference)
-- [Complete Demo Configuration](#complete-demo-configuration)
-- [Integration Examples](#integration-examples)
-- [Running the Demo](#running-the-demo)
-- [Migration Guide](#migration-guide)
-- [Comparison with Other Routers](#comparison-with-other-routers)
-- [Troubleshooting](#troubleshooting)
-- [FAQ](#faq)
-- [License](#license)
-
----
-
-### Features
-
-| Feature | Description | Version |
-|---------|-------------|---------|
-| **HTML-first routing** | Write plain `.html` files — each file is a route automatically | v1.0.0 |
-| **Route config** | Explicit JS route definitions with full control | v1.0.0 |
-| **Dynamic segments** | `[slug]`, `[...catchAll]`, `[[...optional]]` | v1.0.0 |
-| **Route groups** | `(groupName)` for logical organisation without URL changes | v1.0.0 |
-| **Nested layouts** | Layouts wrap pages and compose parent → child | v1.0.0 |
-| **Client-side navigation** | History API with push, replace, back, forward | v1.0.0 |
-| **Middleware** | Intercept every navigation for auth, redirects, logging | v1.0.0 |
-| **Event system** | Subscribe to navigation lifecycle events | v1.0.0 |
-| **ErrorManager** | Handle all HTTP status codes (400–511) with custom error pages, grouping, and logging | v1.3.0 |
-| **AccessController** | Blocked routes (403) and ignored routes (silent 404) with glob patterns | v1.3.0 |
-| **Maintenance Mode** | Toggleable 503 maintenance mode with allowed path bypasses | v1.3.0 |
-| **Route Data Loaders** | Async functions that provide data to pages before render | v1.3.0 |
-| **Route Guards** | Per-route guard functions with redirect support | v1.3.0 |
-| **Per-route Transitions** | Custom CSS transition effects per route | v1.3.0 |
-| **Smart Components** | Header/Footer components that render on every page with auto-link binding | v1.4.0 |
-| **Per-route hideComponents** | Hide specific components (header/footer) per route via `meta.hideComponents` | v1.4.3 |
-| **Template Resolution** | `{{ params.x }}`, `{{ query.x }}`, `{{ data.x }}` in HTML files | v1.4.0 |
-| **auto-resolve pages** | Routes without `page` auto-resolve from `pageDir` HTML files | v1.4.0 |
-| **Access allowlist mode** | Block everything except explicitly allowed paths (`access.mode: 'allowlist'`) | v1.4.3 |
-| **Real-time hot reload** | SSE-based live reload — edit HTML files, page updates without browser refresh | v1.4.3 |
-| **DevServer class** | Import `SafaDevServer` — zero-config dev server with SPA fallback + file watching | v1.4.4 |
-| **Links on error pages** | `_bindLinks()` now runs on 404/error pages so `data-safa-link` works everywhere | v1.4.4 |
-| **SWR Loader Cache** | Stale-while-revalidate caching for route data loaders with TTL and dedup | v2.0.0 |
-| **Parallel Routes (Slots)** | Render multiple independent route sections via `[data-safa-slot]` | v2.0.0 |
-| **Intercepting Routes** | Display routes as interactive overlays on the current page | v2.0.0 |
-| **Vite Plugin** | `safa-router/vite` — auto-inject only needed feature imports during build | v2.0.0 |
-| **Type-Safe Routes** | Full TypeScript inference with `defineRoute()`, `defineRoutes()`, `SafeRouteParams<T>` | v2.0.0 |
-| **Core Router** | `safa-router/core` — minimal router without optional features for smaller bundles | v2.0.0 |
-| **Zero dependencies** | Pure JavaScript, ESM, ~5 KB gzipped | — |
-| **Framework agnostic** | Works with React, Vue, Svelte, or vanilla JS | — |
-
----
-
-### Table of Contents
-
-- [Installation](#installation)
-- [Quick Start (HTML only)](#quick-start-html-only)
-- [Route Configuration](#route-configuration)
-- [Smart Components (v1.4.0)](#smart-components-v140)
-- [Route Data Loaders (v1.3.0)](#route-data-loaders-v130)
-- [Route Guards (v1.3.0)](#route-guards-v130)
-- [Middleware](#middleware)
-- [Layouts](#layouts)
-- [Dynamic Routes & Route Groups](#dynamic-routes--route-groups)
-- [Error Handling](#error-handling)
-  - [ErrorManager (v1.3.0)](#errormanager-v130)
-  - [Custom Error Pages](#custom-error-pages)
-  - [AccessController (v1.3.0)](#accesscontroller-v130)
-  - [Maintenance Mode (v1.3.0)](#maintenance-mode-v130)
-- [Events](#events)
-- [Template Resolution (v1.4.0)](#template-resolution-v140)
-- [Per-route Transitions (v1.3.0)](#per-route-transitions-v130)
-- [API Reference](#api-reference)
-- [Complete Demo Configuration](#complete-demo-configuration)
-- [Running the Demo](#running-the-demo)
-- [Migration Guide](#migration-guide)
-
----
-
-### Installation
+| Problem | SafaRouter Solution |
+|---------|-------------------|
+| Tied to a framework | Works with **React, Vue, Svelte, or vanilla JS** |
+| Heavy dependencies | **Zero dependencies**, ~5 KB gzipped |
+| Complex setup | **1 minute** to first route |
+| No middleware | Built-in **middleware chain** |
+| No access control | **Route blocking**, **allowlist/blocklist** |
+| No error management | **ErrorManager** with custom error pages |
+| No SSR support | **SSR-compatible** — runs in Node.js |
+| No TypeScript types | **Full TypeScript** definitions included |
+| No build step needed | Runs directly in browser via **ESM imports** |
+| No real-time updates | Built-in **SSE/polling/WebSocket** hot reload |
 
 ```bash
 npm install safa-router
+# That's it. No framework, no bundler, no config.
 ```
-
-Or copy the `src/` folder directly into your project.
 
 ---
 
-### Quick Start (HTML only)
+## Quick Start (30 seconds)
 
-Create a folder with `.html` files. Each file becomes a route automatically:
-
+**1. Create project**
 ```
-my-project/
-├── html-pages/
-│   ├── index.html          ← /
-│   ├── about.html          ← /about
-│   ├── contact.html        ← /contact
-│   └── blog/
-│       ├── index.html      ← /blog
-│       └── [slug].html     ← /blog/:slug (dynamic)
+my-app/
 ├── index.html
-└── main.js
+├── main.js
+└── html-pages/
+    ├── index.html
+    └── about.html
 ```
 
+**2. Write `main.js`**
 ```js
-import { SafaRouter } from 'safa-router'
-
-new SafaRouter({
-  target: '#app',
-  pageDir: 'html-pages',
-}).start()
-```
-
-#### Links in HTML pages
-
-Use `data-safa-link` attribute for client-side navigation:
-
-```html
-<a href="/about" data-safa-link>About</a>
-<a href="/contact" data-safa-link>Contact</a>
-```
-
-#### Template Variables in HTML
-
-HTML files support template placeholders that are resolved automatically:
-
-```html
-<!-- html-pages/profile/[id].html -->
-<h1>User: {{ params.id }}</h1>
-<p>Path: {{ path }}</p>
-```
-
-```html
-<!-- html-pages/contact.html -->
-<p>Subject: {{ query.subject }}</p>
-```
-
-```html
-<!-- html-pages/loader.html (with route data loader) -->
-<p>Server: {{ data.server }}</p>
-<p>Timestamp: {{ data.timestamp }}</p>
-```
-
----
-
-### Route Configuration
-
-For advanced control, define routes explicitly:
-
-```js
-import { SafaRouter } from 'safa-router'
-
-const router = new SafaRouter({
-  target: '#app',
-  basePath: '/my-app',
-  pageDir: 'html-pages',             // auto-resolve pages from here
-
-  layout: 'html-pages/_layout.html', // global layout (HTML file)
-
-  routes: {
-    '/': {},                         // auto-resolves to html-pages/index.html
-
-    '/blog': {
-      children: {
-        '[slug]': {},               // auto-resolves to html-pages/blog/[slug].html
-      },
-    },
-
-    '/about': {},                    // auto-resolves to html-pages/about.html
-    '/contact': {},                  // auto-resolves to html-pages/contact.html
-  },
-})
-
-router.start()
-```
-
-When `page` is not specified for a route, the router automatically looks for an HTML file in `pageDir` that matches the route path. This means you can keep **all your content in HTML files** and use the route config only for structure, guards, loaders, and layouts.
-
-You can also reference specific HTML files:
-
-```js
-routes: {
-  '/': { page: 'index.html' },
-  '/custom': { page: 'my-custom-page.html' },
-}
-```
-
----
-
-### Smart Components (v1.4.0)
-
-Components are named UI elements that render automatically on every page. They are ideal for headers, footers, navigation bars, and other persistent UI.
-
-#### Defining Components
-
-Components are functions that return an HTML string. They receive `{ path, router, params, query }`.
-
-```js
-// components/Header.js
-export default function headerComponent({ path }) {
-  return `
-    <header>
-      <nav>
-        <a href="/" data-safa-link>Home</a>
-        <a href="/about" data-safa-link>About</a>
-        <a href="/blog" data-safa-link>Blog</a>
-      </nav>
-    </header>
-  `
-}
-```
-
-```js
-// components/Footer.js
-export default function footerComponent() {
-  return `
-    <footer>
-      <p>Powered by SafaRouter</p>
-    </footer>
-  `
-}
-```
-
-#### Registering Components
-
-Pass `components` in the config:
-
-```js
-import headerComponent from './components/Header.js'
-import footerComponent from './components/Footer.js'
-
-const router = new SafaRouter({
-  target: '#app',
-  components: {
-    header: headerComponent,
-    footer: footerComponent,
-  },
-  // ... other config
-})
-```
-
-#### Target Elements
-
-Add `data-safa-component` attributes in your HTML where you want each component to render:
-
-```html
-<!-- index.html -->
-<div data-safa-component="header"></div>
-
-<main id="app">
-  <!-- page content renders here -->
-</main>
-
-<div data-safa-component="footer"></div>
-```
-
-#### Active Link Highlighting
-
-Components re-render on every navigation, so you can highlight the current page:
-
-```js
-export default function headerComponent({ path }) {
-  return `
-    <nav>
-      <a href="/" data-safa-link class="${path === '/' ? 'active' : ''}">Home</a>
-      <a href="/about" data-safa-link class="${path === '/about' ? 'active' : ''}">About</a>
-    </nav>
-  `
-}
-```
-
-#### Template Resolution in Components
-
-Components also support `{{ params }}`, `{{ query }}`, and `{{ data }}` template placeholders:
-
-```js
-export default function headerComponent({ path, params }) {
-  return `
-    <header>
-      <span>Current user: {{ params.id }}</span>
-    </header>
-  `
-}
-```
-
-#### How Components Work
-
-1. Components are rendered after every page render (normal navigation, 404, errors)
-2. Links inside components (`data-safa-link`) are automatically bound for client-side navigation
-3. Components receive fresh context on every navigation
-4. Multiple components are supported — just add more entries to `components`
-
-### Per-route hideComponents (v1.4.3)
-
-Hide specific smart components on individual routes using `meta.hideComponents`:
-
-```js
-routes: {
-  '/sandbox': {
-    meta: { hideComponents: ['footer'] },   // footer hidden, header visible
-  },
-  '/no-header': {
-    meta: { hideComponents: ['header'] },   // header hidden, footer visible
-  },
-  '/plain': {
-    meta: { hideComponents: true },          // both header and footer hidden
-  },
-}
-```
-
-- Accepts an array of component names to hide, or `true` to hide all components
-- Works with any component registered in the `components` config
-
----
-
-### Route Data Loaders (v1.3.0)
-
-Loaders are async functions that fetch data before the page renders. The data is passed to the page component and is also available as `{{ data.x }}` in HTML templates.
-
-```js
-routes: {
-  '/dashboard': {
-    loader: async ({ params, query, router }) => {
-      const response = await fetch('/api/dashboard')
-      return await response.json()
-    },
-    // page receives data via {{ data.visitors }}, {{ data.revenue }}, etc.
-  },
-}
-```
-
-With HTML pages, the loaded data is available through template resolution:
-
-```html
-<!-- html-pages/dashboard.html -->
-<div class="card">
-  <h3>Visitors: {{ data.visitors }}</h3>
-  <p>Revenue: {{ data.revenue }}</p>
-</div>
-```
-
-The loader receives `{ params, query, router }` and must return an object or a promise that resolves to an object.
-
-#### Loading State
-
-You can show a loading indicator while the loader is running:
-
-```js
-routes: {
-  '/slow': {
-    loading: () => '<div class="spinner"><p>Loading…</p></div>',
-    loader: async () => {
-      await new Promise(r => setTimeout(r, 2000))
-      return { data: 'loaded' }
-    },
-  },
-}
-```
-
----
-
-### SWR Loader Cache (v2.0.0)
-
-SafaRouter includes an **SWR (Stale-While-Revalidate)** caching layer for route data loaders. When a loader has been called before, the cached result is returned instantly while a background re-fetch keeps data fresh.
-
-```js
-const router = new SafaRouter({
-  loaderCache: true,               // enable SWR cache (default: true)
-  loaderStaleTime: 30000,          // time in ms before cache is stale (default: 30s)
-  loaderCacheMaxSize: 100,         // max cached entries (default: 100)
-})
-```
-
-**Cache behavior:**
-
-| State | Behavior |
-|-------|----------|
-| Fresh cache (≤ staleTime) | Returns cached data — no fetch |
-| Stale cache (> staleTime) | Returns cached data immediately + background re-fetch |
-| No cache | Awaits fetch, then caches result |
-
-**Concurrent request deduplication:** If multiple navigations to the same route happen simultaneously, only one fetch request is made — all wait for the same promise.
-
-**Per-route control:**
-
-```js
-routes: {
-  '/always-fresh': {
-    loader: async () => fetch('/api/data').then(r => r.json()),
-    // Uses global cache config
-  },
-}
-```
-
-**Disable cache for specific scenarios:**
-
-```js
-const router = new SafaRouter({
-  loaderCache: false,   // disable entirely
-})
-```
-
-The cache is automatically invalidated on navigation errors and when `router.reload()` is called.
-
----
-
-### Parallel Routes / Slots (v2.0.0)
-
-Parallel routes allow you to render multiple independent sections on the same page. Each section, or **slot**, has its own loader and renders into a `[data-safa-slot]` element.
-
-```js
-routes: {
-  '/dashboard': {
-    page: () => '<h1>Dashboard</h1>',
-    slots: {
-      sidebar: {
-        loader: async () => {
-          const data = await fetch('/api/sidebar')
-          return data.json()
-        },
-      },
-      analytics: {
-        loader: async () => {
-          const data = await fetch('/api/analytics')
-          return data.json()
-        },
-      },
-    },
-  },
-}
-```
-
-In your HTML, add `[data-safa-slot]` target elements:
-
-```html
-<main id="app">
-  <!-- Main page renders here -->
-</main>
-<aside data-safa-slot="sidebar">
-  <!-- Sidebar slot renders here -->
-</aside>
-<div data-safa-slot="analytics">
-  <!-- Analytics slot renders here -->
-</div>
-```
-
-Slot loaders run **in parallel** with the main route loader via `Promise.all`. Each slot receives its own data context, accessible via the loader context `{ params, query, router }`.
-
-**Why slots?**
-- Independent data fetching — each slot manages its own loading state
-- No URL negotiation — slots are declared in the route config, not the URL
-- Reusable across routes — the same slot structure can be used in multiple route definitions
-
----
-
-### Intercepting Routes (v2.0.0)
-
-Intercepting routes display a route as an **overlay** on top of the current page, similar to modal navigation in social media apps (e.g., clicking a photo shows it as a modal while the feed stays underneath).
-
-```js
-routes: {
-  '/photo/[id]': {
-    intercept: true,                // always intercept when navigating internally
-    page: ({ params }) => `
-      <div class="photo-modal">
-        <img src="/photos/${params.id}.jpg" />
-      </div>
-    `,
-  },
-}
-```
-
-**Conditional intercept with `from` pattern:**
-
-```js
-routes: {
-  '/photo/[id]': {
-    intercept: { from: '/feed' },   // only intercept when coming from /feed
-    page: ({ params }) => `
-      <div class="photo-modal">
-        <img src="/photos/${params.id}.jpg" />
-      </div>
-    `,
-  },
-}
-```
-
-`from` accepts a string (exact match), a RegExp, or `true` (always intercept on internal navigation).
-
-**How it works:**
-
-1. When navigation starts, if the matched route has `intercept` and `_previousRouteData` exists (internal navigation), the route renders as an overlay
-2. The overlay is a full-screen `<div>` appended to the target element with a close button
-3. Clicking the close button calls `router.dismissInterceptor()`, which removes the overlay and calls `history.back()`
-4. Direct URL access or page refresh shows the normal route (no overlay)
-
-```js
-// Programmatically dismiss the interceptor
-router.dismissInterceptor()
-```
-
-**Events:**
-
-```js
-router.on('interceptoropen', ({ path }) => {
-  console.log('Interceptor opened for:', path)
-})
-
-router.on('interceptorclose', ({ path }) => {
-  console.log('Interceptor closed for:', path)
-})
-```
-
-**Use cases:**
-- Photo galleries showing images as modals
-- Quick-view product details
-- Login/signup overlays
-- Any route that should appear as a layer on top of the current page
-
----
-
-### Vite Plugin (v2.0.0)
-
-SafaRouter includes a Vite plugin that **auto-detects which optional features you use** and injects only the necessary imports, keeping your production bundle minimal.
-
-```js
-// vite.config.js
-import { safaRouter } from 'safa-router/vite'
-
-export default {
-  plugins: [safaRouter()],
-}
-```
-
-**How it works:**
-
-The plugin scans your source code for:
-1. Config keys inside `new SafaRouter({...})` calls
-2. Method calls that indicate feature usage (e.g., `router.blockRoute()`, `router.setMaintenance()`)
-
-Based on detection, it prepends bare imports for only the features you need:
-
-| Config Key | Feature Import | Trigger |
-|-----------|----------------|---------|
-| `access` | `safa-router/features/access` | `access` config, or `.blockRoute()`, `.onAccessDenied()` |
-| `realtime` | `safa-router/features/realtime` | `realtime` config |
-| `components` | `safa-router/features/components` | `components` config with keys |
-| `errorLogging` / `error` | `safa-router/features/errors` | `errorLogging` or `error` config |
-| `maintenanceMode` | `safa-router/features/maintenance` | `maintenanceMode` config, or `.setMaintenance()`, `.onMaintenance()` |
-| `scrollRestoration` | `safa-router/features/scroll` | `scrollRestoration` config |
-| `transition*` | `safa-router/features/transitions` | Any `transition*` config key |
-
-**No config needed beyond adding the plugin.** If you don't use any optional features, no extra imports are injected.
-
----
-
-### Core Router (v2.0.0)
-
-For minimal bundle size, import the **core router** which excludes all optional features (access control, maintenance mode, error manager, transitions, etc.):
-
-```js
-import { SafaRouter } from 'safa-router/core'
-
-const router = new SafaRouter({
-  target: '#app',
-  routes: {
-    '/': { page: () => '<h1>Home</h1>' },
-    '/about': { page: () => '<h1>About</h1>' },
-  },
-})
-```
-
-The core router includes:
-- Route matching and resolution
-- Nested layouts
-- Middleware chain
-- History management
-- Client-side navigation
-- Route data loaders with SWR cache
-- Event system
-
-**Not included in core:**
-- AccessController (block/ignore routes)
-- Maintenance mode
-- ErrorManager (custom error pages, per-status control)
-- TransitionsManager (CSS transitions)
-- Smart components (header/footer)
-- Realtime hot reload
-- Scroll restoration
-- Plugin system
-
-Use the core router when you want the smallest possible bundle (under 3 KB gzipped) and don't need the optional features.
-
----
-
-### Type-Safe Routes (v2.0.0)
-
-Use the `safa-router/typed` module for **full TypeScript inference** of route parameters:
-
-```ts
-import { defineRoute, defineRoutes, createRouter } from 'safa-router/typed'
-
-// Define individual routes
-const homeRoute = defineRoute('/')
-const blogRoute = defineRoute('/blog/[slug]')
-const docRoute = defineRoute('/docs/[...path]')
-
-// Define a routes object
-const routes = defineRoutes({
-  '/': {},
-  '/blog/[slug]': {
-    loader: async ({ params }) => {
-      // params.slug is inferred as string ✓
-      return { title: params.slug }
-    },
-  },
-  '/docs/[...path]': {
-    loader: async ({ params }) => {
-      // params.path is inferred as string[] ✓
-      return { segments: params.path }
-    },
-  },
-})
-
-// Create typed router
-createRouter({
-  target: '#app',
-  routes,
-}).start()
-
-// Type helpers
-type Params = SafeRouteParams<'/blog/[slug]'>  // { slug: string }
-type CatchAll = SafeRouteParams<'/docs/[...path]'>  // { path: string[] }
-```
-
-**Exported types:**
-
-| Type | Description |
-|------|-------------|
-| `SafeRouteParams<T>` | Infers `{ param: string }` from path pattern |
-| `SafeLoaderContext<T>` | Typed loader context with inferred params |
-| `SafeGuardContext<T>` | Typed guard context with inferred params |
-| `TypedRouteEntry<T>` | Route entry with typed loader/guard contexts |
-
-Type-safe routes are **zero-cost at runtime** — all type information is erased during compilation, leaving only the plain JavaScript helpers.
-
----
-
-### Modular Architecture (v2.0.0)
-
-SafaRouter v2.0.0 introduces a **modular, tree-shakeable architecture**. Optional features are split into standalone modules under `safa-router/features/`:
-
-| Module | Import Path | Description |
-|--------|-------------|-------------|
-| **access** | `safa-router/features/access` | Route blocking, ignoring, allowlist/blocklist |
-| **realtime** | `safa-router/features/realtime` | SSE/polling/WebSocket hot reload |
-| **components** | `safa-router/features/components` | Smart header/footer components |
-| **errors** | `safa-router/features/errors` | ErrorManager, custom error pages |
-| **maintenance** | `safa-router/features/maintenance` | 503 maintenance mode |
-| **scroll** | `safa-router/features/scroll` | Scroll position restoration |
-| **transitions** | `safa-router/features/transitions` | CSS transition effects |
-
-**How tree-shaking works:**
-
-When you use the full router (`safa-router`), the `detectFeatures(config)` function checks which config keys are present and only initializes the corresponding feature modules. With the Vite plugin, this detection happens at build time — only the feature modules you actually use are included in the bundle.
-
-When you use the core router (`safa-router/core`), no feature modules are loaded at all, resulting in the absolute minimum bundle size.
-
-```js
-// Full router — auto-detects features from config
-import { SafaRouter } from 'safa-router'
-
-// Core router — no features, minimal bundle
-import { SafaRouter } from 'safa-router/core'
-
-// Individual feature modules — import directly when using custom setup
-import { init as initAccess } from 'safa-router/features/access'
-```
-
-Guards protect routes from unauthorized access. They run before the page loads and can redirect to another route.
-
-```js
-routes: {
-  '/dashboard': {
-    guard: ({ params, query, router }) => {
-      const token = localStorage.getItem('auth_token')
-      if (!token) return '/login'  // redirect to login
-      return true                  // allow access
-    },
-  },
-
-  '/login': {},
-}
-```
-
-- Return `true` to allow navigation
-- Return a string (URL path) to redirect
-- Return `false` to redirect to `/`
-
----
-
-### Middleware
-
-Middleware intercepts every navigation before it happens. Use it for global auth checks, analytics, logging, or redirects.
-
-```js
-router.use(async (ctx, next) => {
-  console.log(`Navigating to: ${ctx.path}`)
-
-  // Redirect if not authenticated
-  if (ctx.path.startsWith('/admin') && !isAdmin()) {
-    ctx.redirect = '/login'
-    return
-  }
-
-  // Cancel navigation
-  if (!featureEnabled) {
-    ctx.cancelled = true
-    return
-  }
-
-  return next()  // continue
-})
-```
-
-**Context object:**
-
-| Property | Type | Description |
-|----------|------|-------------|
-| `path` | `string` | Target URL path |
-| `method` | `string` | `'push'` or `'replace'` |
-| `query` | `object` | URL query parameters |
-| `redirect` | `string\|null` | Set to redirect |
-| `cancelled` | `boolean` | Set to `true` to cancel |
-
----
-
-### Layouts
-
-Layouts wrap page content. They compose parent → child, allowing deeply nested layouts.
-
-#### Global Layout
-
-```js
-const router = new SafaRouter({
-  layout: ({ children, params, router }) => `
-    <header>
-      <nav>
-        <a href="/" data-safa-link>Home</a>
-        <a href="/blog" data-safa-link>Blog</a>
-      </nav>
-    </header>
-    <main>${children}</main>
-  `,
-})
-```
-
-You can also use an HTML file as layout:
-
-```js
-const router = new SafaRouter({
-  layout: 'html-pages/_layout.html',
-})
-```
-
-Where `_layout.html` contains `{children}` as a placeholder:
-
-```html
-<!-- html-pages/_layout.html -->
-<header>
-  <nav>
-    <a href="/" data-safa-link>Home</a>
-    <a href="/blog" data-safa-link>Blog</a>
-  </nav>
-</header>
-<main>{children}</main>
-```
-
-#### Per-route Layouts
-
-```js
-routes: {
-  '/dashboard': {
-    layout: ({ children }) => `
-      <aside>Sidebar</aside>
-      <div class="content">${children}</div>
-    `,
-    children: {
-      settings: {},
-    },
-  },
-}
-```
-
-Layouts compose: `globalLayout > dashboardLayout > page`.
-
----
-
-### Dynamic Routes & Route Groups
-
-#### Dynamic Segments
-
-| Pattern | Example URL | params |
-|---------|-------------|--------|
-| `[slug]` | `/blog/my-post` | `{ slug: 'my-post' }` |
-| `[...path]` | `/docs/guide/intro` | `{ path: ['guide', 'intro'] }` |
-| `[[...path]]` | `/docs` | `{ path: [] }` |
-
-```js
-routes: {
-  '/blog': {
-    children: {
-      '[slug]': {
-        // page: auto-resolved from html-pages/blog/[slug].html
-      },
-    },
-  },
-}
-```
-
-#### Route Groups
-
-Use `(groupName)` to organise routes without affecting the URL:
-
-```js
-routes: {
-  '(main)': {
-    children: {
-      'profile': {
-        children: {
-          '[id]': {},
-        },
-      },
-    },
-  },
-}
-```
-
-This makes `/profile/123` available without `/main/profile/123`.
-
----
-
-### Error Handling
-
-#### ErrorManager (v1.3.0)
-
-The ErrorManager handles all HTTP status codes from 400 to 511. It provides per-status control, custom error pages, error grouping, and logging.
-
-```js
-const router = new SafaRouter({
-  errors: {
-    pageDir: 'html-pages/errors',   // custom error page directory
-    stackTraces: true,               // show stack traces (dev mode)
-  },
-})
-```
-
-**Error page resolution order:**
-
-1. `html-pages/errors/{statusCode}.html` (e.g. `403.html`, `404.html`)
-2. `html-pages/errors/{group}.html` (e.g. `4xx.html` for all 4xx codes)
-3. Built-in fallback
-
-**Per-status control:**
-
-```js
-// Disable 404 handling
-router.errorManager.setStatusEnabled(404, false)
-
-// Disable all 5xx errors
-router.errorManager.setGroupEnabled('server-error', false)
-
-// Enable/disable statuses by group
-router.errorManager.setGroupEnabled('client-error', true)
-```
-
-**Error groups:**
-
-| Group | Status Codes |
-|-------|-------------|
-| `client-error` | 400–499 |
-| `server-error` | 500–511 |
-| `redirect` | 300–399 |
-| `success` | 200–299 |
-| `informational` | 100–199 |
-
-**Custom error pages:**
-
-Create HTML files in your error page directory:
-
-```
-html-pages/errors/
-├── 403.html      ← shown for 403 Forbidden
-├── 404.html      ← shown for 404 Not Found
-├── 418.html      ← shown for 418 I'm a Teapot
-├── 500.html      ← shown for 500 Server Error
-├── 503.html      ← shown for 503 Service Unavailable
-└── [code].html   ← dynamic error page with {{ params.code }}
-```
-
-#### Custom 404 and Error Components
-
-```js
-const router = new SafaRouter({
-  notFound: ({ path, router, statusCode }) => `
-    <h1>${statusCode} — ${path} not found</h1>
-    <a href="/" data-safa-link>Back to home</a>
-  `,
-
-  error: ({ error, path, router, statusCode }) => `
-    <h1>${statusCode} — Error</h1>
-    <pre>${error.message}</pre>
-  `,
-})
-```
-
-#### AccessController (v1.3.0)
-
-Control access to routes with blocked (403) and ignored (silent 404) patterns. Supports `*` (single level) and `**` (recursive) wildcards.
-
-```js
-const router = new SafaRouter({
-  access: {
-    blocked: ['/admin', '/private/**'],
-    ignored: ['/hidden', '/deprecated/*'],
-  },
-})
-```
-
-##### Allowlist mode (v1.4.3)
-
-By default the controller runs in **blocklist** mode — everything is allowed except `blocked` paths. Switch to **allowlist** mode to block everything **except** the paths in `allowed`:
-
-```js
-const router = new SafaRouter({
-  access: {
-    mode: 'allowlist',                  // block everything by default
-    allowed: ['/login', '/public/**'],  // only these are accessible
-  },
-})
-```
-
-Runtime control:
-
-```js
-router.accessController.setMode('allowlist')       // switch to allowlist
-router.accessController.setMode('blocklist')        // switch back to blocklist
-router.accessController.allow('/sandbox')           // add to allowed
-router.accessController.unallow('/sandbox')         // remove from allowed
-router.accessController.getMode()                   // 'allowlist' | 'blocklist'
-```
-
-**Runtime control:**
-
-```js
-router.blockRoute('/api/temp')      // dynamically block a route
-router.unblockRoute('/api/temp')    // unblock it
-router.ignoreRoute('/old-page')     // dynamically ignore a route
-router.unignoreRoute('/old-page')   // unignore it
-
-// Check access
-router.accessController.isAccessible('/admin')   // false
-router.accessController.isAccessible('/about')    // true
-```
-
-**Events:**
-
-```js
-router.onAccessDenied(({ path, reason }) => {
-  console.warn(`Access denied: ${path} — ${reason}`)
-})
-```
-
-#### Maintenance Mode (v1.3.0)
-
-Toggle a 503 maintenance mode with allowed path bypasses.
-
-```js
-const router = new SafaRouter({
-  maintenanceMode: {
-    enabled: false,
-    allowedPaths: ['/login', '/assets/**'],
-  },
-})
-```
-
-**Runtime control:**
-
-```js
-router.setMaintenance(true)   // enable maintenance mode
-router.setMaintenance(false)  // disable
-router.isMaintenance()        // check status
-router.reload()               // re-render current page
-```
-
-**Event:**
-
-```js
-router.onMaintenance(({ path }) => {
-  console.info(`Maintenance blocked: ${path}`)
-})
-```
-
----
-
-### Events
-
-Subscribe to navigation lifecycle events:
-
-| Event | Payload | Description |
-|-------|---------|-------------|
-| `beforenavigate` | `{ path, method }` | Before navigation starts |
-| `beforerender` | `{ pathname }` | Before page render |
-| `afterrender` | `{ pathname }` | After render completes |
-| `routechange` | `{ pathname, params, query }` | Route changed |
-| `loading` | `{ path, loading }` | Loading state changed |
-| `notfound` | `{ path, statusCode }` | Route not found |
-| `error` | `{ path, error, statusCode }` | Navigation error |
-| `accessdenied` | `{ path, reason }` | AccessController blocked |
-| `maintenance` | `{ path }` | Maintenance mode blocked |
-| `ready` | `{ pathname }` | Router initialized |
-| `destroy` | `{}` | Router destroyed |
-| `interceptoropen` | `{ path }` | Interceptor overlay opened (v2.0.0) |
-| `interceptorclose` | `{ path }` | Interceptor overlay closed (v2.0.0) |
-
-```js
-router.on('routechange', ({ pathname, params, query }) => {
-  console.log('Navigated to', pathname)
-})
-
-router.on('error', ({ path, error, statusCode }) => {
-  console.error(`Error ${statusCode} at ${path}:`, error.message)
-})
-
-router.afterEach(({ pathname }) => {
-  // Fires after every successful navigation
-})
-
-router.onError(({ path, error, statusCode }) => {
-  // Fires on navigation error
-})
-
-router.onMaintenance(({ path }) => {
-  // Fires when maintenance mode blocks a route
-})
-
-router.onAccessDenied(({ path, reason }) => {
-  // Fires when AccessController blocks a route
-})
-```
-
----
-
-### Template Resolution (v1.4.0)
-
-HTML files and components support template placeholders that are automatically resolved:
-
-| Placeholder | Source | Example |
-|-------------|--------|---------|
-| `{{ path }}` | Current URL path | `/blog/my-post` |
-| `{{ params.x }}` | Route parameters | `{{ params.slug }}` → `my-post` |
-| `{{ query.x }}` | URL query parameters | `{{ query.page }}` → `2` |
-| `{{ data.x }}` | Route data loader result | `{{ data.server }}` → `safa-router` |
-
-```html
-<!-- html-pages/blog/[slug].html -->
-<h1>Post: {{ params.slug }}</h1>
-<p>Path: {{ path }}</p>
-```
-
-```html
-<!-- html-pages/contact.html -->
-<h2>Query Params</h2>
-<p>Subject: {{ query.subject }}</p>
-<p>Language: {{ query.lang }}</p>
-```
-
-```html
-<!-- html-pages/profile/[id].html -->
-<h1>User Profile</h1>
-<p>ID: {{ params.id }}</p>
-```
-
-Template resolution works in:
-- HTML files loaded from `pageDir`
-- Smart Component output
-- Layout HTML files
-
----
-
-### Per-route Transitions (v1.3.0)
-
-Each route can define custom CSS transition effects:
-
-```js
-routes: {
-  '/transition': {
-    meta: {
-      transition: {
-        duration: 500,
-        enterClass: 'fade-in',
-        enterActiveClass: 'fade-in-active',
-        exitClass: 'fade-out',
-        exitActiveClass: 'fade-out-active',
-      },
-    },
-  },
-}
-```
-
-Transitions are applied when navigating to and from the route.
-
-### Real-time Hot Reload (v1.4.3)
-
-SafaRouter supports live updates — edit your HTML files and the page updates without a browser refresh.
-
-**Client-side config:**
-
-```js
-const router = new SafaRouter({
-  realtime: {
-    enabled: true,          // enable real-time updates
-    mode: 'sse',            // 'sse' (default), 'polling', or 'websocket'
-    url: '/__realtime',     // SSE/WebSocket endpoint
-    interval: 2000,         // polling interval (ms) — only used when mode='polling'
-    onChange: null,         // optional custom handler(data, router)
-  },
-})
-```
-
-**How it works:**
-1. The client connects to the realtime endpoint via `EventSource` (SSE), polling, or WebSocket
-2. The dev server watches your HTML/component files for changes
-3. When a file changes, the server sends an event to the client
-4. The client clears its route cache and re-fetches the current page content (no full browser refresh)
-
-**Custom handler example:**
-
-```js
-realtime: {
-  enabled: true,
-  onChange: (data, router) => {
-    console.log(`File changed: ${data.path}`)
-    if (data.path.endsWith('.css')) {
-      // reload CSS without re-rendering
-      document.querySelectorAll('link[rel=stylesheet]').forEach(el => {
-        el.href = el.href.replace(/\?.*/, '') + '?' + Date.now()
-      })
-    }
-  },
-}
-```
-
-The built-in dev server (`SafaDevServer`) enables this automatically — see [DevServer](#safadevserver-v144) below.
-
----
-
-### SafaDevServer (v1.4.4)
-
-The `SafaDevServer` class provides a production-grade development server with SPA fallback, file watching, and SSE real-time updates — all in one import.
-
-```js
-import { SafaDevServer } from 'safa-router'
-
-const server = new SafaDevServer({
-  port: 3000,
-  root: './test-app',          // directory to serve
-  basePath: '/test-app',        // app base path (matches router.basePath)
-  watch: true,                  // enable file watching + SSE
-  srcDirs: ['./src'],           // serve source JS files (for bare import mapping)
-  watchDirs: ['./test-app/html-pages', './test-app/components'],
-})
-
-server.start()
-// Server: http://localhost:3000/test-app/
-```
-
-**Why SafaDevServer?**
-- **SPA fallback** — refreshing on any route (e.g. `/about`) correctly serves `index.html`
-- **File watching** — HTML/component changes trigger SSE events for real-time page updates
-- **No bundler needed** — import your source files directly; the server serves them with correct MIME types
-- **Zero-config routing** — all paths under `basePath` fall back to `index.html` for the SPA
-
-**Minimal example:**
-
-```js
-import { SafaDevServer } from 'safa-router'
-
-new SafaDevServer({ root: './dist' }).start()
-```
-
-Stop the server:
-```js
-server.stop()
-```
-
-### Integration Examples
-
-SafaRouter works with any framework — here are minimal integration patterns.
-
-#### React
-
-```jsx
-import { useEffect, useRef } from 'react'
-import { SafaRouter } from 'safa-router'
-
-export default function App() {
-  const appRef = useRef(null)
-  useEffect(() => {
-    const router = new SafaRouter({
-      target: appRef.current,
-      pageDir: 'html-pages',
-      routes: { '/': {}, '/about': {} },
-    })
-    router.start()
-    return () => router.destroy()
-  }, [])
-  return <div ref={appRef} />
-}
-```
-
-#### Vue
-
-```vue
-<template>
-  <div ref="appRef"></div>
-</template>
-
-<script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
-import { SafaRouter } from 'safa-router'
-
-const appRef = ref(null)
-let router
-
-onMounted(() => {
-  router = new SafaRouter({
-    target: appRef.value,
-    pageDir: 'html-pages',
-    routes: { '/': {}, '/about': {} },
-  })
-  router.start()
-})
-
-onUnmounted(() => router?.destroy())
-</script>
-```
-
-#### Svelte
-
-```svelte
-<script>
-  import { onMount, onDestroy } from 'svelte'
-  import { SafaRouter } from 'safa-router'
-
-  let appEl
-  let router
-
-  onMount(() => {
-    router = new SafaRouter({
-      target: appEl,
-      pageDir: 'html-pages',
-      routes: { '/': {}, '/about': {} },
-    })
-    router.start()
-  })
-
-  onDestroy(() => router?.destroy())
-</script>
-
-<div bind:this={appEl} />
-```
-
-#### Vanilla JS
-
-```html
-<div id="app"></div>
-<script type="module">
 import { SafaRouter } from 'safa-router'
 
 new SafaRouter({
@@ -1344,463 +72,153 @@ new SafaRouter({
   pageDir: 'html-pages',
   routes: { '/': {}, '/about': {} },
 }).start()
-</script>
 ```
+
+**3. Write `html-pages/index.html`**
+```html
+<h1>Home</h1>
+<a href="/about" data-safa-link>About</a>
+```
+
+**4. Open in browser** (or `npx serve .`)
+
+That's it. No build step, no bundler, no framework.
 
 ---
 
-### Architecture
+## Features
 
-SafaRouter is built around an **HTML-first routing** philosophy. Instead of defining pages as JavaScript components, you write plain `.html` files in a `pageDir` directory — each file becomes a route automatically. The router maps URL paths to these files, resolves template placeholders (`{{ params }}`, `{{ query }}`, `{{ data }}`), and renders them into a target container. This approach separates content from logic and works without any build step or bundler.
-
-At its core, the router uses a **tree-based route resolution** system. Routes are defined as a nested object tree where each node can have children, layouts, guards, loaders, and metadata. When a URL is navigated to, the router walks the tree — matching static segments, dynamic `[params]`, catch-all `[...rest]`, and optional segments — in O(n) time where *n* is the path segment count. Route groups `(group)` provide logical organization without affecting the URL.
-
-The **component system** supports page components, layout components (which compose parent → child), and smart components (like headers/footers that render on every page). All components are simple functions returning HTML strings, making them framework-agnostic. A plugin system allows extending the router with custom functionality — plugins hook into the same lifecycle events as middleware and can modify navigation behavior, add new features, or integrate with external libraries.
-
-SafaRouter is **SSR-compatible** — it runs in environments without a DOM (Node.js, server-side rendering pipelines) and produces HTML strings for the matched route. The same route tree, middleware chain, and data loading infrastructure work on both client and server, enabling isomorphic routing with minimal configuration.
-
-### Performance
-
-SafaRouter delivers all of this in **<5 KB gzipped** with **zero runtime dependencies**. Route matching is O(n) against path segments (not total routes), and an LRU cache avoids redundant fetches for loaded pages. No JSX, template compilation, or virtual DOM overhead — just plain HTML and vanilla JS.
-
----
-
-### API Reference
-
-#### `new SafaRouter(options)`
-
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `target` | `string\|Element` | `'#app'` | CSS selector or element to render into |
-| `pageDir` | `string` | `undefined` | Folder with `.html` files for auto-routing |
-| `layout` | `Function\|string` | `null` | Global layout (function or HTML file path) |
-| `routes` | `object` | `{}` | Explicit route definitions |
-| `components` | `object` | `{}` | Named components rendered on every page (v1.4.0) |
-| `notFound` | `Function\|string` | `null` | Custom 404 page component |
-| `error` | `Function\|string` | `null` | Custom error page component |
-| `basePath` | `string` | `''` | Base path when app is served from subdirectory |
-| `useHash` | `boolean` | `false` | Use `#hash` routing instead of History API |
-| `realtime` | `object` | `{ enabled: false }` | Real-time update config (SSE/polling/WebSocket) — v1.4.3 |
-| `scrollToTop` | `boolean` | `true` | Scroll to top on navigation |
-| `cacheRoutes` | `boolean` | `true` | Cache loaded components |
-| `maxCacheSize` | `number` | `50` | Maximum cached pages |
-| `navigationTimeout` | `number` | `0` | Navigation timeout in ms (0 = no timeout) |
-| `titleTemplate` | `string` | `null` | Document title template (e.g. `'%s — My App'`) |
-| `transitionDuration` | `number` | `0` | Default transition duration in ms |
-| `prefetchStrategy` | `string` | `'none'` | Prefetch strategy: `'none'`, `'visible'`, `'all'` |
-| `errors.pageDir` | `string` | `undefined` | Custom error page directory (v1.3.0) |
-| `errors.stackTraces` | `boolean` | `true` | Show stack traces in error pages (v1.3.0) |
-| `access.blocked` | `string[]` | `[]` | Blocked route patterns (403) (v1.3.0) |
-| `access.ignored` | `string[]` | `[]` | Ignored route patterns (silent 404) (v1.3.0) |
-| `access.allowed` | `string[]` | `[]` | Allowed patterns in allowlist mode (v1.4.3) |
-| `access.mode` | `string` | `'blocklist'` | `'blocklist'` or `'allowlist'` (v1.4.3) |
-| `maintenanceMode.enabled` | `boolean` | `false` | Enable maintenance mode (v1.3.0) |
-| `maintenanceMode.allowedPaths` | `string[]` | `[]` | Paths that bypass maintenance (v1.3.0) |
-| `errorLogging.enabled` | `boolean` | `false` | Enable error logging (v1.3.0) |
-| `loaderCache` | `boolean` | `true` | Enable SWR cache for loaders (v2.0.0) |
-| `loaderStaleTime` | `number` | `30000` | Time in ms before cache is stale (v2.0.0) |
-| `loaderCacheMaxSize` | `number` | `100` | Max SWR cache entries (v2.0.0) |
-
-#### Router Methods
-
-| Method | Description |
-|--------|-------------|
-| `router.start(target?)` | Initialize and start the router |
-| `router.push(url, state?)` | Navigate to URL (new history entry) |
-| `router.replace(url, state?)` | Navigate (replace current history entry) |
-| `router.back()` | Go back |
-| `router.forward()` | Go forward |
-| `router.reload()` | Re-render current route |
-| `router.use(fn)` | Add middleware function |
-| `router.on(event, fn)` | Subscribe to event |
-| `router.off(event, fn)` | Unsubscribe from event |
-| `router.afterEach(fn)` | Subscribe to successful navigation |
-| `router.onError(fn)` | Subscribe to error events |
-| `router.onMaintenance(fn)` | Subscribe to maintenance events (v1.3.0) |
-| `router.onAccessDenied(fn)` | Subscribe to access denied events (v1.3.0) |
-| `router.createLink(config)` | Create a Link instance |
-| `router.prefetch(path)` | Preload a page |
-| `router.clearCache()` | Clear component cache |
-| `router.getRoute(path)` | Inspect a route definition |
-| `router.destroy()` | Clean up and stop |
-| `router.dismissInterceptor()` | Close intercept overlay and go back (v2.0.0) |
-
-**v1.3.0 methods:**
-
-| Method | Description |
-|--------|-------------|
-| `router.blockRoute(path)` | Dynamically block a route (403) |
-| `router.unblockRoute(path)` | Remove a dynamic block |
-| `router.ignoreRoute(path)` | Dynamically ignore a route (silent 404) |
-| `router.unignoreRoute(path)` | Remove a dynamic ignore |
-| `router.setMaintenance(bool)` | Toggle maintenance mode |
-| `router.isMaintenance()` | Check maintenance mode status |
-| `router.retry(path, options?)` | Retry navigation with retry count |
-
-#### Router Properties
-
-| Property | Type | Description |
-|----------|------|-------------|
-| `router.pathname` | `string` | Current URL path |
-| `router.params` | `object` | Dynamic route parameters |
-| `router.query` | `object` | URL query parameters |
-| `router.loading` | `boolean` | Navigation in progress |
-| `router.matchedRoute` | `object\|null` | Current matched route info |
-| `router.currentRoute` | `object\|null` | Current route data |
-| `router.errorManager` | `ErrorManager` | ErrorManager instance (v1.3.0) |
-| `router.accessController` | `AccessController` | AccessController instance (v1.3.0) |
-
-#### Route Definition
-
-```js
-{
-  page: Function|string,       // Component or HTML file path
-  layout: Function|string,     // Layout wrapping children
-  children: { ... },           // Nested route definitions
-  loading: Function|string,    // Loading component
-  loader: Function,            // Async data loader (v1.3.0)
-  guard: Function,             // Access guard (v1.3.0)
-  error: Function|string,      // Per-route error component
-  notFound: Function|string,   // Per-route 404 component
-  meta: { title, transition }, // Route metadata
-  slots: { ... },              // Parallel route slots (v2.0.0)
-  intercept: boolean|object,   // Intercepting route config (v2.0.0)
-}
-```
-
-**Special segments:**
-
-| Pattern | Example | Description |
-|---------|---------|-------------|
-| `[param]` | `[slug]` | Matches one path segment |
-| `[...param]` | `[...path]` | Matches one or more segments |
-| `[[...param]]` | `[[...tags]]` | Matches zero or more segments |
-| `(group)` | `(auth)` | Route group — doesn't affect URL |
-
-#### Component Signatures
-
-Each component receives a context object:
-
-```js
-// Page component
-({ params, query, router, data }) => HTML string
-
-// Layout component
-({ children, params, query, router, data }) => HTML string
-
-// Loading component
-({ path, router }) => HTML string
-
-// Error component
-({ error, path, router, statusCode }) => HTML string
-
-// Not-found component
-({ path, router, statusCode }) => HTML string
-
-// Smart component (v1.4.0)
-({ path, router, params, query }) => HTML string
-
-// Route guard (v1.3.0)
-({ params, query, router }) => true | false | redirectPath
-
-// Route loader (v1.3.0)
-({ params, query, router }) => Promise<data>
-```
-
-All renderable components must return an **HTML string**.
+| Feature | Description | Since |
+|---------|-------------|-------|
+| **HTML-first routing** | Plain `.html` files = routes automatically | v1.0 |
+| **Nested layouts** | Layouts wrap pages, compose parent → child | v1.0 |
+| **Dynamic routes** | `[slug]`, `[...catchAll]`, `[[...optional]]` | v1.0 |
+| **Route groups** | `(group)` for organization without URL changes | v1.0 |
+| **Middleware** | Intercept every navigation (auth, redirects, logging) | v1.0 |
+| **Event system** | Subscribe to lifecycle events | v1.0 |
+| **Route guards** | Per-route guard functions with redirect support | v1.3 |
+| **Data loaders** | Async data fetching before render | v1.3 |
+| **SWR cache** | Stale-while-revalidate caching for loaders | v2.0 |
+| **Error manager** | 400–511 HTTP error handling with custom pages | v1.3 |
+| **Access control** | Blocklist/allowlist with glob patterns | v1.3 |
+| **Maintenance mode** | 503 mode with bypass paths | v1.3 |
+| **Per-route transitions** | CSS transition effects per route | v1.3 |
+| **Smart components** | Persistent header/footer on every page | v1.4 |
+| **Template resolution** | `{{ params.x }}`, `{{ data.x }}` in HTML | v1.4 |
+| **Real-time hot reload** | SSE/polling/WebSocket live updates | v1.4 |
+| **DevServer** | Zero-config dev server with SPA fallback | v1.4 |
+| **Parallel routes (slots)** | Multiple independent sections per page | v2.0 |
+| **Intercepting routes** | Routes as overlays on current page | v2.0 |
+| **Vite plugin** | Auto-inject only needed feature imports | v2.0 |
+| **Type-safe routes** | Full TypeScript inference | v2.0 |
+| **Core router** | Minimal bundle without optional features | v2.0 |
 
 ---
 
-### Complete Demo Configuration
-
-Here is a complete example showing all features together:
-
-```js
-import { SafaRouter } from 'safa-router'
-import headerComponent from './components/Header.js'
-import footerComponent from './components/Footer.js'
-
-const router = new SafaRouter({
-  target: '#app',
-  basePath: '/my-app',
-  pageDir: 'html-pages',
-  layout: 'html-pages/_layout.html',
-
-  components: {
-    header: headerComponent,
-    footer: footerComponent,
-  },
-
-  errors: {
-    pageDir: 'html-pages/errors',
-    stackTraces: true,
-  },
-
-  access: {
-    blocked: ['/admin', '/private/**'],
-    ignored: ['/hidden', '/deprecated/*'],
-  },
-
-  maintenanceMode: {
-    enabled: false,
-    allowedPaths: ['/login', '/assets/**'],
-  },
-
-  errorLogging: {
-    enabled: true,
-  },
-
-  routes: {
-    '/': {},
-
-    '/blog': {
-      children: {
-        '[slug]': {},
-      },
-    },
-
-    '/dashboard': {
-      layout: dashboardLayout,
-      children: {
-        settings: {},
-      },
-    },
-
-    '/slow': {
-      loading: () => '<div class="spinner">Loading…</div>',
-      loader: async () => {
-        await new Promise(r => setTimeout(r, 1500))
-      },
-    },
-
-    '/loader': {
-      loader: async () => {
-        const data = await fetch('/api/data')
-        return data.json()
-      },
-    },
-
-    '/guard': {
-      guard: ({ router }) => {
-        const authed = localStorage.getItem('auth') === 'true'
-        return authed || '/login'
-      },
-    },
-
-    '/transition': {
-      meta: {
-        transition: {
-          duration: 500,
-          enterClass: 'fade-in',
-          enterActiveClass: 'fade-in-active',
-          exitClass: 'fade-out',
-          exitActiveClass: 'fade-out-active',
-        },
-      },
-    },
-  },
-})
-
-router.afterEach(({ pathname }) => {
-  console.log(`Navigated to: ${pathname}`)
-})
-
-router.onError(({ path, error, statusCode }) => {
-  console.warn(`Error at ${path}:`, error.message)
-})
-
-router.start()
-```
-
----
-
-### Running the Demo
-
-```bash
-cd safa-router
-node dev-server.js
-```
-
-Then open `http://localhost:3000/test-app/`
-
-The demo showcases:
-- HTML pages with template resolution
-- Nested layouts
-- Dynamic routes (`[slug]`)
-- Route groups
-- Route data loaders
-- Route guards
-- AccessController (blocked/ignored routes)
-- ErrorManager with custom error pages
-- Maintenance mode
-- Per-route transitions
-- Smart Header/Footer components (v1.4.0)
-- Sandbox for interactive testing
-- Sitemap
-
----
-
-### Migration Guide
-
-#### From v1.5.x to v2.0.0
-
-**What changed:**
-- New optional features are tree-shakeable — unused features don't add to bundle
-- SWR caching for loaders is enabled by default (`loaderCache: true`)
-- New `safa-router/vite` plugin for automatic feature detection
-- New `safa-router/core` for minimal router without optional features
-- New `safa-router/typed` for TypeScript-safe route definitions
-- Routes can now define `slots` for parallel content and `intercept` for overlay navigation
-
-**Migration steps:**
-
-1. **No breaking changes** — v2.0.0 is fully backward-compatible with v1.5.x
-2. If you use Vite, add the plugin to your `vite.config.js`:
-   ```js
-   import { safaRouter } from 'safa-router/vite'
-   export default { plugins: [safaRouter()] }
-   ```
-3. For TypeScript projects, optionally migrate to typed routes with `safa-router/typed`
-4. For minimal bundles, consider switching to `safa-router/core` if you don't need optional features
-
-**Before (v1.5.x):**
-```js
-import { SafaRouter } from 'safa-router'
-```
-
-**After (v2.0.0) — same API, no changes needed:**
-```js
-import { SafaRouter } from 'safa-router'
-// Or for minimal bundle:
-import { SafaRouter } from 'safa-router/core'
-```
-
-#### From v1.4.x to v1.5.0
-
-See the v1.5.0 CHANGELOG for migration details.
-
-#### From v1.3.x to v1.4.0
-
-**What changed:**
-- Routes without `page` auto-resolve from `pageDir`
-- New `components` config option for persistent UI
-- New `_resolveTemplate()` method for `{{ params }}` / `{{ query }}` / `{{ data }}` in HTML files
-- All page content should be in HTML files (JS page files are deprecated)
-
-**Migration steps:**
-
-1. Move static page content from JS files to HTML files in `pageDir`
-2. Remove `page` from routes that use auto-resolved HTML files
-3. Optionally extract persistent UI (header, footer) into `components`
-4. Add `data-safa-component` target elements to `index.html`
-
-**Before (v1.3.x):**
-```js
-import homePage from './pages/home.js'
-import aboutPage from './pages/about.js'
-
-const router = new SafaRouter({
-  pageDir: 'html-pages',
-  routes: {
-    '/': { page: homePage },
-    '/about': { page: aboutPage },
-  },
-})
-```
-
-**After (v1.4.0):**
-```js
-const router = new SafaRouter({
-  pageDir: 'html-pages',
-  routes: {
-    '/': {},
-    '/about': {},
-  },
-})
-```
-
-#### From v1.2.x to v1.3.0
-
-See the v1.3.0 CHANGELOG for migration details.
-
-### Comparison with Other Routers
+## Comparison
 
 | Feature | SafaRouter | React Router | Vue Router | TanStack Router | page.js |
 |---------|-----------|-------------|-----------|----------------|---------|
 | Framework | Any | React only | Vue only | Any (React-first) | Any |
-| Nested Layouts | ✅ | ✅ | ✅ | ✅ | ❌ |
-| Dynamic Routes | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Zero dependencies | ✅ | ❌ | ❌ | ❌ | ✅ |
+| TypeScript | ✅ Full | ✅ | ✅ | ✅ Full | ❌ |
+| Nested layouts | ✅ | ✅ | ✅ | ✅ | ❌ |
+| Dynamic routes | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Middleware | ✅ | ❌ | ❌ | ✅ | ❌ |
-| Access Control | ✅ | ❌ | ❌ | ❌ | ❌ |
-| Maintenance Mode | ✅ | ❌ | ❌ | ❌ | ❌ |
-| Error Manager | ✅ | ❌ | ❌ | ❌ | ❌ |
-| Data Loaders | ✅ | ✅ | ✅ | ✅ | ❌ |
-| Type-Safe Routes | ✅ Full | Partial | Partial | ✅ Full | ❌ |
-| Real-time Hot Reload | ✅ | ❌ | ❌ | ❌ | ❌ |
-| Smart Components | ✅ | ❌ | ❌ | ❌ | ❌ |
-| Zero Dependencies | ✅ | ❌ | ❌ | ❌ | ✅ |
+| Route guards | ✅ | ✅ | ✅ | ✅ | ❌ |
+| Access control | ✅ | ❌ | ❌ | ❌ | ❌ |
+| Maintenance mode | ✅ | ❌ | ❌ | ❌ | ❌ |
+| Error manager | ✅ | ❌ | ❌ | ❌ | ❌ |
+| Data loaders | ✅ | ✅ | ✅ | ✅ | ❌ |
+| SWR caching | ✅ | ❌ | ❌ | ✅ | ❌ |
+| SSR support | ✅ | ✅ | ✅ | ✅ | ❌ |
+| Real-time hot reload | ✅ | ❌ | ❌ | ❌ | ❌ |
+| Smart components | ✅ | ❌ | ❌ | ❌ | ❌ |
+| Parallel routes | ✅ | ❌ | ❌ | ✅ | ❌ |
+| Intercepting routes | ✅ | ❌ | ❌ | ❌ | ❌ |
 | Size (approx) | ~5 KB | ~14 KB | ~8 KB | ~15 KB | ~2 KB |
-
-### Troubleshooting
-
-**Links don't work on 404/error pages**
-SafaRouter uses a global `document` click handler — links should work everywhere. If you encounter issues, make sure you are using v1.4.4 or later.
-
-**Page refresh returns 404**
-Use the `SafaDevServer` class — it has built-in SPA fallback. Never use a plain static file server for SPA development.
-
-**Import fails: "Failed to resolve module specifier"**
-If using the bare specifier `'safa-router'` in a browser without a bundler, add an importmap:
-```html
-<script type="importmap">
-{
-  "imports": {
-    "safa-router": "/node_modules/safa-router/src/index.js"
-  }
-}
-</script>
-```
-
-Or install via npm and use a bundler (Vite, webpack, etc.).
-
-**Components not rendering**
-Ensure you have `<div data-safa-component="componentName">` in your HTML and the matching key in the `components` config object.
-
-### FAQ
-
-**Q: Does SafaRouter work with React/Vue/Svelte?**
-
-A: Yes. SafaRouter is framework-agnostic. See the [Integration Examples](#integration-examples) section.
-
-**Q: Do I need a bundler?**
-
-A: No. SafaRouter runs directly in the browser via ESM imports. A bundler is optional.
-
-**Q: Can I use it with TypeScript?**
-
-A: Yes. Type definitions are included (`safa-router.d.ts`).
-
-**Q: How does the real-time hot reload work?**
-
-A: The dev server watches HTML files and sends SSE events to the browser. The router re-fetches only the current page content — no full browser refresh.
-
-**Q: Is SafaRouter production-ready?**
-
-A: SafaRouter is used in development and production. It has 267+ tests and zero runtime dependencies. As with any tool, evaluate it against your project's requirements.
-
-**Q: How is this different from React Router or Vue Router?**
-
-A: SafaRouter is framework-agnostic and supports nested layouts, dynamic routes, middleware, error management, access control, and real-time updates — all without requiring React, Vue, or a bundler.
-
-**Q: Does it support hash routing?**
-
-A: Yes. Set `useHash: true` in the config.
 
 ---
 
-### License
+## Examples
 
-[MIT](LICENSE) &copy; 2026 SafaRouter
+Ready-to-run examples for every setup:
+
+| Example | Stack | Try it |
+|---------|-------|--------|
+| **Vanilla** | Plain HTML + JS | `cd examples/vanilla && npx serve .` |
+| **Vite** | Vite + safa-router plugin | `cd examples/vite && npm install && npm run dev` |
+| **React** | React 19 + Vite | `cd examples/react && npm install && npm run dev` |
+| **Vue** | Vue 3 + Vite | `cd examples/vue && npm install && npm run dev` |
+| **Svelte** | Svelte 5 + Vite | `cd examples/svelte && npm install && npm run dev` |
+| **Webpack** | Webpack 5 | `cd examples/webpack && npm install && npm run dev` |
+
+---
+
+## Documentation
+
+Full documentation site: [**SafaRouter Docs**](https://karan-safaie-qadi.github.io/SafaRouter/)
+
+- [Getting Started](https://karan-safaie-qadi.github.io/SafaRouter/getting-started.html)
+- [Routing](https://karan-safaie-qadi.github.io/SafaRouter/routing.html)
+- [Dynamic Routes](https://karan-safaie-qadi.github.io/SafaRouter/dynamic-routes.html)
+- [Nested Routes](https://karan-safaie-qadi.github.io/SafaRouter/nested-routes.html)
+- [Middleware](https://karan-safaie-qadi.github.io/SafaRouter/middleware.html)
+- [Route Guards](https://karan-safaie-qadi.github.io/SafaRouter/route-guards.html)
+- [Lazy Loading](https://karan-safaie-qadi.github.io/SafaRouter/lazy-loading.html)
+- [API Reference](https://karan-safaie-qadi.github.io/SafaRouter/api-reference.html)
+- [Migration Guide](https://karan-safaie-qadi.github.io/SafaRouter/migration-guide.html)
+
+Or serve locally:
+
+```bash
+npx serve docs-site
+```
+
+---
+
+## Benchmark
+
+| Metric | Value |
+|--------|-------|
+| Bundle size (full router) | ~5 KB gzipped |
+| Bundle size (core router) | ~3 KB gzipped |
+| Route resolution | O(n) — n = path segment count |
+| Route matching | < 0.01 ms per route |
+| Initial render | < 1 ms (DOM ready) |
+| Page transition | Configurable (default 0 ms) |
+| SWR cache | Concurrent dedup, max 100 entries |
+| LRU page cache | Up to 50 cached pages |
+| Startup (with routes) | < 10 ms |
+| Dependencies | 0 |
+| Test coverage | 267 tests across 22 files |
+
+---
+
+## Roadmap
+
+| Version | Focus | Status |
+|---------|-------|--------|
+| **v2.0** | SWR caching, parallel routes, intercepting routes, Vite plugin, TypeScript types | ✅ Released |
+| **v2.1** | DevTools browser extension, docs-site polish, improved TypeScript inference | 🔜 Planned |
+| **v2.2** | Link prefetching, route animations API, code-splitting helpers | 📋 Planned |
+| **v3.0** | Plugin ecosystem, CLI scaffolding, full TanStack Router parity | 🎯 Future |
+
+---
+
+## Migration
+
+Upgrade guides:
+
+- [v1.5 → v2.0](https://karan-safaie-qadi.github.io/SafaRouter/migration-guide.html#from-v15x-to-v200)
+- [v1.4 → v1.5](https://karan-safaie-qadi.github.io/SafaRouter/migration-guide.html#from-v14x-to-v150)
+- [v1.3 → v1.4](https://karan-safaie-qadi.github.io/SafaRouter/migration-guide.html#from-v13x-to-v140)
+
+---
+
+## License
+
+[MIT](LICENSE) &copy; 2026 Karan Safaie Qadi
 
 ---
 
@@ -1808,376 +226,15 @@ A: Yes. Set `useHash: true` in the config.
 
 ## فارسی
 
-**صفا روتر** الگوی مسیریابی اپ روتِر نکست‌جی‌اس — لایه‌بندی‌های تو در تو، مسیرهای پویا، میان‌افزار، مدیریت خطا، کنترل دسترسی و کامپوننت‌های هوشمند — را به هر پروژه فرانت‌اندی می‌آورد.
-
-با React، Vue، Svelte یا جاواسکریپت خالص کار می‌کند. وابستگی صفر، زیر ۵ کیلوبایت.
-
-### فهرست مطالب
-
-- [نصب](#نصب)
-- [شروع سریع (فقط HTML)](#شروع-سریع-فقط-html)
-- [کامپوننت‌های هوشمند (v1.4.0)](#کامپوننت‌های-هوشمند-v140)
-- [مدیریت خطا](#مدیریت-خطا)
-- [مخفی‌سازی کامپوننت در مسیر خاص (v1.4.3)](#مخفی‌سازی-کامپوننت-در-مسیر-خاص-v143)
-- [به‌روزرسانی لحظه‌ای Real-time (v1.4.3)](#به‌روزرسانی-لحظه‌ای-real-time-v143)
-- [سرور توسعه SafaDevServer (v1.4.4)](#سرور-توسعه-safadevserver-v144)
-- [کش SWR لودر (v2.0.0)](#کش-swr-لودر-v200)
-- [مسیرهای موازی / اسلات‌ها (v2.0.0)](#مسیرهای-موازی--اسلات‌ها-v200)
-- [مسیرهای میان‌گیر (Intercepting Routes) (v2.0.0)](#مسیرهای-میان‌گیر-intercepting-routes-v200)
-- [پلاگین Vite (v2.0.0)](#پلاگین-vite-v200)
-- [روتر هسته (Core Router) (v2.0.0)](#روتر-هسته-core-router-v200)
-- [مسیرهای تایپ‌سیف (v2.0.0)](#مسیرهای-تایپ‌سیف-v200)
-- [معماری ماژولار (v2.0.0)](#معماری-ماژولار-v200)
-- [مثال‌های یکپارچه‌سازی](#مثال‌های-یکپارچه‌سازی)
-- [راهنمای کامل API](#راهنمای-کامل-api)
-- [جدول مقایسه](#جدول-مقایسه)
-- [عیب‌یابی](#عیب‌یابی)
-- [پرسش‌های متداول](#پرسش‌های-متداول)
-- [اجرای دمو](#اجرای-دمو)
-- [مجوز](#مجوز)
-
----
-
-### نصب
+**صفا روتر** الگوی مسیریابی App Router نکست‌جی‌اس را به هر پروژه فرانت‌اندی می‌آورد — بدون نیاز به React، Next.js یا باندلر.
 
 ```bash
 npm install safa-router
 ```
 
-یا با استفاده از ابزار CLI:
-
-```bash
-npx create-safa-app
-```
-
----
-
-### شروع سریع (فقط HTML)
-
-```
-my-project/
-├── html-pages/
-│   ├── index.html          ← /
-│   ├── about.html          ← /about
-│   └── blog/
-│       └── [slug].html     ← /blog/:slug
-├── index.html
-└── main.js
-```
+### شروع سریع (۳۰ ثانیه)
 
 ```js
-import { SafaRouter } from 'safa-router'
-
-new SafaRouter({
-  target: '#app',
-  pageDir: 'html-pages',
-}).start()
-```
-
-#### لینک‌ها
-
-از `data-safa-link` استفاده کنید:
-
-```html
-<a href="/about" data-safa-link>درباره</a>
-```
-
-#### متغیرهای قالب
-
-فایل‌های HTML از متغیرهای قالب پشتیبانی می‌کنند:
-
-```html
-<!-- html-pages/blog/[slug].html -->
-<h1>مطلب: {{ params.slug }}</h1>
-```
-
----
-
-### کامپوننت‌های هوشمند (v1.4.0)
-
-کامپوننت‌ها المان‌هایی هستند که در هر صفحه به صورت خودکار رندر می‌شوند:
-
-```js
-// components/Header.js
-export default function headerComponent({ path }) {
-  return `
-    <header>
-      <nav>
-        <a href="/" data-safa-link>خانه</a>
-        <a href="/about" data-safa-link>درباره</a>
-      </nav>
-    </header>
-  `
-}
-```
-
-ثبت در کانفیگ:
-
-```js
-import headerComponent from './components/Header.js'
-
-const router = new SafaRouter({
-  components: {
-    header: headerComponent,
-  },
-})
-```
-
-محل رندر در HTML:
-
-```html
-<div data-safa-component="header"></div>
-<main id="app"></main>
-```
-
----
-
-### مدیریت خطا (v1.3.0)
-
-مدیریت تمام کدهای وضعیت HTTP از ۴۰۰ تا ۵۱۱ با صفحات خطای سفارشی:
-
-```js
-const router = new SafaRouter({
-  errors: {
-    pageDir: 'html-pages/errors',
-  },
-})
-```
-
-ساختار پوشه صفحات خطا:
-
-```
-html-pages/errors/
-├── 403.html
-├── 404.html
-├── 500.html
-└── 503.html
-```
-
-#### کنترل دسترسی (v1.3.0)
-
-مسیرهای مسدود شده (۴۰۳) و نادیده گرفته شده (۴۰۴):
-
-```js
-const router = new SafaRouter({
-  access: {
-    blocked: ['/admin', '/private/**'],
-    ignored: ['/hidden', '/deprecated/*'],
-  },
-})
-```
-
-#### حالت تعمیرات (v1.3.0)
-
-```js
-router.setMaintenance(true)   // فعال کردن حالت تعمیرات
-router.setMaintenance(false)  // غیرفعال کردن
-```
-
-### مخفی‌سازی کامپوننت در مسیر خاص (v1.4.3)
-
-کامپوننت‌ها را در مسیرهای خاص مخفی کنید:
-
-```js
-routes: {
-  '/sandbox': {
-    meta: { hideComponents: ['footer'] },
-  },
-  '/plain': {
-    meta: { hideComponents: true },
-  },
-}
-```
-
-### به‌روزرسانی لحظه‌ای Real-time (v1.4.3)
-
-فایل‌های HTML را ویرایش کنید — صفحه بدون رفرش مرورگر به‌روز می‌شود:
-
-```js
-const router = new SafaRouter({
-  realtime: {
-    enabled: true,
-    mode: 'sse',
-  },
-})
-```
-
-### سرور توسعه SafaDevServer (v1.4.4)
-
-```js
-import { SafaDevServer } from 'safa-router'
-
-new SafaDevServer({
-  root: './test-app',
-  basePath: '/test-app',
-  watch: true,
-}).start()
-```
-
-رفرش صفحه در هر مسیری درست کار می‌کند.
-
----
-
-### کش SWR لودر (v2.0.0)
-
-صفا روتر از کش **SWR (Stale-While-Revalidate)** برای لودرهای مسیر پشتیبانی می‌کند. داده‌های کش شده فوراً برمی‌گردند و در پس‌زمینه به‌روز می‌شوند:
-
-```js
-const router = new SafaRouter({
-  loaderCache: true,          // فعال کردن کش SWR (پیش‌فرض: true)
-  loaderStaleTime: 30000,     // مدت زمان اعتبار کش (پیش‌فرض: ۳۰ ثانیه)
-})
-```
-
-### مسیرهای موازی / اسلات‌ها (v2.0.0)
-
-بخش‌های مستقل متعدد را در یک صفحه رندر کنید. هر اسلات لودر مختص خود را دارد:
-
-```js
-routes: {
-  '/dashboard': {
-    page: () => '<h1>Dashboard</h1>',
-    slots: {
-      sidebar: { loader: async () => fetch('/api/sidebar').then(r => r.json()) },
-      analytics: { loader: async () => fetch('/api/analytics').then(r => r.json()) },
-    },
-  },
-}
-```
-
-محل رندر در HTML با `[data-safa-slot="name"]` مشخص می‌شود.
-
-### مسیرهای میان‌گیر (Intercepting Routes) (v2.0.0)
-
-مسیرها را به صورت **overlay** روی صفحه فعلی نمایش دهید:
-
-```js
-routes: {
-  '/photo/[id]': {
-    intercept: true,  // همیشه به صورت overlay باز می‌شود
-    page: ({ params }) => `<div class="modal"><img src="/photos/${params.id}.jpg" /></div>`,
-  },
-}
-```
-
-بستن overlay با `router.dismissInterceptor()`.
-
-### پلاگین Vite (v2.0.0)
-
-```js
-// vite.config.js
-import { safaRouter } from 'safa-router/vite'
-export default { plugins: [safaRouter()] }
-```
-
-پلاگین自动 کد شما را اسکن می‌کند و فقط ایمپورت ماژول‌های مورد نیاز را تزریق می‌کند.
-
-### روتر هسته (Core Router) (v2.0.0)
-
-برای باندل حداقلی:
-
-```js
-import { SafaRouter } from 'safa-router/core'
-```
-
-بدون هیچ ویژگی اختیاری — فقط مسیریابی خالص.
-
-### مسیرهای تایپ‌سیف (v2.0.0)
-
-```ts
-import { defineRoute, defineRoutes } from 'safa-router/typed'
-const blogRoute = defineRoute('/blog/[slug]')
-// params.slug به صورت خودکار string تشخیص داده می‌شود
-```
-
-### معماری ماژولار (v2.0.0)
-
-همه ویژگی‌های اختیاری به ماژول‌های مجزا تقسیم شده‌اند (`safa-router/features/*`). با پلاگین Vite، فقط ماژول‌هایی که واقعاً استفاده می‌کنید در باندل نهایی قرار می‌گیرند.
-
----
-
-### مثال‌های یکپارچه‌سازی
-
-صفا روتر با هر فریم‌ورکی کار می‌کند — در ادامه الگوهای حداقلی یکپارچه‌سازی آورده شده است.
-
-#### React
-
-```jsx
-import { useEffect, useRef } from 'react'
-import { SafaRouter } from 'safa-router'
-
-export default function App() {
-  const appRef = useRef(null)
-  useEffect(() => {
-    const router = new SafaRouter({
-      target: appRef.current,
-      pageDir: 'html-pages',
-      routes: { '/': {}, '/about': {} },
-    })
-    router.start()
-    return () => router.destroy()
-  }, [])
-  return <div ref={appRef} />
-}
-```
-
-#### Vue
-
-```vue
-<template>
-  <div ref="appRef"></div>
-</template>
-
-<script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
-import { SafaRouter } from 'safa-router'
-
-const appRef = ref(null)
-let router
-
-onMounted(() => {
-  router = new SafaRouter({
-    target: appRef.value,
-    pageDir: 'html-pages',
-    routes: { '/': {}, '/about': {} },
-  })
-  router.start()
-})
-
-onUnmounted(() => router?.destroy())
-</script>
-```
-
-#### Svelte
-
-```svelte
-<script>
-  import { onMount, onDestroy } from 'svelte'
-  import { SafaRouter } from 'safa-router'
-
-  let appEl
-  let router
-
-  onMount(() => {
-    router = new SafaRouter({
-      target: appEl,
-      pageDir: 'html-pages',
-      routes: { '/': {}, '/about': {} },
-    })
-    router.start()
-  })
-
-  onDestroy(() => router?.destroy())
-</script>
-
-<div bind:this={appEl} />
-```
-
-#### Vanilla JS
-
-```html
-<div id="app"></div>
-<script type="module">
 import { SafaRouter } from 'safa-router'
 
 new SafaRouter({
@@ -2185,129 +242,34 @@ new SafaRouter({
   pageDir: 'html-pages',
   routes: { '/': {}, '/about': {} },
 }).start()
-</script>
 ```
 
----
-
-### راهنمای کامل API
-
-| گزینه | نوع | پیش‌فرض | توضیح |
-|-------|-----|---------|-------|
-| `target` | `string\|Element` | `'#app'` | محل رندر |
-| `pageDir` | `string` | `undefined` | پوشه فایل‌های HTML |
-| `layout` | `Function\|string` | `null` | لِی‌اوت سراسری |
-| `routes` | `object` | `{}` | تعریف مسیرها |
-| `components` | `object` | `{}` | کامپوننت‌های هوشمند (v1.4.0) |
-| `basePath` | `string` | `''` | مسیر پایه |
-| `useHash` | `boolean` | `false` | مسیریابی هش |
-| `realtime` | `object` | `{ enabled: false }` | تنظیمات به‌روزرسانی لحظه‌ای (v1.4.3) |
-| `errors.pageDir` | `string` | `undefined` | پوشه صفحات خطا (v1.3.0) |
-| `access.blocked` | `string[]` | `[]` | مسیرهای مسدود شده (v1.3.0) |
-| `access.ignored` | `string[]` | `[]` | مسیرهای نادیده (v1.3.0) |
-| `access.allowed` | `string[]` | `[]` | مسیرهای مجاز در حالت allowlist (v1.4.3) |
-| `access.mode` | `string` | `'blocklist'` | `'blocklist'` یا `'allowlist'` (v1.4.3) |
-| `loaderCache` | `boolean` | `true` | فعال‌سازی کش SWR برای لودرها (v2.0.0) |
-| `loaderStaleTime` | `number` | `30000` | مدت اعتبار کش به میلی‌ثانیه (v2.0.0) |
-
-#### رویدادها
-
-| رویداد | توضیح |
-|--------|-------|
-| `routechange` | مسیر تغییر کرد |
-| `error` | خطا رخ داد |
-| `accessdenied` | دسترسی مسدود شد (v1.3.0) |
-| `maintenance` | حالت تعمیرات فعال شد (v1.3.0) |
-| `notfound` | صفحه پیدا نشد |
-| `interceptoropen` | overlay مسیر میان‌گیر باز شد (v2.0.0) |
-| `interceptorclose` | overlay مسیر میان‌گیر بسته شد (v2.0.0) |
-
----
-
-### اجرای دمو
-
-```bash
-cd safa-router
-node dev-server.js
-```
-
-باز کنید: `http://localhost:3000/test-app/`
-
----
-
-### جدول مقایسه
-
-| ویژگی | SafaRouter | React Router | Vue Router | TanStack Router | page.js |
-|-------|-----------|-------------|-----------|----------------|---------|
-| فریم‌ورک | هر فریم‌ورکی | فقط React | فقط Vue | هر فریم‌ورکی (React-first) | هر فریم‌ورکی |
-| لایه‌بندی تو در تو | ✅ | ✅ | ✅ | ✅ | ❌ |
-| مسیرهای پویا | ✅ | ✅ | ✅ | ✅ | ✅ |
-| میان‌افزار | ✅ | ❌ | ❌ | ✅ | ❌ |
-| کنترل دسترسی | ✅ | ❌ | ❌ | ❌ | ❌ |
-| حالت تعمیرات | ✅ | ❌ | ❌ | ❌ | ❌ |
-| مدیریت خطا | ✅ | ❌ | ❌ | ❌ | ❌ |
-| بارگذار داده | ✅ | ✅ | ✅ | ✅ | ❌ |
-| تایپ‌سیف | ✅ کامل | جزئی | جزئی | ✅ کامل | ❌ |
-| به‌روزرسانی لحظه‌ای | ✅ | ❌ | ❌ | ❌ | ❌ |
-| کامپوننت‌های هوشمند | ✅ | ❌ | ❌ | ❌ | ❌ |
-| وابستگی صفر | ✅ | ❌ | ❌ | ❌ | ✅ |
-| حجم (تقریبی) | ~۵ کیلوبایت | ~۱۴ کیلوبایت | ~۸ کیلوبایت | ~۱۵ کیلوبایت | ~۲ کیلوبایت |
-
-### عیب‌یابی
-
-**لینک‌ها در صفحات ۴۰۴/خطا کار نمی‌کنند**
-مطمئن شوید که از نسخه‌ی v1.4.4 یا بالاتر استفاده می‌کنید. نسخه‌های قدیمی‌تر `_bindLinks()` را در handlerهای خطا فراخوانی نمی‌کردند.
-
-**رفرش صفحه ۴۰۴ برمی‌گرداند**
-از کلاس `SafaDevServer` استفاده کنید — این کلاس قابلیت SPA fallback را دارد. برای توسعه SPA هرگز از یک سرور فایل استاتیک ساده استفاده نکنید.
-
-**خطا در import: «Failed to resolve module specifier»**
-اگر از شناسه‌ی خام `'safa-router'` در مرورگر بدون باندلر استفاده می‌کنید، یک importmap اضافه کنید:
 ```html
-<script type="importmap">
-{
-  "imports": {
-    "safa-router": "/node_modules/safa-router/src/index.js"
-  }
-}
-</script>
+<!-- html-pages/index.html -->
+<h1>خانه</h1>
+<a href="/about" data-safa-link>درباره</a>
 ```
 
-یا از طریق npm نصب کرده و از یک باندلر (Vite, webpack و غیره) استفاده کنید.
+### قابلیت‌ها
 
-**کامپوننت‌ها رندر نمی‌شوند**
-مطمئن شوید که `<div data-safa-component="componentName">` را در HTML خود دارید و کلید متناظر در شیء `components` تنظیمات وجود دارد.
+- ✅ مستقل از فریم‌ورک (React, Vue, Svelte, یا vanilla JS)
+- ✅ وابستگی صفر — زیر ۵ کیلوبایت
+- ✅ مسیرهای پویا، لایه‌بندی تو در تو، میان‌افزار
+- ✅ مدیریت خطا و کنترل دسترسی
+- ✅ کش SWR، مسیرهای موازی، مسیرهای میان‌گیر
+- ✅ پلاگین Vite، تایپ‌اسکریپت کامل
+- ✅ ۲۶۷ تست، پشتیبانی SSR
 
-### پرسش‌های متداول
+### مستندات
 
-**س: آیا صفا روتر با React/Vue/Svelte کار می‌کند؟**
+[مستندات کامل صفا روتر](https://karan-safaie-qadi.github.io/SafaRouter/)
 
-ج: بله. صفا روتر مستقل از فریم‌ورک است. به بخش [مثال‌های یکپارچه‌سازی](#مثال‌های-یکپارچه‌سازی) مراجعه کنید.
+---
 
-**س: آیا به باندلر نیاز دارم؟**
+## Contributing
 
-ج: خیر. صفا روتر مستقیماً در مرورگر از طریق ESM imports اجرا می‌شود. باندلر اختیاری است.
+We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
-**س: آیا می‌توانم با TypeScript استفاده کنم؟**
-
-ج: بله. تعاریف تایپ (`safa-router.d.ts`) همراه کتابخانه ارائه شده است.
-
-**س: به‌روزرسانی لحظه‌ای (real-time hot reload) چگونه کار می‌کند؟**
-
-ج: سرور توسعه فایل‌های HTML را نظارت می‌کند و رویدادهای SSE به مرورگر ارسال می‌کند. روتر فقط محتوای صفحه فعلی را دوباره دریافت می‌کند — بدون رفرش کامل مرورگر.
-
-**س: آیا صفا روتر برای محیط تولید آماده است؟**
-
-ج: صفا روتر در توسعه و تولید استفاده می‌شود. این کتابخانه بیش از ۲۶۷ تست و وابستگی صفر در زمان اجرا دارد. مانند هر ابزاری، آن را نسبت به نیازهای پروژه خود ارزیابی کنید.
-
-**س: تفاوت این کتابخانه با React Router یا Vue Router چیست؟**
-
-ج: صفا روتر مستقل از فریم‌ورک است و از لایه‌بندی تو در تو، مسیرهای پویا، میان‌افزار، مدیریت خطا، کنترل دسترسی و به‌روزرسانی لحظه‌ای — همه بدون نیاز به React، Vue یا باندلر — پشتیبانی می‌کند.
-
-**س: آیا از مسیریابی هش (hash routing) پشتیبانی می‌کند؟**
-
-ج: بله. گزینه `useHash: true` را در تنظیمات قرار دهید.
-
-### مجوز
-
-[MIT](LICENSE) &copy; 2026 SafaRouter
+- Report bugs via [GitHub Issues](https://github.com/Karan-Safaie-Qadi/SafaRouter/issues)
+- Submit fixes and features via [Pull Requests](https://github.com/Karan-Safaie-Qadi/SafaRouter/pulls)
+- Read our [Code of Conduct](CODE_OF_CONDUCT.md)

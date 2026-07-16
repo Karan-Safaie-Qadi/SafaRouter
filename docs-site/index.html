@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SafaRouter — A standalone frontend router</title>
+  <link rel="stylesheet" href="assets/style.css">
+  <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="logo-link">
+        <img src="assets/logo.svg" alt="SafaRouter">
+        SafaRouter
+      </a>
+      <button class="mobile-menu-btn" onclick="toggleSidebar()" aria-label="Menu">☰</button>
+      <nav class="header-nav">
+        <a href="getting-started.html">Docs</a>
+        <a href="api-reference.html">API</a>
+        <a href="examples.html">Examples</a>
+        <a href="migration-guide.html">Migration</a>
+        <a href="https://github.com/Karan-Safaie-Qadi/SafaRouter" class="github-link" target="_blank">
+          GitHub
+        </a>
+      </nav>
+    </div>
+  </header>
+
+  <div class="layout-wrapper">
+    <aside class="sidebar" id="sidebar">
+      <nav>
+        <div class="sidebar-section">
+          <div class="sidebar-heading">Getting Started</div>
+          <a href="index.html" class="sidebar-link active">Overview</a>
+          <a href="getting-started.html" class="sidebar-link">Installation & Quick Start</a>
+        </div>
+        <div class="sidebar-section">
+          <div class="sidebar-heading">Core Concepts</div>
+          <a href="routing.html" class="sidebar-link">Routing</a>
+          <a href="dynamic-routes.html" class="sidebar-link">Dynamic Routes</a>
+          <a href="nested-routes.html" class="sidebar-link">Nested Routes & Layouts</a>
+          <a href="middleware.html" class="sidebar-link">Middleware</a>
+          <a href="route-guards.html" class="sidebar-link">Route Guards</a>
+          <a href="lazy-loading.html" class="sidebar-link">Lazy Loading</a>
+        </div>
+        <div class="sidebar-section">
+          <div class="sidebar-heading">Reference</div>
+          <a href="api-reference.html" class="sidebar-link">API Reference</a>
+          <a href="migration-guide.html" class="sidebar-link">Migration Guide</a>
+          <a href="examples.html" class="sidebar-link">Examples</a>
+        </div>
+      </nav>
+    </aside>
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+    <main class="main-content">
+      <section class="hero">
+        <img src="assets/logo.svg" alt="SafaRouter" class="hero-logo">
+        <h1>SafaRouter</h1>
+        <p>A standalone frontend router inspired by Next.js App Router — works with any framework or vanilla JS</p>
+        <div class="hero-badges">
+          <img src="https://img.shields.io/badge/version-2.0.1-blue" alt="Version">
+          <img src="https://img.shields.io/badge/license-MIT-green" alt="License">
+          <img src="https://img.shields.io/badge/dependencies-0-brightgreen" alt="Zero Dependencies">
+          <img src="https://img.shields.io/badge/size-%3C5%20KB-gold" alt="Size">
+        </div>
+        <div class="hero-buttons">
+          <a href="getting-started.html" class="btn btn-primary">Get Started</a>
+          <a href="https://github.com/Karan-Safaie-Qadi/SafaRouter" class="btn btn-secondary" target="_blank">View on GitHub</a>
+        </div>
+      </section>
+
+      <h2 style="font-size:1.5rem;font-weight:700;margin-top:16px;">Why SafaRouter?</h2>
+      <p style="color:var(--text-secondary);margin-bottom:8px;">
+        Pure JavaScript, zero dependencies, under 5 KB gzipped. Brings the App Router development pattern to any frontend project.
+      </p>
+
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="icon">⚡</div>
+          <h3>HTML-First Routing</h3>
+          <p>Write plain <code>.html</code> files — each file becomes a route automatically. No build step needed.</p>
+        </div>
+        <div class="feature-card">
+          <div class="icon">📁</div>
+          <h3>Nested Layouts</h3>
+          <p>Compose layouts from parent to child. Global layouts, per-route layouts, and HTML file layouts with <code>{children}</code> placeholders.</p>
+        </div>
+        <div class="feature-card">
+          <div class="icon">🔀</div>
+          <h3>Dynamic Routes</h3>
+          <p><code>[param]</code>, <code>[...catchAll]</code>, <code>[[...optional]]</code>, and route groups <code>(group)</code>.</p>
+        </div>
+        <div class="feature-card">
+          <div class="icon">🛡️</div>
+          <h3>Middleware & Guards</h3>
+          <p>Intercept every navigation with middleware. Add per-route guard functions with redirect support.</p>
+        </div>
+        <div class="feature-card">
+          <div class="icon">📦</div>
+          <h3>Lazy Loading</h3>
+          <p>Dynamic imports and code splitting. Route-level loading states and SWR data caching.</p>
+        </div>
+        <div class="feature-card">
+          <div class="icon">🔗</div>
+          <h3>Framework Agnostic</h3>
+          <p>Works with React, Vue, Svelte, or vanilla JavaScript. No framework lock-in.</p>
+        </div>
+        <div class="feature-card">
+          <div class="icon">🔄</div>
+          <h3>Real-Time Hot Reload</h3>
+          <p>SSE-based live reload — edit HTML files, page updates without browser refresh.</p>
+        </div>
+        <div class="feature-card">
+          <div class="icon">🎯</div>
+          <h3>Type-Safe Routes</h3>
+          <p>Full TypeScript inference with <code>defineRoute()</code>, <code>defineRoutes()</code>, and <code>SafeRouteParams&lt;T&gt;</code>.</p>
+        </div>
+        <div class="feature-card">
+          <div class="icon">🧩</div>
+          <h3>Modular Architecture</h3>
+          <p>Tree-shakeable optional features. Core router under 3 KB gzipped. Vite plugin auto-detects needed features.</p>
+        </div>
+      </div>
+
+      <h2 style="font-size:1.5rem;font-weight:700;margin-top:40px;">Quick Start</h2>
+      <div class="steps">
+        <div class="step">
+          <strong>Install</strong>
+          <p><code>npm install safa-router</code></p>
+        </div>
+        <div class="step">
+          <strong>Create HTML pages</strong>
+          <p>Create a folder of <code>.html</code> files — each file is a route.</p>
+        </div>
+        <div class="step">
+          <strong>Initialize</strong>
+          <p>Create a router instance, point it at your pages, and call <code>.start()</code>.</p>
+        </div>
+      </div>
+
+      <pre><code class="language-js">import { SafaRouter } from 'safa-router'
+
+new SafaRouter({
+  target: '#app',
+  pageDir: 'html-pages',
+}).start()</code></pre>
+
+      <p style="margin-top:8px;font-size:0.9rem;color:var(--text-secondary);">
+        That's it. Your pages are now routing. <a href="getting-started.html">Learn more →</a>
+      </p>
+    </main>
+  </div>
+
+  <footer class="site-footer">
+    <p>MIT Licensed &middot; <a href="https://github.com/Karan-Safaie-Qadi/SafaRouter">GitHub</a> &middot; Built with SafaRouter</p>
+  </footer>
+
+  <script>
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('open')
+      document.getElementById('sidebarOverlay').classList.toggle('open')
+    }
+  </script>
+</body>
+</html>

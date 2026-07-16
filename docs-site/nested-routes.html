@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nested Routes & Layouts — SafaRouter</title>
+  <link rel="stylesheet" href="assets/style.css">
+  <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <script>hljs.highlightAll();</script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="index.html" class="logo-link">
+        <img src="assets/logo.svg" alt="SafaRouter"> SafaRouter
+      </a>
+      <button class="mobile-menu-btn" onclick="toggleSidebar()" aria-label="Menu">☰</button>
+      <nav class="header-nav">
+        <a href="getting-started.html">Docs</a>
+        <a href="api-reference.html">API</a>
+        <a href="examples.html">Examples</a>
+        <a href="migration-guide.html">Migration</a>
+        <a href="https://github.com/Karan-Safaie-Qadi/SafaRouter" class="github-link" target="_blank">GitHub</a>
+      </nav>
+    </div>
+  </header>
+
+  <div class="layout-wrapper">
+    <aside class="sidebar" id="sidebar">
+      <nav>
+        <div class="sidebar-section">
+          <div class="sidebar-heading">Getting Started</div>
+          <a href="index.html" class="sidebar-link">Overview</a>
+          <a href="getting-started.html" class="sidebar-link">Installation & Quick Start</a>
+        </div>
+        <div class="sidebar-section">
+          <div class="sidebar-heading">Core Concepts</div>
+          <a href="routing.html" class="sidebar-link">Routing</a>
+          <a href="dynamic-routes.html" class="sidebar-link">Dynamic Routes</a>
+          <a href="nested-routes.html" class="sidebar-link active">Nested Routes & Layouts</a>
+          <a href="middleware.html" class="sidebar-link">Middleware</a>
+          <a href="route-guards.html" class="sidebar-link">Route Guards</a>
+          <a href="lazy-loading.html" class="sidebar-link">Lazy Loading</a>
+        </div>
+        <div class="sidebar-section">
+          <div class="sidebar-heading">Reference</div>
+          <a href="api-reference.html" class="sidebar-link">API Reference</a>
+          <a href="migration-guide.html" class="sidebar-link">Migration Guide</a>
+          <a href="examples.html" class="sidebar-link">Examples</a>
+        </div>
+      </nav>
+    </aside>
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+    <main class="main-content content">
+      <h1>Nested Routes & Layouts</h1>
+      <p>Layouts wrap page content and compose from parent to child. This allows for deeply nested UI structures without repeating markup.</p>
+
+      <h2>Global Layout</h2>
+      <p>A layout applied to every route:</p>
+      <pre><code class="language-js">const router = new SafaRouter({
+  layout: ({ children, params, router }) => `
+    &lt;header&gt;
+      &lt;nav&gt;
+        &lt;a href="/" data-safa-link&gt;Home&lt;/a&gt;
+        &lt;a href="/blog" data-safa-link&gt;Blog&lt;/a&gt;
+      &lt;/nav&gt;
+    &lt;/header&gt;
+    &lt;main&gt;${children}&lt;/main&gt;
+    &lt;footer&gt;Powered by SafaRouter&lt;/footer&gt;
+  `,
+})</code></pre>
+
+      <h3>HTML File as Layout</h3>
+      <p>Use an HTML file with a <code>{children}</code> placeholder:</p>
+      <pre><code class="language-html">&lt;!-- html-pages/_layout.html --&gt;
+&lt;header&gt;
+  &lt;nav&gt;
+    &lt;a href="/" data-safa-link&gt;Home&lt;/a&gt;
+    &lt;a href="/blog" data-safa-link&gt;Blog&lt;/a&gt;
+  &lt;/nav&gt;
+&lt;/header&gt;
+&lt;main&gt;{children}&lt;/main&gt;</code></pre>
+      <pre><code class="language-js">const router = new SafaRouter({
+  layout: 'html-pages/_layout.html',
+})</code></pre>
+
+      <h2>Per-Route Layouts</h2>
+      <p>Each route can define its own layout. Layouts nest automatically:</p>
+      <pre><code class="language-js">routes: {
+  '/dashboard': {
+    layout: ({ children, params, router }) => `
+      &lt;div class="dashboard"&gt;
+        &lt;aside class="sidebar"&gt;
+          &lt;a href="/dashboard/settings" data-safa-link&gt;Settings&lt;/a&gt;
+        &lt;/aside&gt;
+        &lt;div class="content"&gt;${children}&lt;/div&gt;
+      &lt;/div&gt;
+    `,
+    children: {
+      'settings': {
+        page: () => '&lt;h1&gt;Settings&lt;/h1&gt;',
+      },
+      'profile': {
+        page: () => '&lt;h1&gt;Profile&lt;/h1&gt;',
+      },
+    },
+  },
+}</code></pre>
+      <p>Layout cascade: <code>globalLayout → dashboardLayout → page</code></p>
+
+      <h2>Nested Route Hierarchy</h2>
+      <p>Routes can be deeply nested, with each level adding its own layout:</p>
+      <pre><code class="language-js">routes: {
+  '/': { page: () => '&lt;h1&gt;Home&lt;/h1&gt;' },
+
+  '/blog': {
+    layout: blogLayout,       // wraps all blog routes
+    children: {
+      '[slug]': {
+        layout: postLayout,   // wraps individual posts
+        page: postPage,
+        children: {
+          'comments': {
+            page: commentsPage,
+          },
+        },
+      },
+    },
+  },
+}
+
+// /blog/my-post → blogLayout > postLayout > postPage
+// /blog/my-post/comments → blogLayout > postLayout > commentsPage</code></pre>
+
+      <h2>Route Groups <code>(group)</code></h2>
+      <p>Route groups let you organize routes without affecting the URL structure — perfect for shared layouts:</p>
+      <pre><code class="language-js">routes: {
+  '(auth)': {
+    layout: authLayout,
+    children: {
+      'login': { page: loginPage },
+      'register': { page: registerPage },
+    },
+  },
+  '(main)': {
+    layout: mainLayout,
+    children: {
+      'dashboard': { page: dashboardPage },
+      'profile': { page: profilePage },
+    },
+  },
+}
+
+// URLs: /login, /register, /dashboard, /profile
+// No "/auth/login" or "/main/dashboard" in the URL</code></pre>
+
+      <h2>Layout Context</h2>
+      <p>Layout functions receive a context object:</p>
+      <pre><code class="language-js">layout = ({ children, params, query, router, data }) => {
+  // children — the rendered child content
+  // params — dynamic route parameters
+  // query — URL query parameters
+  // router — the SafaRouter instance
+  // data — resolved data from the route's loader
+
+  return `&lt;div&gt;${children}&lt;/div&gt;`
+}</code></pre>
+
+      <h2>Smart Components</h2>
+      <p>In addition to layouts, SafaRouter supports <strong>smart components</strong> — persistent UI elements like headers and footers that render on every page:</p>
+      <pre><code class="language-js">// components/Header.js
+export default function header({ path }) {
+  return `
+    &lt;header&gt;
+      &lt;nav&gt;
+        &lt;a href="/" data-safa-link class="${path === '/' ? 'active' : ''}"&gt;Home&lt;/a&gt;
+        &lt;a href="/about" data-safa-link class="${path === '/about' ? 'active' : ''}"&gt;About&lt;/a&gt;
+      &lt;/nav&gt;
+    &lt;/header&gt;
+  `
+}
+
+// Router config
+const router = new SafaRouter({
+  components: {
+    header: headerComponent,
+    footer: footerComponent,
+  },
+})</code></pre>
+      <pre><code class="language-html">&lt;div data-safa-component="header"&gt;&lt;/div&gt;
+&lt;main id="app"&gt;&lt;/main&gt;
+&lt;div data-safa-component="footer"&gt;&lt;/div&gt;</code></pre>
+
+      <h2>Per-Route Component Visibility</h2>
+      <p>Hide smart components on specific routes using <code>meta.hideComponents</code>:</p>
+      <pre><code class="language-js">routes: {
+  '/sandbox': {
+    meta: { hideComponents: ['footer'] },
+  },
+  '/plain': {
+    meta: { hideComponents: true },  // hide all components
+  },
+}</code></pre>
+    </main>
+  </div>
+
+  <footer class="site-footer">
+    <p>MIT Licensed &middot; <a href="https://github.com/Karan-Safaie-Qadi/SafaRouter">GitHub</a> &middot; Built with SafaRouter</p>
+  </footer>
+
+  <script>
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('open')
+      document.getElementById('sidebarOverlay').classList.toggle('open')
+    }
+  </script>
+</body>
+</html>

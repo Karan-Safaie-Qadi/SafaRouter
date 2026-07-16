@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SafaRouter Playground</title>
+  <style>
+    :root { --primary: #6366f1; --primary-dark: #4f46e5; --accent: #f59e0b; --bg: #0f172a; --surface: #1e293b; --text: #f1f5f9; --text-muted: #94a3b8; --border: #334155; --font: 'Segoe UI', system-ui, sans-serif; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: var(--font); background: var(--bg); color: var(--text); min-height: 100vh; direction: ltr; }
+    header { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); padding: 1.5rem 2rem; display: flex; align-items: center; justify-content: space-between; }
+    header h1 { font-size: 1.5rem; font-weight: 700; }
+    header h1 span { color: var(--accent); }
+    header nav a { color: #fff; text-decoration: none; opacity: .8; font-size: .875rem; }
+    header nav a:hover { opacity: 1; }
+    .main { display: grid; grid-template-columns: 1fr 1fr; gap: 0; height: calc(100vh - 64px); }
+    .editor-panel { background: #1a1a2e; border-left: 1px solid var(--border); display: flex; flex-direction: column; }
+    .editor-panel .tabs { display: flex; background: #16162a; border-bottom: 1px solid var(--border); }
+    .editor-panel .tabs button { padding: .625rem 1.25rem; background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: .8125rem; border-bottom: 2px solid transparent; transition: all .2s; }
+    .editor-panel .tabs button.active { color: var(--primary); border-bottom-color: var(--primary); background: #1a1a2e; }
+    .editor-panel .tabs button:hover { color: var(--text); }
+    .editor-panel textarea { flex: 1; background: #1a1a2e; color: #e2e8f0; border: none; padding: 1rem; font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: .8125rem; line-height: 1.6; resize: none; outline: none; tab-size: 2; }
+    .preview-panel { display: flex; flex-direction: column; }
+    .preview-panel .toolbar { display: flex; align-items: center; justify-content: space-between; padding: .625rem 1rem; background: var(--surface); border-bottom: 1px solid var(--border); }
+    .preview-panel .toolbar span { font-size: .8125rem; color: var(--text-muted); }
+    .preview-panel .toolbar button { padding: .375rem 1rem; background: var(--primary); color: #fff; border: none; border-radius: 6px; cursor: pointer; font-size: .8125rem; font-weight: 600; transition: background .2s; }
+    .preview-panel .toolbar button:hover { background: var(--primary-dark); }
+    .preview-panel #preview { flex: 1; background: #fff; color: #1e293b; padding: 2rem; overflow: auto; }
+    .preview-panel #preview a { color: var(--primary); text-decoration: underline; cursor: pointer; }
+    .preview-panel #preview a:hover { color: var(--primary-dark); }
+    .preview-panel #preview nav { margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid #e2e8f0; }
+    .preview-panel #preview nav a { margin-left: 1rem; text-decoration: none; font-weight: 600; }
+    .preview-panel #preview nav a.active { color: var(--primary); }
+    .status-bar { display: flex; align-items: center; gap: 1rem; padding: .5rem 1rem; background: #0f172a; border-top: 1px solid var(--border); font-size: .75rem; color: var(--text-muted); }
+    .status-bar .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+    .status-bar .dot.green { background: #22c55e; }
+    .status-bar .dot.yellow { background: var(--accent); }
+    @media (max-width: 768px) { .main { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <header>
+    <h1><span>Safa</span>Router <span style="font-size:.875rem;opacity:.7">Playground</span></h1>
+    <nav><a href="https://github.com/Karan-Safaie-Qadi/SafaRouter" target="_blank">GitHub</a></nav>
+  </header>
+
+  <div class="main">
+    <div class="editor-panel">
+      <div class="tabs">
+        <button class="active" data-tab="config">Config</button>
+        <button data-tab="home">Home</button>
+        <button data-tab="about">About</button>
+        <button data-tab="blog">Blog</button>
+      </div>
+      <textarea id="editor" spellcheck="false">{
+  "target": "#app",
+  "pageDir": "pages",
+  "routes": {
+    "/": {},
+    "/about": {},
+    "/blog/[slug]": {}
+  }
+}</textarea>
+    </div>
+    <div class="preview-panel">
+      <div class="toolbar">
+        <span>🔍 Preview</span>
+        <button id="runBtn">▶ Run</button>
+      </div>
+      <div id="preview">
+        <div id="app">
+          <p style="color:#94a3b8">Click <strong>Run</strong> to start the router...</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="status-bar">
+    <span><span class="dot green"></span> Ready</span>
+    <span>safa-router v2.0.1</span>
+    <span>ESM — Zero Dependencies</span>
+  </div>
+
+  <script type="importmap">
+  {
+    "imports": {
+      "safa-router": "../../src/index.js",
+      "safa-router/vite": "../../src/vite-plugin.js",
+      "safa-router/core": "../../src/core/SafaRouter.js",
+      "safa-router/features/access": "../../src/features/access.js",
+      "safa-router/features/scroll": "../../src/features/scroll.js"
+    }
+  }
+  </script>
+
+  <script type="module">
+    // ── Tab switching ──
+    const tabs = document.querySelectorAll('[data-tab]')
+    const editor = document.getElementById('editor')
+    const files = {
+      config: `{
+  "target": "#app",
+  "pageDir": "pages",
+  "routes": {
+    "/": {},
+    "/about": {},
+    "/blog/[slug]": {}
+  }
+}`,
+      home: `<h1>🏠 Home</h1>
+<p>Welcome to SafaRouter!</p>
+<nav>
+  <a href="/about" data-safa-link>About</a>
+  <a href="/blog/hello-world" data-safa-link>Blog Post</a>
+</nav>`,
+      about: `<h1>ℹ️ About</h1>
+<p>SafaRouter brings App Router patterns to any project.</p>
+<nav>
+  <a href="/" data-safa-link>Home</a>
+  <a href="/blog/hello-world" data-safa-link>Blog Post</a>
+</nav>`,
+      blog: `<h1>📝 {{ params.slug }}</h1>
+<p>This is a dynamic route.</p>
+<nav>
+  <a href="/" data-safa-link>Home</a>
+  <a href="/about" data-safa-link>About</a>
+</nav>`
+    }
+    let currentTab = 'config'
+
+    tabs.forEach(btn => {
+      btn.addEventListener('click', () => {
+        tabs.forEach(b => b.classList.remove('active'))
+        btn.classList.add('active')
+        currentTab = btn.dataset.tab
+        editor.value = files[currentTab]
+      })
+    })
+    editor.value = files.config
+
+    editor.addEventListener('input', () => {
+      files[currentTab] = editor.value
+    })
+
+    // ── Run button ──
+    document.getElementById('runBtn').addEventListener('click', async () => {
+      const preview = document.getElementById('preview')
+      const app = document.getElementById('app')
+      app.innerHTML = '<p style="color:#94a3b8">⏳ Loading...</p>'
+
+      try {
+        const { SafaRouter } = await import('safa-router')
+
+        // Clean up previous
+        if (window.__router) {
+          window.__router.destroy()
+          delete window.__router
+        }
+
+        // Create pages from editor content
+        const pages = {
+          'index.html': files.home,
+          'about.html': files.about,
+          'blog/[slug].html': files.blog,
+        }
+
+        // Override fetchPage to use our editor content
+        const config = JSON.parse(files.config)
+
+        const router = new SafaRouter({
+          ...config,
+          _playgroundFetch: (path) => {
+            const normalized = path.replace(/^\/+/, '') || 'index.html'
+            const html = pages[normalized]
+            return html !== undefined
+              ? Promise.resolve(html)
+              : Promise.resolve(`<h1>📄 ${path}</h1><p>Page not found in playground</p><nav><a href="/" data-safa-link>Home</a></nav>`)
+          },
+        })
+
+        // Monkey-patch _fetchPage for playground
+        const origFetchPage = router._fetchPage.bind(router)
+        router._fetchPage = async (path, signal) => {
+          const normalized = path.replace(/^\/+/, '') || 'index.html'
+          const html = pages[normalized]
+          if (html !== undefined) return html
+          return origFetchPage(path, signal)
+        }
+
+        window.__router = router
+        await router.start()
+
+        // Bind links in preview
+        preview.querySelectorAll('[data-safa-link]').forEach(el => {
+          el.addEventListener('click', (e) => {
+            e.preventDefault()
+            router.push(el.getAttribute('href'))
+          })
+        })
+
+        // Update status
+        document.querySelector('.status-bar .dot').className = 'dot green'
+      } catch (err) {
+        app.innerHTML = `<p style="color:#ef4444">❌ Error: ${err.message}</p>`
+        document.querySelector('.status-bar .dot').className = 'dot yellow'
+      }
+    })
+  </script>
+</body>
+</html>

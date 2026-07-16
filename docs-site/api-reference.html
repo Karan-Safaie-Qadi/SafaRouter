@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>API Reference — SafaRouter</title>
+  <link rel="stylesheet" href="assets/style.css">
+  <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <script>hljs.highlightAll();</script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="index.html" class="logo-link">
+        <img src="assets/logo.svg" alt="SafaRouter"> SafaRouter
+      </a>
+      <button class="mobile-menu-btn" onclick="toggleSidebar()" aria-label="Menu">☰</button>
+      <nav class="header-nav">
+        <a href="getting-started.html">Docs</a>
+        <a href="api-reference.html">API</a>
+        <a href="examples.html">Examples</a>
+        <a href="migration-guide.html">Migration</a>
+        <a href="https://github.com/Karan-Safaie-Qadi/SafaRouter" class="github-link" target="_blank">GitHub</a>
+      </nav>
+    </div>
+  </header>
+
+  <div class="layout-wrapper">
+    <aside class="sidebar" id="sidebar">
+      <nav>
+        <div class="sidebar-section">
+          <div class="sidebar-heading">Getting Started</div>
+          <a href="index.html" class="sidebar-link">Overview</a>
+          <a href="getting-started.html" class="sidebar-link">Installation & Quick Start</a>
+        </div>
+        <div class="sidebar-section">
+          <div class="sidebar-heading">Core Concepts</div>
+          <a href="routing.html" class="sidebar-link">Routing</a>
+          <a href="dynamic-routes.html" class="sidebar-link">Dynamic Routes</a>
+          <a href="nested-routes.html" class="sidebar-link">Nested Routes & Layouts</a>
+          <a href="middleware.html" class="sidebar-link">Middleware</a>
+          <a href="route-guards.html" class="sidebar-link">Route Guards</a>
+          <a href="lazy-loading.html" class="sidebar-link">Lazy Loading</a>
+        </div>
+        <div class="sidebar-section">
+          <div class="sidebar-heading">Reference</div>
+          <a href="api-reference.html" class="sidebar-link active">API Reference</a>
+          <a href="migration-guide.html" class="sidebar-link">Migration Guide</a>
+          <a href="examples.html" class="sidebar-link">Examples</a>
+        </div>
+      </nav>
+    </aside>
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+    <main class="main-content content">
+      <h1>API Reference</h1>
+      <p>Complete reference for all SafaRouter configuration options, methods, events, and types.</p>
+
+      <h2>Constructor: <code>new SafaRouter(options)</code></h2>
+
+      <h3>Core Config Options</h3>
+      <table>
+        <tr><th>Option</th><th>Type</th><th>Default</th><th>Description</th></tr>
+        <tr><td><code>target</code></td><td><code>string | Element</code></td><td><code>'#app'</code></td><td>CSS selector or element to render content into</td></tr>
+        <tr><td><code>pageDir</code></td><td><code>string</code></td><td><code>undefined</code></td><td>Directory of <code>.html</code> files for auto-routing</td></tr>
+        <tr><td><code>routes</code></td><td><code>object</code></td><td><code>{}</code></td><td>Explicit route definitions tree</td></tr>
+        <tr><td><code>layout</code></td><td><code>Function | string</code></td><td><code>null</code></td><td>Global layout function or HTML file path</td></tr>
+        <tr><td><code>basePath</code></td><td><code>string</code></td><td><code>''</code></td><td>Base path for subdirectory deployment</td></tr>
+        <tr><td><code>useHash</code></td><td><code>boolean</code></td><td><code>false</code></td><td>Use hash-based routing (<code>/#/path</code>)</td></tr>
+        <tr><td><code>notFound</code></td><td><code>Function | string</code></td><td><code>null</code></td><td>Custom 404 page component</td></tr>
+        <tr><td><code>error</code></td><td><code>Function | string</code></td><td><code>null</code></td><td>Custom error page component</td></tr>
+      </table>
+
+      <h3>Smart Components</h3>
+      <table>
+        <tr><th>Option</th><th>Type</th><th>Default</th><th>Description</th></tr>
+        <tr><td><code>components</code></td><td><code>object</code></td><td><code>{}</code></td><td>Named components rendered on every page (v1.4.0)</td></tr>
+      </table>
+
+      <h3>Navigation & Caching</h3>
+      <table>
+        <tr><th>Option</th><th>Type</th><th>Default</th><th>Description</th></tr>
+        <tr><td><code>scrollToTop</code></td><td><code>boolean</code></td><td><code>true</code></td><td>Scroll to top on navigation</td></tr>
+        <tr><td><code>cacheRoutes</code></td><td><code>boolean</code></td><td><code>true</code></td><td>Cache loaded pages</td></tr>
+        <tr><td><code>maxCacheSize</code></td><td><code>number</code></td><td><code>50</code></td><td>Maximum cached pages</td></tr>
+        <tr><td><code>navigationTimeout</code></td><td><code>number</code></td><td><code>0</code></td><td>Navigation timeout in ms (0 = no timeout)</td></tr>
+        <tr><td><code>titleTemplate</code></td><td><code>string</code></td><td><code>null</code></td><td>Title template e.g. <code>'%s — My App'</code></td></tr>
+        <tr><td><code>prefetchStrategy</code></td><td><code>string</code></td><td><code>'none'</code></td><td><code>'none'</code> | <code>'visible'</code> | <code>'all'</code></td></tr>
+      </table>
+
+      <h3>Transitions</h3>
+      <table>
+        <tr><th>Option</th><th>Type</th><th>Default</th><th>Description</th></tr>
+        <tr><td><code>transitionDuration</code></td><td><code>number</code></td><td><code>0</code></td><td>Default CSS transition duration (ms)</td></tr>
+        <tr><td><code>transitionEnterClass</code></td><td><code>string</code></td><td><code>'safa-enter'</code></td><td>Enter transition CSS class</td></tr>
+        <tr><td><code>transitionExitClass</code></td><td><code>string</code></td><td><code>'safa-exit'</code></td><td>Exit transition CSS class</td></tr>
+        <tr><td><code>transitionEnterActiveClass</code></td><td><code>string</code></td><td><code>'safa-enter-active'</code></td><td>Active enter transition class</td></tr>
+        <tr><td><code>transitionExitActiveClass</code></td><td><code>string</code></td><td><code>'safa-exit-active'</code></td><td>Active exit transition class</td></tr>
+      </table>
+
+      <h3>Access Control (v1.3.0)</h3>
+      <table>
+        <tr><th>Option</th><th>Type</th><th>Default</th><th>Description</th></tr>
+        <tr><td><code>access.blocked</code></td><td><code>string[]</code></td><td><code>[]</code></td><td>Route patterns to block (403)</td></tr>
+        <tr><td><code>access.ignored</code></td><td><code>string[]</code></td><td><code>[]</code></td><td>Route patterns to ignore (silent 404)</td></tr>
+        <tr><td><code>access.allowed</code></td><td><code>string[]</code></td><td><code>[]</code></td><td>Allowed patterns in allowlist mode (v1.4.3)</td></tr>
+        <tr><td><code>access.mode</code></td><td><code>string</code></td><td><code>'blocklist'</code></td><td><code>'blocklist'</code> or <code>'allowlist'</code> (v1.4.3)</td></tr>
+      </table>
+
+      <h3>Error Handling (v1.3.0)</h3>
+      <table>
+        <tr><th>Option</th><th>Type</th><th>Default</th><th>Description</th></tr>
+        <tr><td><code>errors.pageDir</code></td><td><code>string</code></td><td><code>undefined</code></td><td>Custom error page directory</td></tr>
+        <tr><td><code>errors.stackTraces</code></td><td><code>boolean</code></td><td><code>true</code></td><td>Show stack traces in error pages</td></tr>
+        <tr><td><code>errorLogging.enabled</code></td><td><code>boolean</code></td><td><code>false</code></td><td>Enable error logging</td></tr>
+      </table>
+
+      <h3>Maintenance Mode (v1.3.0)</h3>
+      <table>
+        <tr><th>Option</th><th>Type</th><th>Default</th><th>Description</th></tr>
+        <tr><td><code>maintenanceMode.enabled</code></td><td><code>boolean</code></td><td><code>false</code></td><td>Enable maintenance mode (503)</td></tr>
+        <tr><td><code>maintenanceMode.allowedPaths</code></td><td><code>string[]</code></td><td><code>[]</code></td><td>Paths that bypass maintenance</td></tr>
+      </table>
+
+      <h3>Realtime (v1.4.3)</h3>
+      <table>
+        <tr><th>Option</th><th>Type</th><th>Default</th><th>Description</th></tr>
+        <tr><td><code>realtime.enabled</code></td><td><code>boolean</code></td><td><code>false</code></td><td>Enable real-time hot reload</td></tr>
+        <tr><td><code>realtime.mode</code></td><td><code>string</code></td><td><code>'sse'</code></td><td><code>'sse'</code> | <code>'polling'</code> | <code>'websocket'</code></td></tr>
+        <tr><td><code>realtime.url</code></td><td><code>string</code></td><td><code>'/__realtime'</code></td><td>SSE/WebSocket endpoint</td></tr>
+        <tr><td><code>realtime.interval</code></td><td><code>number</code></td><td><code>2000</code></td><td>Polling interval (ms, <code>mode='polling'</code>)</td></tr>
+      </table>
+
+      <h3>Loader Cache (v2.0.0)</h3>
+      <table>
+        <tr><th>Option</th><th>Type</th><th>Default</th><th>Description</th></tr>
+        <tr><td><code>loaderCache</code></td><td><code>boolean</code></td><td><code>true</code></td><td>Enable SWR cache for data loaders</td></tr>
+        <tr><td><code>loaderStaleTime</code></td><td><code>number</code></td><td><code>30000</code></td><td>Time before cache goes stale (ms)</td></tr>
+        <tr><td><code>loaderCacheMaxSize</code></td><td><code>number</code></td><td><code>100</code></td><td>Max SWR cache entries</td></tr>
+      </table>
+
+      <h2>Router Methods</h2>
+      <table>
+        <tr><th>Method</th><th>Description</th></tr>
+        <tr><td><code>router.start(target?)</code></td><td>Initialize and start the router</td></tr>
+        <tr><td><code>router.push(url, state?)</code></td><td>Navigate to URL (new history entry)</td></tr>
+        <tr><td><code>router.replace(url, state?)</code></td><td>Navigate (replace current history entry)</td></tr>
+        <tr><td><code>router.pushRoute(name, params?, query?)</code></td><td>Navigate to a named route</td></tr>
+        <tr><td><code>router.back()</code></td><td>Go back in history</td></tr>
+        <tr><td><code>router.forward()</code></td><td>Go forward in history</td></tr>
+        <tr><td><code>router.reload()</code></td><td>Re-render current route</td></tr>
+        <tr><td><code>router.use(fn)</code></td><td>Add middleware function</td></tr>
+        <tr><td><code>router.useNamed(name, fn, priority?)</code></td><td>Add named middleware with priority</td></tr>
+        <tr><td><code>router.insertMiddlewareBefore(ref, fn, priority?)</code></td><td>Insert middleware before a named one</td></tr>
+        <tr><td><code>router.insertMiddlewareAfter(ref, fn, priority?)</code></td><td>Insert middleware after a named one</td></tr>
+        <tr><td><code>router.middleware(name)</code></td><td>Remove a named middleware</td></tr>
+        <tr><td><code>router.beforeEach(fn)</code></td><td>Alias for <code>router.use(fn)</code></td></tr>
+        <tr><td><code>router.afterEach(fn)</code></td><td>Subscribe to successful navigation</td></tr>
+        <tr><td><code>router.on(event, fn)</code></td><td>Subscribe to an event</td></tr>
+        <tr><td><code>router.off(event, fn)</code></td><td>Unsubscribe from an event</td></tr>
+        <tr><td><code>router.onError(fn)</code></td><td>Subscribe to error events</td></tr>
+        <tr><td><code>router.onNotFound(fn)</code></td><td>Subscribe to not-found events</td></tr>
+        <tr><td><code>router.onRouteChange(fn)</code></td><td>Subscribe to route change events</td></tr>
+        <tr><td><code>router.onBeforeNavigate(fn)</code></td><td>Subscribe to before-navigate events</td></tr>
+        <tr><td><code>router.onAccessDenied(fn)</code></td><td>Subscribe to access denied events (v1.3.0)</td></tr>
+        <tr><td><code>router.onMaintenance(fn)</code></td><td>Subscribe to maintenance events (v1.3.0)</td></tr>
+        <tr><td><code>router.createLink(config)</code></td><td>Create a Link instance</td></tr>
+        <tr><td><code>router.prefetch(path)</code></td><td>Preload a route</td></tr>
+        <tr><td><code>router.clearCache()</code></td><td>Clear component/loader cache</td></tr>
+        <tr><td><code>router.getRoute(path)</code></td><td>Inspect a route definition</td></tr>
+        <tr><td><code>router.retry(path, options?)</code></td><td>Retry navigation with backoff (v1.3.0)</td></tr>
+        <tr><td><code>router.blockRoute(path)</code></td><td>Dynamically block a route (v1.3.0)</td></tr>
+        <tr><td><code>router.unblockRoute(path)</code></td><td>Remove a dynamic block (v1.3.0)</td></tr>
+        <tr><td><code>router.ignoreRoute(path)</code></td><td>Dynamically ignore a route (v1.3.0)</td></tr>
+        <tr><td><code>router.unignoreRoute(path)</code></td><td>Remove a dynamic ignore (v1.3.0)</td></tr>
+        <tr><td><code>router.setMaintenance(bool, opts?)</code></td><td>Toggle maintenance mode (v1.3.0)</td></tr>
+        <tr><td><code>router.isMaintenance()</code></td><td>Check maintenance mode (v1.3.0)</td></tr>
+        <tr><td><code>router.plugin(plugin)</code></td><td>Register a plugin (v2.0.0)</td></tr>
+        <tr><td><code>router.ejectPlugin(name)</code></td><td>Remove a plugin by name (v2.0.0)</td></tr>
+        <tr><td><code>router.getPlugin(name)</code></td><td>Get a plugin instance (v2.0.0)</td></tr>
+        <tr><td><code>router.dismissInterceptor()</code></td><td>Close intercept overlay (v2.0.0)</td></tr>
+        <tr><td><code>router.destroy()</code></td><td>Clean up and stop the router</td></tr>
+      </table>
+
+      <h2>Router Properties</h2>
+      <table>
+        <tr><th>Property</th><th>Type</th><th>Description</th></tr>
+        <tr><td><code>router.pathname</code></td><td><code>string</code></td><td>Current URL path</td></tr>
+        <tr><td><code>router.params</code></td><td><code>object</code></td><td>Dynamic route parameters</td></tr>
+        <tr><td><code>router.query</code></td><td><code>object</code></td><td>URL query parameters</td></tr>
+        <tr><td><code>router.loading</code></td><td><code>boolean</code></td><td>Navigation in progress</td></tr>
+        <tr><td><code>router.currentRoute</code></td><td><code>object | null</code></td><td>Current matched route data</td></tr>
+        <tr><td><code>router.errorManager</code></td><td><code>ErrorManager</code></td><td>ErrorManager instance (v1.3.0)</td></tr>
+        <tr><td><code>router.accessController</code></td><td><code>AccessController</code></td><td>AccessController instance (v1.3.0)</td></tr>
+        <tr><td><code>router.plugins</code></td><td><code>array</code></td><td>List of registered plugins (v2.0.0)</td></tr>
+      </table>
+
+      <h2>Route Definition</h2>
+      <pre><code class="language-js">{
+  page: Function | string,        // Component or HTML file path
+  layout: Function | string,      // Layout wrapping children
+  children: { ... },              // Nested route definitions
+  loading: Function | string,     // Loading component
+  loader: Function,               // Async data loader (v1.3.0)
+  guard: Function,                // Access guard (v1.3.0)
+  error: Function | string,       // Per-route error component
+  notFound: Function | string,    // Per-route 404 component
+  meta: { title, transition, hideComponents },
+  slots: { ... },                 // Parallel route slots (v2.0.0)
+  intercept: boolean | object,    // Intercepting route (v2.0.0)
+}</code></pre>
+
+      <h2>Special Route Segments</h2>
+      <table>
+        <tr><th>Pattern</th><th>Example</th><th>Description</th></tr>
+        <tr><td><code>[param]</code></td><td><code>[slug]</code></td><td>Matches one path segment</td></tr>
+        <tr><td><code>[...param]</code></td><td><code>[...path]</code></td><td>Matches one or more segments</td></tr>
+        <tr><td><code>[[...param]]</code></td><td><code>[[...tags]]</code></td><td>Matches zero or more segments</td></tr>
+        <tr><td><code>(group)</code></td><td><code>(auth)</code></td><td>Route group — no URL effect</td></tr>
+      </table>
+
+      <h2>Component Signatures</h2>
+      <pre><code class="language-js">// Page
+({ params, query, router, data }) => HTML string
+
+// Layout
+({ children, params, query, router, data }) => HTML string
+
+// Loading
+({ path, router }) => HTML string
+
+// Error
+({ error, path, router, statusCode }) => HTML string
+
+// Not-Found
+({ path, router, statusCode }) => HTML string
+
+// Smart Component (v1.4.0)
+({ path, router, params, query }) => HTML string
+
+// Route Guard (v1.3.0)
+({ params, query, router }) => true | false | redirectPath
+
+// Route Loader (v1.3.0)
+({ params, query, router }) => Promise&lt;data&gt;</code></pre>
+
+      <h2>Events</h2>
+      <table>
+        <tr><th>Event</th><th>Payload</th><th>Description</th></tr>
+        <tr><td><code>beforenavigate</code></td><td><code>{ path, method }</code></td><td>Before navigation starts</td></tr>
+        <tr><td><code>beforerender</code></td><td><code>{ pathname }</code></td><td>Before page render</td></tr>
+        <tr><td><code>afterrender</code></td><td><code>{ pathname }</code></td><td>After render completes</td></tr>
+        <tr><td><code>routechange</code></td><td><code>{ pathname, params, query }</code></td><td>Route changed</td></tr>
+        <tr><td><code>loading</code></td><td><code>{ path, loading }</code></td><td>Loading state changed</td></tr>
+        <tr><td><code>notfound</code></td><td><code>{ path, statusCode }</code></td><td>Route not found</td></tr>
+        <tr><td><code>error</code></td><td><code>{ path, error, statusCode }</code></td><td>Navigation error</td></tr>
+        <tr><td><code>accessdenied</code></td><td><code>{ path, reason }</code></td><td>AccessController blocked</td></tr>
+        <tr><td><code>maintenance</code></td><td><code>{ path }</code></td><td>Maintenance mode blocked</td></tr>
+        <tr><td><code>ready</code></td><td><code>{ pathname }</code></td><td>Router initialized</td></tr>
+        <tr><td><code>destroy</code></td><td><code>{}</code></td><td>Router destroyed</td></tr>
+        <tr><td><code>interceptoropen</code></td><td><code>{ path }</code></td><td>Interceptor overlay opened (v2.0.0)</td></tr>
+        <tr><td><code>interceptorclose</code></td><td><code>{ path }</code></td><td>Interceptor overlay closed (v2.0.0)</td></tr>
+      </table>
+
+      <h2>Constants</h2>
+      <pre><code class="language-js">import { EVENTS, DEFAULT_CONFIG, HTTP_STATUS } from 'safa-router'
+
+// EVENTS — all event names (same as table above)
+// DEFAULT_CONFIG — default router configuration object
+// HTTP_STATUS — status code constants
+// HTTP_STATUS_TEXT — status text mapping</code></pre>
+
+      <h2>Imports & Exports</h2>
+      <pre><code class="language-js">// Full router
+import { SafaRouter, SafaDevServer, Link, RouteTree, RouteMatcher,
+  HistoryManager, MiddlewareChain, PluginManager,
+  RealtimeManager, ErrorManager, AccessController,
+  LoaderCache, TransitionsManager, ScrollManager } from 'safa-router'
+
+// Core router (minimal)
+import { SafaRouter } from 'safa-router/core'
+
+// Type-safe routes
+import { defineRoute, defineRoutes, createRouter } from 'safa-router/typed'
+
+// Vite plugin
+import { safaRouter } from 'safa-router/vite'
+
+// Error classes
+import { SafaError, RouteNotFoundError, NavigationError,
+  RouteLoadError, NavigationAbortError, HttpError,
+  AccessDeniedError, MaintenanceModeError } from 'safa-router'
+
+// Utilities
+import { normalizePath, parseQuery, buildQuery, joinPaths,
+  createURL, isExternalURL, isSamePath, isDynamicSegment,
+  isCatchAllSegment, isOptionalCatchAll, isRouteGroupSegment,
+  useRouter, debounce, deepMerge } from 'safa-router'
+
+// SSR
+import { matchRoute, matchPattern, renderRoute, routeExists, listRoutes } from 'safa-router'</code></pre>
+    </main>
+  </div>
+
+  <footer class="site-footer">
+    <p>MIT Licensed &middot; <a href="https://github.com/Karan-Safaie-Qadi/SafaRouter">GitHub</a> &middot; Built with SafaRouter</p>
+  </footer>
+
+  <script>
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('open')
+      document.getElementById('sidebarOverlay').classList.toggle('open')
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,13 @@
+﻿{
+  "name": "safa-router-vanilla-example",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Vanilla JS example using safa-router",
+  "type": "module",
+  "scripts": {
+    "start": "npx serve ."
+  },
+  "dependencies": {
+    "safa-router": "^2.0.0"
+  }
+}

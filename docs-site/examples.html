@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Examples — SafaRouter</title>
+  <link rel="stylesheet" href="assets/style.css">
+  <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <script>hljs.highlightAll();</script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="index.html" class="logo-link">
+        <img src="assets/logo.svg" alt="SafaRouter"> SafaRouter
+      </a>
+      <button class="mobile-menu-btn" onclick="toggleSidebar()" aria-label="Menu">☰</button>
+      <nav class="header-nav">
+        <a href="getting-started.html">Docs</a>
+        <a href="api-reference.html">API</a>
+        <a href="examples.html">Examples</a>
+        <a href="migration-guide.html">Migration</a>
+        <a href="https://github.com/Karan-Safaie-Qadi/SafaRouter" class="github-link" target="_blank">GitHub</a>
+      </nav>
+    </div>
+  </header>
+
+  <div class="layout-wrapper">
+    <aside class="sidebar" id="sidebar">
+      <nav>
+        <div class="sidebar-section">
+          <div class="sidebar-heading">Getting Started</div>
+          <a href="index.html" class="sidebar-link">Overview</a>
+          <a href="getting-started.html" class="sidebar-link">Installation & Quick Start</a>
+        </div>
+        <div class="sidebar-section">
+          <div class="sidebar-heading">Core Concepts</div>
+          <a href="routing.html" class="sidebar-link">Routing</a>
+          <a href="dynamic-routes.html" class="sidebar-link">Dynamic Routes</a>
+          <a href="nested-routes.html" class="sidebar-link">Nested Routes & Layouts</a>
+          <a href="middleware.html" class="sidebar-link">Middleware</a>
+          <a href="route-guards.html" class="sidebar-link">Route Guards</a>
+          <a href="lazy-loading.html" class="sidebar-link">Lazy Loading</a>
+        </div>
+        <div class="sidebar-section">
+          <div class="sidebar-heading">Reference</div>
+          <a href="api-reference.html" class="sidebar-link">API Reference</a>
+          <a href="migration-guide.html" class="sidebar-link">Migration Guide</a>
+          <a href="examples.html" class="sidebar-link active">Examples</a>
+        </div>
+      </nav>
+    </aside>
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+    <main class="main-content content">
+      <h1>Integration Examples</h1>
+      <p>SafaRouter works with any JavaScript framework. Here are minimal integration patterns.</p>
+
+      <h2>React</h2>
+      <pre><code class="language-jsx">import { useEffect, useRef } from 'react'
+import { SafaRouter } from 'safa-router'
+
+export default function App() {
+  const appRef = useRef(null)
+
+  useEffect(() => {
+    const router = new SafaRouter({
+      target: appRef.current,
+      pageDir: 'html-pages',
+      routes: {
+        '/': {},
+        '/about': {},
+        '/blog': {
+          children: { '[slug]': {} },
+        },
+      },
+      components: {
+        header: ({ path }) => `
+          &lt;nav&gt;
+            &lt;a href="/" data-safa-link&gt;Home&lt;/a&gt;
+            &lt;a href="/about" data-safa-link&gt;About&lt;/a&gt;
+          &lt;/nav&gt;
+        `,
+      },
+    })
+
+    router.start()
+    return () => router.destroy()
+  }, [])
+
+  return (
+    &lt;div&gt;
+      &lt;div data-safa-component="header"&gt;&lt;/div&gt;
+      &lt;main ref={appRef}&gt;&lt;/main&gt;
+    &lt;/div&gt;
+  )
+}</code></pre>
+
+      <h2>Vue</h2>
+      <pre><code class="language-vue">&lt;template&gt;
+  &lt;div&gt;
+    &lt;div data-safa-component="header"&gt;&lt;/div&gt;
+    &lt;div ref="appRef"&gt;&lt;/div&gt;
+  &lt;/div&gt;
+&lt;/template&gt;
+
+&lt;script setup&gt;
+import { ref, onMounted, onUnmounted } from 'vue'
+import { SafaRouter } from 'safa-router'
+
+const appRef = ref(null)
+let router
+
+onMounted(() => {
+  router = new SafaRouter({
+    target: appRef.value,
+    pageDir: 'html-pages',
+    routes: {
+      '/': {},
+      '/about': {},
+      '/user/[id]': {},
+    },
+    components: {
+      header: ({ path }) => `
+        &lt;nav&gt;
+          &lt;a href="/" data-safa-link&gt;Home&lt;/a&gt;
+          &lt;a href="/about" data-safa-link&gt;About&lt;/a&gt;
+        &lt;/nav&gt;
+      `,
+    },
+  })
+  router.start()
+})
+
+onUnmounted(() => router?.destroy())
+&lt;/script&gt;</code></pre>
+
+      <h2>Svelte</h2>
+      <pre><code class="language-svelte">&lt;script&gt;
+  import { onMount, onDestroy } from 'svelte'
+  import { SafaRouter } from 'safa-router'
+
+  let appEl
+  let router
+
+  onMount(() => {
+    router = new SafaRouter({
+      target: appEl,
+      pageDir: 'html-pages',
+      routes: {
+        '/': {},
+        '/about': {},
+      },
+      layout: ({ children }) =&gt; `
+        &lt;header&gt;My App&lt;/header&gt;
+        &lt;main&gt;${children}&lt;/main&gt;
+      `,
+    })
+    router.start()
+  })
+
+  onDestroy(() =&gt; router?.destroy())
+&lt;/script&gt;
+
+&lt;div data-safa-component="header"&gt;&lt;/div&gt;
+&lt;div bind:this={appEl} /&gt;</code></pre>
+
+      <h2>Vanilla JS</h2>
+      <pre><code class="language-html">&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;
+  &lt;title&gt;SafaRouter App&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+  &lt;div data-safa-component="header"&gt;&lt;/div&gt;
+  &lt;div id="app"&gt;&lt;/div&gt;
+  &lt;div data-safa-component="footer"&gt;&lt;/div&gt;
+
+  &lt;script type="module"&gt;
+    import { SafaRouter } from 'safa-router'
+
+    new SafaRouter({
+      target: '#app',
+      pageDir: 'html-pages',
+      routes: {
+        '/': {},
+        '/about': {},
+        '/contact': {},
+      },
+      titleTemplate: '%s — My App',
+    }).start()
+  &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+
+      <h2>Complete Demo Configuration</h2>
+      <p>Here is a full-featured example showing all the capabilities together:</p>
+      <pre><code class="language-js">import { SafaRouter } from 'safa-router'
+import headerComponent from './Header.js'
+import footerComponent from './Footer.js'
+
+const router = new SafaRouter({
+  target: '#app',
+  basePath: '/my-app',
+  pageDir: 'html-pages',
+
+  layout: 'html-pages/_layout.html',
+
+  components: {
+    header: headerComponent,
+    footer: footerComponent,
+  },
+
+  titleTemplate: '%s — My App',
+
+  errors: {
+    pageDir: 'html-pages/errors',
+    stackTraces: true,
+  },
+
+  access: {
+    blocked: ['/admin', '/private/**'],
+    ignored: ['/hidden'],
+  },
+
+  maintenanceMode: {
+    enabled: false,
+    allowedPaths: ['/login', '/assets/**'],
+  },
+
+  routes: {
+    '/': {},
+
+    '/blog': {
+      children: { '[slug]': {} },
+    },
+
+    '/dashboard': {
+      layout: ({ children }) =&gt; `
+        &lt;aside&gt;Sidebar&lt;/aside&gt;
+        &lt;div class="content"&gt;${children}&lt;/div&gt;
+      `,
+      children: { settings: {} },
+    },
+
+    '/slow': {
+      loading: () =&gt; '&lt;div class="spinner"&gt;Loading…&lt;/div&gt;',
+      loader: async () =&gt; {
+        await new Promise(r =&gt; setTimeout(r, 1500))
+        return { data: 'loaded' }
+      },
+    },
+
+    '/guard': {
+      guard: ({ router }) =&gt; {
+        const authed = localStorage.getItem('auth') === 'true'
+        return authed || '/login'
+      },
+    },
+
+    '/transition': {
+      meta: {
+        transition: {
+          duration: 500,
+          enterClass: 'fade-in',
+          enterActiveClass: 'fade-in-active',
+        },
+      },
+    },
+  },
+})
+
+router.afterEach(({ pathname }) =&gt; {
+  console.log(`Navigated to: ${pathname}`)
+})
+
+router.onError(({ path, error, statusCode }) =&gt; {
+  console.warn(`Error at ${path}:`, error.message)
+})
+
+router.start()</code></pre>
+
+      <h2>TypeScript Example</h2>
+      <pre><code class="language-ts">import { defineRoute, defineRoutes, createRouter } from 'safa-router/typed'
+
+const routes = defineRoutes({
+  '/': {},
+  '/blog/[slug]': {
+    loader: async ({ params }) =&gt; {
+      // params.slug is inferred as string
+      const data = await fetch(`/api/posts/${params.slug}`)
+      return data.json()
+    },
+  },
+  '/docs/[...path]': {
+    loader: async ({ params }) =&gt; {
+      // params.path is inferred as string[]
+      return { segments: params.path }
+    },
+  },
+})
+
+createRouter({
+  target: '#app',
+  routes,
+}).start()</code></pre>
+
+      <h2>Vite Plugin</h2>
+      <pre><code class="language-js">// vite.config.js
+import { safaRouter } from 'safa-router/vite'
+
+export default {
+  plugins: [safaRouter()],
+}</code></pre>
+      <p>The plugin auto-detects which optional features you use and injects only the necessary imports, keeping your production bundle minimal.</p>
+
+      <h2>SafaDevServer</h2>
+      <pre><code class="language-js">import { SafaDevServer } from 'safa-router'
+
+const server = new SafaDevServer({
+  port: 3000,
+  root: './test-app',
+  basePath: '/test-app',
+  watch: true,
+  watchDirs: ['./test-app/html-pages'],
+})
+
+server.start()
+// http://localhost:3000/test-app/</code></pre>
+
+      <h2>Parallel Routes (Slots)</h2>
+      <pre><code class="language-js">routes: {
+  '/dashboard': {
+    page: () =&gt; '&lt;h1&gt;Dashboard&lt;/h1&gt;',
+    slots: {
+      sidebar: {
+        loader: async () =&gt; {
+          const res = await fetch('/api/sidebar')
+          return res.json()
+        },
+      },
+    },
+  },
+}</code></pre>
+      <pre><code class="language-html">&lt;main id="app"&gt;&lt;/main&gt;
+&lt;aside data-safa-slot="sidebar"&gt;&lt;/aside&gt;</code></pre>
+
+      <h2>Intercepting Routes</h2>
+      <pre><code class="language-js">routes: {
+  '/photo/[id]': {
+    intercept: true,  // always show as overlay on internal nav
+    page: ({ params }) =&gt; `
+      &lt;div class="modal"&gt;
+        &lt;img src="/photos/${params.id}.jpg" /&gt;
+      &lt;/div&gt;
+    `,
+  },
+}
+
+// Programmatically dismiss
+router.dismissInterceptor()</code></pre>
+
+      <div class="info-box">
+        <div class="icon">💡</div>
+        <p><strong>Framework-agnostic by design.</strong> SafaRouter doesn't require React, Vue, or Svelte — it works with any of them because all components are plain functions returning HTML strings. Choose the framework you love, or use none at all.</p>
+      </div>
+    </main>
+  </div>
+
+  <footer class="site-footer">
+    <p>MIT Licensed &middot; <a href="https://github.com/Karan-Safaie-Qadi/SafaRouter">GitHub</a> &middot; Built with SafaRouter</p>
+  </footer>
+
+  <script>
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('open')
+      document.getElementById('sidebarOverlay').classList.toggle('open')
+    }
+  </script>
+</body>
+</html>

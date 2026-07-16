@@ -2,6 +2,41 @@
 
 All notable changes to SafaRouter will be documented in this file.
 
+## [2.0.1] - 2026-07-16
+
+### Fixed
+- `routeMatch.intercept` null guard — `routeMatch?.intercept` prevents crash when `routeMatch` is null (`SafaRouter.js:693`)
+- CI: removed Node 18 from test matrix (Vitest v4 requires Node >=20)
+- `package.json` engines.node updated from `>=18` to `>=20`
+
+## [2.0.0] - 2026-07-16
+
+### Added
+- **SWR Loader Cache** (`LoaderCache.js`): stale-while-revalidate caching with configurable `loaderStaleTime` (default 30s), `loaderCacheMaxSize` (default 100), concurrent request deduplication
+- **Parallel Routes / Slots**: independent route sections rendered into `[data-safa-slot="name"]` elements, slot loaders run in parallel via `Promise.all`
+- **Intercepting Routes**: routes displayed as interactive overlays on the current page with `intercept: true` or `intercept: { from: pattern }`, `dismissInterceptor()` API, `interceptoropen`/`interceptorclose` events
+- **Vite Plugin** (`safa-router/vite`): static code analysis detects config keys and method calls, auto-injects only needed feature imports
+- **Type-Safe Routes** (`safa-router/typed`): `defineRoute()`, `defineRoutes()`, `createRouter()`, `SafeRouteParams<T>`, `SafeLoaderContext<T>`, `SafeGuardContext<T>`, `TypedRouteEntry<T>`
+- **Core Router** (`safa-router/core`): minimal router without optional features (access, maintenance, errors, transitions, components, scroll, realtime, plugins)
+- **Modular Architecture**: 7 tree-shakeable feature modules under `safa-router/features/*`
+- **Edge-case guards**: `typeof window === 'undefined'` in ScrollManager, `typeof document === 'undefined'` in `_renderComponents`, `querySelector` guard in `_focus`
+- New config options: `loaderCache`, `loaderStaleTime`, `loaderCacheMaxSize`
+
+### Changed
+- Route `resolve()` returns match even without `page` when `slots` exist
+- Full README rewrite with professional branding, quick start, comparison table, roadmap, examples directory, benchmark data
+- `src/vite-plugin.js` — removed unused `detectFeatures` import, added missing transition keys to `CONFIG_KEYS`
+- Exports map in `package.json` supports `./core`, `./typed`, `./vite`, `./features/*`
+
+### Documentation
+- Professional docs site at `docs-site/` (13 pages: getting-started, routing, dynamic-routes, nested-routes, middleware, route-guards, lazy-loading, api-reference, migration-guide, examples)
+- `examples/` directory with 6 ready-to-run examples: vanilla, vite, react, vue, svelte, webpack
+- Logo (`docs-site/assets/logo.svg`), custom CSS branding (indigo/amber theme)
+
+### Testing
+- 63 new tests: LoaderCache (11), typed routes (7), parallel+interceptor (16), Vite plugin (12), core router (9), modular (4), vite plugin transition keys (1), test version updates (2)
+- Total: 267 tests across 22 test files, all passing
+
 ## [1.5.0] - 2026-06-25
 
 ### Added
