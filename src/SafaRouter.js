@@ -513,8 +513,9 @@ export class SafaRouter {
 
     try {
       const ctx = { path, method, query, cancelled: false, redirect: null }
-      await this._middleware.run(ctx)
+      const middlewareResult = await this._middleware.run(ctx)
       if (this._navId !== navId) { this._isLoading = false; return }
+      if (middlewareResult === false) { this._isLoading = false; return }
       if (ctx.redirect) return this._navigate(ctx.redirect, 'replace', ctx.query, {}, depth + 1)
       if (ctx.cancelled) {
         const abortErr = new NavigationAbortError()
