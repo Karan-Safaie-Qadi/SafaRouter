@@ -38,7 +38,7 @@ export function safaRouter() {
   return {
     name: 'safa-router',
 
-    transform(code, id) {
+    transform(code, _id) {
       const features = detectFeaturesFromCode(code)
       if (features.length === 0) return
 

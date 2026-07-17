@@ -55,7 +55,6 @@ export class SafaRouter {
     this._maintenanceMode = this.config.maintenanceMode?.enabled || false
     this._interceptActive = false
     this._previousRouteData = null
-    this._previousScrollY = 0
 
     this._globalNotFound = this.config.notFound || null
     this._globalError = this.config.error || null
@@ -186,8 +185,9 @@ export class SafaRouter {
     const flat = this._routeTree.flatten()
     const matched = flat.find(r => r.meta?.name === routeName || r.path === routeName)
     if (!matched) throw new SafaError(`Route "${routeName}" not found`, 'ROUTE_NOT_FOUND')
+    const path = matched.path.replace(/:(\w+)/g, (_, k) => params[k] || ':' + k)
     const qs = Object.keys(query).length ? '?' + new URLSearchParams(query).toString() : ''
-    return this.push(matched.path + qs)
+    return this.push(path + qs)
   }
 
   back() {
@@ -386,7 +386,6 @@ export class SafaRouter {
     if (dynSeg >= 0) return candidates
 
     const parent = segs.slice(0, -1).join('/')
-    const last = segs[segs.length - 1]
     if (parent) {
       candidates.push(`${dir}/${parent}/[slug].html`)
       candidates.push(`${dir}/${parent}/[slug]/index.html`)
@@ -697,8 +696,6 @@ export class SafaRouter {
       if (routeMatch?.intercept && this._shouldIntercept(routeMatch.intercept)) {
         this._interceptActive = true
         this._previousRouteData = this._routeData
-        this._interceptContent = pageContent
-        this._interceptLayoutFns = layoutFns
         await this._renderIntercept(pageContent, layoutFns)
       } else {
         await this._render(pageContent, layoutFns)
@@ -1095,8 +1092,6 @@ export class SafaRouter {
       this._interceptOverlay.remove()
       this._interceptOverlay = null
     }
-    this._interceptContent = null
-    this._interceptLayoutFns = null
     if (this._previousRouteData) {
       this._routeData = this._previousRouteData
       this._previousRouteData = null

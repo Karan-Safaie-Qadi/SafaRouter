@@ -1,5 +1,4 @@
 import { ErrorManager } from '../ErrorManager.js'
-import { EVENTS } from '../constants.js'
 
 export const name = 'errors'
 
