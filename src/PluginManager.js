@@ -61,7 +61,7 @@ export class PluginManager {
       const mw = plugin.middleware
       this._router.use(mw)
       wrapped._cleanup.push(() => {
-        this._router._middleware.remove(mw)
+        this._router.removeMiddleware(mw)
       })
     }
 

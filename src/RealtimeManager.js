@@ -29,8 +29,6 @@ export class RealtimeManager {
       })
       this._eventSource.onerror = () => {
         if (this._destroyed) return
-        this._eventSource.close()
-        setTimeout(() => { if (!this._destroyed) this._startSSE() }, 3000)
       }
     } catch {}
   }
