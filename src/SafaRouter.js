@@ -1097,7 +1097,9 @@ export class SafaRouter {
       this._routeData = this._previousRouteData
       this._previousRouteData = null
     }
-    this._history.back()
+    if (typeof window !== 'undefined') {
+      window.history.replaceState(null, '', this._routeData?.path || '/')
+    }
   }
 
   _renderComponents() {
