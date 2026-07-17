@@ -411,7 +411,7 @@ export class SafaRouter {
         if (res.ok) {
           const text = await res.text()
           this._extractTitle(text)
-          this._addPrefetchLink(p)
+          this._addPrefetchLink(url)
           return text
         }
       } catch {

@@ -7,6 +7,8 @@ export class HistoryManager {
   }
 
   init() {
+    if (this._inited) return
+    this._inited = true
     window.addEventListener('popstate', this._bound)
     if (this._useHash) {
       this._boundHash = () => this._notify(this.path, 'hashchange')

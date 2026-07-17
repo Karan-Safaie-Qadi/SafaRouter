@@ -67,7 +67,9 @@ export class SafaDevServer {
             this._broadcast(this._lastChange)
           })
           this._watchers.push(w)
-        } catch {}
+        } catch (err) {
+          console.warn(`[SafaRouter] Failed to watch directory ${abs}: ${err.message}`)
+        }
       }
     }
   }
