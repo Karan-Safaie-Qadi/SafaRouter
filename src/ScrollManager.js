@@ -58,14 +58,6 @@ export class ScrollManager {
     }
   }
 
-  restoreElementScroll(pathname, container) {
-    const key = `${pathname}::${_elId(container)}`
-    const saved = this._memory.get(key)
-    if (saved !== undefined) {
-      container.scrollTop = saved
-    }
-  }
-
   clear() {
     this._memory.clear()
     this._elementScroll.clear()
