@@ -543,7 +543,6 @@ export class SafaRouter {
       const blocked = this._accessController.isBlocked(path)
       if (blocked) {
         emit(this._events, EVENTS.ACCESS_DENIED, { path, reason: blocked.message })
-        this._pathname = path
         return this._handleError(path, blocked, navId, signal, HTTP_STATUS.FORBIDDEN)
       }
       if (this._accessController.isIgnored(path)) {
