@@ -1157,7 +1157,6 @@ export class SafaRouter {
   }
 
   _onHistoryChange({ path, action, state }) {
-    if (action === 'back') return
     if (action === 'popstate') {
       this._resolve(this._stripBase(path), 'replace')
       if (state && state._scrollY !== undefined) {
